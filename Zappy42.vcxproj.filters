@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Archivos de origen">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Archivos de encabezado">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Archivos de recursos">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Archivos de origen\Agents">
+      <UniqueIdentifier>{e968a665-4bb4-467c-a948-41ba7ffa3deb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Agents">
+      <UniqueIdentifier>{743c9274-618e-4c98-a959-ea8e757eb125}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Map">
+      <UniqueIdentifier>{120141f1-9b4f-499b-a823-434ab9aa5453}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Map">
+      <UniqueIdentifier>{f579d2ba-5c94-4d6a-8e2b-720bfb9c0a7a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Blackboard.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Bid.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="AgentExplorer.cpp">
+      <Filter>Archivos de origen\Agents</Filter>
+    </ClCompile>
+    <ClCompile Include="AgentHungry.cpp">
+      <Filter>Archivos de origen\Agents</Filter>
+    </ClCompile>
+    <ClCompile Include="AgentBreeder.cpp">
+      <Filter>Archivos de origen\Agents</Filter>
+    </ClCompile>
+    <ClCompile Include="AgentChaman.cpp">
+      <Filter>Archivos de origen\Agents</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Tile.cpp">
+      <Filter>Archivos de origen\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Map.cpp">
+      <Filter>Archivos de origen\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Event.cpp">
+      <Filter>Archivos de origen\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="AgentStoner.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Blackboard.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="IAgent.h">
+      <Filter>Archivos de encabezado\Agents</Filter>
+    </ClInclude>
+    <ClInclude Include="Bid.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentHungry.h">
+      <Filter>Archivos de encabezado\Agents</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentExplorer.h">
+      <Filter>Archivos de encabezado\Agents</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentBreeder.h">
+      <Filter>Archivos de encabezado\Agents</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentChaman.h">
+      <Filter>Archivos de encabezado\Agents</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="Tile.h">
+      <Filter>Archivos de encabezado\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>Archivos de encabezado\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.h">
+      <Filter>Archivos de encabezado\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>Archivos de encabezado\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentStoner.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Zappy.natvis" />
+  </ItemGroup>
+</Project>

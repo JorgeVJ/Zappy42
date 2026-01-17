@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+	<!-- ===================== -->
+	<!-- Inventory -->
+	<!-- ===================== -->
+	<Type Name="Inventory">
+		<DisplayString>
+			Food={data[0]}, Linemate={data[1]}, Deraumere={data[2]}, Sibur={data[3]}, Mendiane={data[4]}, Phiras={data[5]}, Thystame={data[6]}
+		</DisplayString>
+
+		<Expand>
+			<Item Name="Food">data[0]</Item>
+			<Item Name="Linemate">data[1]</Item>
+			<Item Name="Deraumere">data[2]</Item>
+			<Item Name="Sibur">data[3]</Item>
+			<Item Name="Mendiane">data[4]</Item>
+			<Item Name="Phiras">data[5]</Item>
+			<Item Name="Thystame">data[6]</Item>
+		</Expand>
+	</Type>
+
+	<!-- ===================== -->
+	<!-- Influence -->
+	<!-- ===================== -->
+	<Type Name="Influence">
+		<DisplayString>
+			Influence Active={IsActive} Origin=({Origin->X},{Origin->Y})
+		</DisplayString>
+	</Type>
+
+	<Type Name="std::pair&lt;int, Influence*&gt;">
+		<DisplayString>
+			Steps={first}, Strength={100 * pow(0.8, first)}, Active={second->IsActive}
+		</DisplayString>
+
+		<Expand>
+			<Item Name="Steps">first</Item>
+			<Item Name="Influence">second</Item>
+		</Expand>
+	</Type>
+
+	<!-- ===================== -->
+	<!-- Tile -->
+	<!-- ===================== -->
+	<Type Name="Tile">
+		<DisplayString>
+			Tile ({X},{Y}) Seen={EverSeen}
+		</DisplayString>
+
+		<Expand>
+			<Item Name="Inventory">Inventory</Item>
+			<Item Name="LastSeenTick">lastSeenTick</Item>
+
+			<!-- Neighbors -->
+			<Item Name="Neighbors">neighbors</Item>
+
+			<!-- Influences by Resource -->
+			<Synthetic Name="Influences">
+				<Expand>
+					<Item Name="Food">influences[0]</Item>
+					<Item Name="Linemate">influences[1]</Item>
+					<Item Name="Deraumere">influences[2]</Item>
+					<Item Name="Sibur">influences[3]</Item>
+					<Item Name="Mendiane">influences[4]</Item>
+					<Item Name="Phiras">influences[5]</Item>
+					<Item Name="Thystame">influences[6]</Item>
+				</Expand>
+			</Synthetic>
+		</Expand>
+	</Type>
+
+	<!-- ===================== -->
+	<!-- pair<int, Influence*> -->
+	<!-- (para ver bien cada influencia local) -->
+	<!-- ===================== -->
+
+</AutoVisualizer>

@@ -1,0 +1,19 @@
+#include "AgentChaman.h"
+#include "Inventory.h"
+#include "Bid.h"
+
+void AgentChaman::GetBids(Blackboard& bb)
+{
+    auto it = bb.Inventory.IncantationRecipes.find(bb.Level);
+    if (it == bb.Inventory.IncantationRecipes.end())
+        return; // no se puede incantar a este nivel
+
+    const Inventory& recipe = it->second;
+
+    if (!bb.Inventory.Has(recipe))
+        return; // No se añaden Bids ya que no es posible hacer la encantación.
+
+    // TODO: crear bids reales
+    bb.Bids.push_back(Bid("broadcast 2", bb.Level <= 1 ? 15.0 : 0.0));
+}
+
