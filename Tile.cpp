@@ -15,12 +15,12 @@ void Tile::MarkSeen(int currentTick) {
     EverSeen = true;
 }
 
-double Tile::GetExploredValue(int currentTick, int decayTicks) const {
+double Tile::GetExplorationValue(int currentTick, int decayTicks) const {
     if (!EverSeen)
-        return 0.0;
+        return 1;
 
     int delta = currentTick - lastSeenTick;
-    double value = 1.0 - static_cast<double>(delta) / decayTicks;
+    double value = static_cast<double>(delta) / decayTicks;
     if (value < 0.0) value = 0.0;
     if (value > 1.0) value = 1.0;
     return value;

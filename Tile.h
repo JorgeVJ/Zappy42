@@ -6,6 +6,7 @@
 #include <vector>
 #include "Inventory.h"
 #include "Point.h"
+#include "Direction.h"
 
 class Tile;
 
@@ -13,17 +14,6 @@ struct Influence {
     bool IsActive;
     Resource Resource;
     Tile* Origin;
-};
-
-enum class Direction {
-    North,
-    NorthEast,
-    East,
-    SouthEast,
-    South,
-    SouthWest,
-    West,
-    NorthWest
 };
 
 class Tile : public Point {
@@ -37,7 +27,7 @@ class Tile : public Point {
         void SetNeighbor(Direction dir, Tile* tile);
         Tile* GetNeighbor(Direction dir) const;
         void MarkSeen(int currentTick);
-        double GetExploredValue(int currentTick, int decayTicks = 50) const;
+        double GetExplorationValue(int currentTick, int decayTicks = 50) const;
         double GetInfluenceStrength(Resource resource);
         std::vector<std::pair<int, Influence*>>& GetInfluences(Resource resource);
         void CleanInfluences();

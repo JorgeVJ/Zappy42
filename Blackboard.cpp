@@ -33,7 +33,7 @@ std::vector<std::string> ParseVoir(const std::string& str)
     return cases;
 }
 
-std::vector<std::pair<int, int>> GetVoirOffsets(int level, Direction dir)
+std::vector<std::pair<int, int>> Blackboard::GetVoirOffsets(int level, Direction dir)
 {
     std::vector<std::pair<int, int>> offsets;
 
@@ -75,7 +75,7 @@ Tile* Blackboard::GetPlayerTile() {
 void Blackboard::HandleVoirResponse(const std::string& response)
 {
     std::vector<std::string> cases = ParseVoir(response);
-    std::vector<std::pair<int, int>> offsets = GetVoirOffsets(Level, Direction);
+    std::vector<std::pair<int, int>> offsets = GetVoirOffsets(Level, PlayerDirection);
 
     Tile* origin = GetPlayerTile();
     

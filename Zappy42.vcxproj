@@ -145,6 +145,7 @@
     <ClInclude Include="AgentStoner.h" />
     <ClInclude Include="Bid.h" />
     <ClInclude Include="Blackboard.h" />
+    <ClInclude Include="Direction.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="IAgent.h" />
     <ClInclude Include="Inventory.h" />

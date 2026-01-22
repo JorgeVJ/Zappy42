@@ -1,5 +1,16 @@
 #include "Inventory.h"
 
+std::map<int, Inventory> Inventory::IncantationRecipes = {
+    //  Level	        linemate	deraumere	sibur	mendiane	phiras	thystame
+        {1, Inventory({ 1,          0,          0,      0,          0,      0})},
+        {2, Inventory({ 1,          1,          1,      0,          0,      0})},
+        {3, Inventory({ 2,          0,          1,      0,          2,      0})},
+        {4, Inventory({ 1,          1,          2,      0,          1,      0})},
+        {5, Inventory({ 1,          2,          1,      3,          0,      0})},
+        {6, Inventory({ 1,          2,          3,      0,          1,      0})},
+        {7, Inventory({ 2,          2,          2,      2,          2,      1})},
+};
+
 void Inventory::InnitMap() {
     // Mapear nombres del servidor a enum Resource
     map = {
@@ -10,17 +21,6 @@ void Inventory::InnitMap() {
         { "mendiane",   Resource::Mendiane },
         { "phiras",     Resource::Phiras },
         { "thystame",   Resource::Thystame }
-    };
-
-    IncantationRecipes = {
-        //  Level	        linemate	deraumere	sibur	mendiane	phiras	thystame
-            {1, Inventory({ 1,          0,          0,      0,          0,      0})},
-            {2, Inventory({ 1,          1,          1,      0,          0,      0})},
-            {3, Inventory({ 2,          0,          1,      0,          2,      0})},
-            {4, Inventory({ 1,          1,          2,      0,          1,      0})},
-            {5, Inventory({ 1,          2,          1,      3,          0,      0})},
-            {6, Inventory({ 1,          2,          3,      0,          1,      0})},
-            {7, Inventory({ 2,          2,          2,      2,          2,      1})},
     };
 }
 

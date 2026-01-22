@@ -64,7 +64,7 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="AgentStoner.cpp">
-      <Filter>Archivos de origen</Filter>
+      <Filter>Archivos de origen\Agents</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +105,9 @@
       <Filter>Archivos de encabezado\Map</Filter>
     </ClInclude>
     <ClInclude Include="AgentStoner.h">
+      <Filter>Archivos de encabezado\Agents</Filter>
+    </ClInclude>
+    <ClInclude Include="Direction.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
