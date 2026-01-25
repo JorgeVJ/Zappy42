@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
+#include <chrono>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -181,6 +183,8 @@ int main()
             // Aquí puedes gestionar ok/ko, mensajes broadcast, etc.
             // board.Messages.push_back(response);
         }
+
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 
     // -----------------------------

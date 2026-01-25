@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -119,60 +120,81 @@ static void handle_client(SOCKET clientSocket)
     closesocket(clientSocket);
 }
 
-int main()
-{
+int main() {
     WSADATA wsaData;
-    SOCKET listenSocket = INVALID_SOCKET;
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    {
-        std::cerr << "WSAStartup failed\n";
-        return 1;
+    SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+    sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(12345);
+
+    bind(listenSocket, (sockaddr*)&addr, sizeof(addr));
+    listen(listenSocket, SOMAXCONN);
+
+    std::vector<SOCKET> clients;
+
+    std::cout << "Server listening...\n";
+
+    while (true) {
+        fd_set readSet;
+        FD_ZERO(&readSet);
+        FD_SET(listenSocket, &readSet);
+
+        SOCKET maxSock = listenSocket;
+
+        for (SOCKET s : clients) {
+            FD_SET(s, &readSet);
+            if (s > maxSock) maxSock = s;
+        }
+
+        // Timeout opcional
+        timeval timeout{};
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+
+        int n = select(int(maxSock + 1), &readSet, nullptr, nullptr, &timeout);
+        if (n == SOCKET_ERROR) {
+            std::cerr << "select() error\n";
+            break;
+        }
+
+        // Nueva conexión
+        if (FD_ISSET(listenSocket, &readSet)) {
+            SOCKET client = accept(listenSocket, nullptr, nullptr);
+            if (client != INVALID_SOCKET) {
+                std::cout << "Client connected!\n";
+                clients.push_back(client);
+                send(client, "WELCOME\n", 8, 0);
+            }
+        }
+
+        // Revisar clientes
+        for (size_t i = 0; i < clients.size(); ) {
+            SOCKET s = clients[i];
+            if (FD_ISSET(s, &readSet)) {
+                char buffer[512];
+                int ret = recv(s, buffer, sizeof(buffer) - 1, 0);
+                if (ret <= 0) {
+                    std::cout << "Client disconnected\n";
+                    closesocket(s);
+                    clients.erase(clients.begin() + i);
+                    continue; // no aumentar i
+                }
+                else {
+                    buffer[ret] = '\0';
+                    std::cout << "Received: " << buffer;
+                    // Aquí procesas la línea y envías respuesta
+                }
+            }
+            i++;
+        }
     }
-
-    listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (listenSocket == INVALID_SOCKET)
-    {
-        std::cerr << "socket() failed\n";
-        WSACleanup();
-        return 1;
-    }
-
-    sockaddr_in serverAddr{};
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(12345);
-
-    if (bind(listenSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
-    {
-        std::cerr << "bind() failed\n";
-        closesocket(listenSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    if (listen(listenSocket, 1) == SOCKET_ERROR)
-    {
-        std::cerr << "listen() failed\n";
-        closesocket(listenSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    std::cout << "[Server] Listening on port 12345...\n";
-
-    SOCKET clientSocket = accept(listenSocket, nullptr, nullptr);
-    if (clientSocket == INVALID_SOCKET)
-    {
-        std::cerr << "accept() failed\n";
-        closesocket(listenSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    handle_client(clientSocket);
 
     closesocket(listenSocket);
     WSACleanup();
     return 0;
 }
+
