@@ -7,8 +7,8 @@
 class Map {
     public:
         Map(int width, int height);
+
         Tile* GetTile(int x, int y);
-        void BFSPropagate(Tile* origin, Resource resource, Influence* influence, int maxSteps);
 
     private:
         int width;

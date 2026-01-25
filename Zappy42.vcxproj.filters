@@ -25,6 +25,12 @@
     <Filter Include="Archivos de encabezado\Map">
       <UniqueIdentifier>{f579d2ba-5c94-4d6a-8e2b-720bfb9c0a7a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\Services">
+      <UniqueIdentifier>{cdbc26e2-24c9-4b96-b791-1a4bd6d2e99c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Services">
+      <UniqueIdentifier>{38ac53f5-856e-49c7-b8b5-a5e36d383c9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -48,23 +54,17 @@
     <ClCompile Include="AgentChaman.cpp">
       <Filter>Archivos de origen\Agents</Filter>
     </ClCompile>
-    <ClCompile Include="Inventory.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="Tile.cpp">
-      <Filter>Archivos de origen\Map</Filter>
-    </ClCompile>
-    <ClCompile Include="Map.cpp">
-      <Filter>Archivos de origen\Map</Filter>
-    </ClCompile>
     <ClCompile Include="Event.cpp">
       <Filter>Archivos de origen\Map</Filter>
     </ClCompile>
-    <ClCompile Include="Point.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
     <ClCompile Include="AgentStoner.cpp">
       <Filter>Archivos de origen\Agents</Filter>
+    </ClCompile>
+    <ClCompile Include="ExplorationService.cpp">
+      <Filter>Archivos de origen\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="InfluenceService.cpp">
+      <Filter>Archivos de origen\Services</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,26 +89,17 @@
     <ClInclude Include="AgentChaman.h">
       <Filter>Archivos de encabezado\Agents</Filter>
     </ClInclude>
-    <ClInclude Include="Inventory.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="Tile.h">
-      <Filter>Archivos de encabezado\Map</Filter>
-    </ClInclude>
-    <ClInclude Include="Map.h">
-      <Filter>Archivos de encabezado\Map</Filter>
-    </ClInclude>
     <ClInclude Include="Event.h">
-      <Filter>Archivos de encabezado\Map</Filter>
-    </ClInclude>
-    <ClInclude Include="Point.h">
       <Filter>Archivos de encabezado\Map</Filter>
     </ClInclude>
     <ClInclude Include="AgentStoner.h">
       <Filter>Archivos de encabezado\Agents</Filter>
     </ClInclude>
-    <ClInclude Include="Direction.h">
-      <Filter>Archivos de encabezado</Filter>
+    <ClInclude Include="ExplorationService.h">
+      <Filter>Archivos de encabezado\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="InfluenceService.h">
+      <Filter>Archivos de encabezado\Services</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

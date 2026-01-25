@@ -62,8 +62,7 @@ void Blackboard::PropagateInfluences(Tile* tile)
                 resource,
                 tile
             };
-            tile->Signals.push_back(inf);
-            Map.BFSPropagate(tile, resource, inf, 5);
+            InfluenceService.BFSPropagate(tile, resource, inf, 5);
         }
     }
 }
@@ -87,7 +86,7 @@ void Blackboard::HandleVoirResponse(const std::string& response)
         if (!tile) continue;
 
         tile->Inventory.Clear();
-        tile->EverSeen = true;
+        ExplorationService.MarkSeen(tile, CurrentTick);
 
         std::stringstream ss(cases[i]);
         std::string res;
@@ -95,7 +94,7 @@ void Blackboard::HandleVoirResponse(const std::string& response)
             tile->Inventory.Add(res, 1);
         }
 
-        tile->CleanInfluences();
+        InfluenceService.CleanSignals(tile);
         PropagateInfluences(tile);
     }
 }

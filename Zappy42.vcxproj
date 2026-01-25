@@ -131,11 +131,9 @@
     <ClCompile Include="Bid.cpp" />
     <ClCompile Include="Blackboard.cpp" />
     <ClCompile Include="Event.cpp" />
-    <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="ExplorationService.cpp" />
+    <ClCompile Include="InfluenceService.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Map.cpp" />
-    <ClCompile Include="Point.cpp" />
-    <ClCompile Include="Tile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgentBreeder.h" />
@@ -145,16 +143,18 @@
     <ClInclude Include="AgentStoner.h" />
     <ClInclude Include="Bid.h" />
     <ClInclude Include="Blackboard.h" />
-    <ClInclude Include="Direction.h" />
     <ClInclude Include="Event.h" />
+    <ClInclude Include="ExplorationService.h" />
     <ClInclude Include="IAgent.h" />
-    <ClInclude Include="Inventory.h" />
-    <ClInclude Include="Map.h" />
-    <ClInclude Include="Point.h" />
-    <ClInclude Include="Tile.h" />
+    <ClInclude Include="InfluenceService.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Zappy.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.vcxproj">
+      <Project>{b238162a-9621-47db-832a-e669d40c3bd7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

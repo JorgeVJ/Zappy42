@@ -17,7 +17,7 @@ double GetVoirScore(Blackboard& bb) {
 		if (!tile)
 			continue;
 
-		voirScore += tile->GetExplorationValue(bb.CurrentTick) * voirWeigth;
+		voirScore += bb.ExplorationService.GetExplorationValue(tile, bb.CurrentTick * voirWeigth);
 	}
 
 	return (bias + voirScore) * (1 - bb.GetHungerNeed());

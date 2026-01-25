@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Inventory.h"
 
 std::map<int, Inventory> Inventory::IncantationRecipes = {
