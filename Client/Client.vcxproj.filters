@@ -39,9 +39,6 @@
     <ClCompile Include="Blackboard.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
-    <ClCompile Include="Bid.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
     <ClCompile Include="AgentExplorer.cpp">
       <Filter>Archivos de origen\Agents</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
     <ClCompile Include="AgentChaman.cpp">
       <Filter>Archivos de origen\Agents</Filter>
     </ClCompile>
-    <ClCompile Include="Event.cpp">
-      <Filter>Archivos de origen\Map</Filter>
-    </ClCompile>
     <ClCompile Include="AgentStoner.cpp">
       <Filter>Archivos de origen\Agents</Filter>
     </ClCompile>
@@ -66,6 +60,9 @@
     <ClCompile Include="InfluenceService.cpp">
       <Filter>Archivos de origen\Services</Filter>
     </ClCompile>
+    <ClCompile Include="Bid.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blackboard.h">
@@ -73,9 +70,6 @@
     </ClInclude>
     <ClInclude Include="IAgent.h">
       <Filter>Archivos de encabezado\Agents</Filter>
-    </ClInclude>
-    <ClInclude Include="Bid.h">
-      <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="AgentHungry.h">
       <Filter>Archivos de encabezado\Agents</Filter>
@@ -89,9 +83,6 @@
     <ClInclude Include="AgentChaman.h">
       <Filter>Archivos de encabezado\Agents</Filter>
     </ClInclude>
-    <ClInclude Include="Event.h">
-      <Filter>Archivos de encabezado\Map</Filter>
-    </ClInclude>
     <ClInclude Include="AgentStoner.h">
       <Filter>Archivos de encabezado\Agents</Filter>
     </ClInclude>
@@ -101,8 +92,14 @@
     <ClInclude Include="InfluenceService.h">
       <Filter>Archivos de encabezado\Services</Filter>
     </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="Bid.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="Zappy.natvis" />
+    <Natvis Include="Client.natvis" />
   </ItemGroup>
 </Project>

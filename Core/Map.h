@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "Bid.h"
 #include "Tile.h"
 
 class Map {

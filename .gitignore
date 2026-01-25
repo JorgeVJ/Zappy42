@@ -4,3 +4,6 @@
 /.vs
 /x64
 /Zappy42
+/Client/x64
+/Core/x64
+/Server/x64
