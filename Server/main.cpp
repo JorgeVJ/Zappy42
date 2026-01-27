@@ -7,27 +7,12 @@
 #include <vector>
 #include "Game.h"
 #include "responses.h"
+#include <utils.h>
+#include "Connection.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
-static void SendLine(SOCKET client, const std::string& s)
-{
-    std::string msg = s;
-    if (msg.empty() || msg.back() != '\n')
-        msg += "\n";
-
-    send(client, msg.c_str(), (int)msg.size(), 0);
-}
-
-static std::string Trim(const std::string& str)
-{
-    size_t start = str.find_first_not_of(" \t\r\n");
-    size_t end = str.find_last_not_of(" \t\r\n");
-    if (start == std::string::npos) return "";
-    return str.substr(start, end - start + 1);
-}
-
-void HandleCommand(const std::string& cmd, SOCKET client)
+void HandleCommand(const std::string& cmd, Connection& client)
 {
     // Aquí simulas el server Zappy.
     // Puedes conectarlo luego con tu Map/Tile reales.
@@ -35,178 +20,141 @@ void HandleCommand(const std::string& cmd, SOCKET client)
     if (cmd == "inventory")
     {
         // Respuesta estilo Zappy
-        SendLine(client, "{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");
+        client.SendLine("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");
     }
     else if (cmd == "voir")
     {
         // Ejemplo MUY simplificado:
         // En el real, son tiles en forma de cono según nivel/orientación.
-        SendLine(client, "{nourriture linemate, sibur, phiras phiras,}");
+        client.SendLine("{nourriture linemate, sibur, phiras phiras,}");
     }
     else if (cmd == "avance")
     {
-        SendLine(client, "ok");
+        client.SendLine("ok");
     }
     else if (cmd == "droite")
     {
-        SendLine(client, "ok");
+        client.SendLine("ok");
     }
     else if (cmd == "gauche")
     {
-        SendLine(client, "ok");
+        client.SendLine("ok");
     }
     else if (cmd.rfind("prend ", 0) == 0)
     {
         // prend nourriture / prend linemate ...
-        SendLine(client, "ok");
+        client.SendLine("ok");
     }
     else if (cmd.rfind("broadcast ", 0) == 0)
     {
-        SendLine(client, "ok");
+        client.SendLine("ok");
     }
     else if (cmd == "fork")
     {
-        SendLine(client, "ok");
+        client.SendLine("ok");
     }
     else if (cmd == "incantation")
     {
         // En el server real, esto depende de condiciones del tile
-        SendLine(client, "elevation en cours");
+        client.SendLine("elevation en cours");
     }
     else if (cmd == "msz\n")
     {
         Map* map = Game::GetInstance()->WorldMap;
         std::ostringstream ss;
         ss << "msz " << map->Width << " " << map->Height;
-        SendLine(client, ss.str());
+        client.SendLine(ss.str());
     }
     else if (cmd.find("mct") != std::string::npos) {
         std::string fullMap = GetMCT();
-        send(client, fullMap.c_str(), fullMap.size(), 0);
+        send(client.Get(), fullMap.c_str(), fullMap.size(), 0);
     }
     else
     {
-        SendLine(client, "ko");
+        client.SendLine("ko");
     }
 }
 
-static void handle_client(SOCKET clientSocket)
+int main()
 {
-    std::cout << "[Server] Client connected!\n";
-
-    // Mensaje inicial típico de Zappy
-    SendLine(clientSocket, "WELCOME");
-
-    char buffer[1024];
-    std::string partial;
-
-    while (true)
-    {
-        int bytes = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-        if (bytes <= 0)
-        {
-            std::cout << "[Server] Client disconnected.\n";
-            break;
-        }
-
-        buffer[bytes] = '\0';
-        partial += buffer;
-
-        // Procesar líneas completas (\n)
-        size_t pos;
-        while ((pos = partial.find('\n')) != std::string::npos)
-        {
-            std::string line = partial.substr(0, pos);
-            partial.erase(0, pos + 1);
-
-            line = Trim(line);
-            if (line.empty())
-                continue;
-
-            std::cout << "[Server] Received: " << line << "\n";
-
-            HandleCommand(line, clientSocket);
-        }
-    }
-
-    closesocket(clientSocket);
-}
-
-int main() {
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-    SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+    SOCKET rawListen = socket(AF_INET, SOCK_STREAM, 0);
+    Connection listenSocket(rawListen);
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(12345);
 
-    bind(listenSocket, (sockaddr*)&addr, sizeof(addr));
-    listen(listenSocket, SOMAXCONN);
+    bind(listenSocket.Get(), (sockaddr*)&addr, sizeof(addr));
+    listen(listenSocket.Get(), SOMAXCONN);
 
-    std::vector<SOCKET> clients;
+    std::vector<Connection> clients;
 
     std::cout << "Server listening...\n";
     Game::GetInstance();
 
-    while (true) {
+    while (true)
+    {
         fd_set readSet;
         FD_ZERO(&readSet);
-        FD_SET(listenSocket, &readSet);
+        FD_SET(listenSocket.Get(), &readSet);
 
-        SOCKET maxSock = listenSocket;
+        SOCKET maxSock = listenSocket.Get();
 
-        for (SOCKET s : clients) {
-            FD_SET(s, &readSet);
-            if (s > maxSock) maxSock = s;
+        for (auto& c : clients)
+        {
+            FD_SET(c.Get(), &readSet);
+            if (c.Get() > maxSock)
+                maxSock = c.Get();
         }
 
-        // Timeout opcional
         timeval timeout{};
         timeout.tv_sec = 1;
-        timeout.tv_usec = 0;
 
         int n = select(int(maxSock + 1), &readSet, nullptr, nullptr, &timeout);
-        if (n == SOCKET_ERROR) {
+        if (n == SOCKET_ERROR)
+        {
             std::cerr << "select() error\n";
             break;
         }
 
         // Nueva conexión
-        if (FD_ISSET(listenSocket, &readSet)) {
-            SOCKET client = accept(listenSocket, nullptr, nullptr);
-            if (client != INVALID_SOCKET) {
+        if (FD_ISSET(listenSocket.Get(), &readSet))
+        {
+            SOCKET s = accept(listenSocket.Get(), nullptr, nullptr);
+            if (s != INVALID_SOCKET)
+            {
                 std::cout << "Client connected!\n";
-                clients.push_back(client);
-                send(client, "WELCOME\n", 8, 0);
+                Connection client(s);
+                client.SendLine("WELCOME");
+                clients.push_back(std::move(client));
             }
         }
 
-        // Revisar clientes
-        for (size_t i = 0; i < clients.size(); ) {
-            SOCKET s = clients[i];
-            if (FD_ISSET(s, &readSet)) {
-                char buffer[512];
-                int ret = recv(s, buffer, sizeof(buffer) - 1, 0);
-                if (ret <= 0) {
+        // Clientes existentes
+        for (size_t i = 0; i < clients.size();)
+        {
+            auto& c = clients[i];
+            if (FD_ISSET(c.Get(), &readSet))
+            {
+                std::string msg;
+                if (!c.RecvLine(msg))
+                {
                     std::cout << "Client disconnected\n";
-                    closesocket(s);
                     clients.erase(clients.begin() + i);
-                    continue; // no aumentar i
+                    continue;
                 }
-                else {
-                    buffer[ret] = '\0';
-                    std::cout << "Received: " << buffer;
-                    HandleCommand(buffer, s);
-                }
+
+                std::cout << "Received: " << msg << "\n";
+                HandleCommand(msg.c_str(), c);
             }
-            i++;
+            ++i;
         }
     }
 
-    closesocket(listenSocket);
     WSACleanup();
     return 0;
 }

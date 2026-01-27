@@ -4,7 +4,8 @@
     "Projects": [
       {
         "Path": "Server\\Server.vcxproj",
-        "Action": "Start"
+        "Action": "Start",
+        "DebugTarget": "Depurador local de Windows"
       },
       {
         "Path": "Client\\Client.vcxproj",
