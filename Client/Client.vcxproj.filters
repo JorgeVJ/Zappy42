@@ -19,12 +19,6 @@
     <Filter Include="Archivos de encabezado\Agents">
       <UniqueIdentifier>{743c9274-618e-4c98-a959-ea8e757eb125}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Archivos de origen\Map">
-      <UniqueIdentifier>{120141f1-9b4f-499b-a823-434ab9aa5453}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Archivos de encabezado\Map">
-      <UniqueIdentifier>{f579d2ba-5c94-4d6a-8e2b-720bfb9c0a7a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Archivos de encabezado\Services">
       <UniqueIdentifier>{cdbc26e2-24c9-4b96-b791-1a4bd6d2e99c}</UniqueIdentifier>
     </Filter>

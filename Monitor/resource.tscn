@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://bh6vglpaad1yi"]
+
+[ext_resource type="Script" path="res://Resource.cs" id="1_6nh4u"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_4ad3c"]
+radius = 0.1
+height = 0.2
+radial_segments = 5
+rings = 2
+
+[node name="Resource" type="Node3D"]
+script = ExtResource("1_6nh4u")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_4ad3c")

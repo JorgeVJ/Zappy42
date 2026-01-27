@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cuvgtyo8bw183"]
+
+[ext_resource type="Script" path="res://Egg.cs" id="1_4xqs6"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_00pr2"]
+
+[node name="Egg" type="Node3D"]
+script = ExtResource("1_4xqs6")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_00pr2")

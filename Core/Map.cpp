@@ -4,31 +4,31 @@
 #include <unordered_set>
 
 Map::Map(int width, int height)
-    : width(width), height(height)
+    : Width(width), Height(height)
 {
     CreateTiles();
     ConnectTiles();
 }
 
 Tile* Map::GetTile(int x, int y) {
-    int wrappedX = (x % width + width) % width;
-    int wrappedY = (y % height + height) % height;
+    int wrappedX = (x % Width + Width) % Width;
+    int wrappedY = (y % Height + Height) % Height;
     return tiles[wrappedY][wrappedX].get();
 }
 
 void Map::CreateTiles() {
-    tiles.resize(height);
-    for (int y = 0; y < height; ++y) {
-        tiles[y].resize(width);
-        for (int x = 0; x < width; ++x) {
+    tiles.resize(Height);
+    for (int y = 0; y < Height; ++y) {
+        tiles[y].resize(Width);
+        for (int x = 0; x < Width; ++x) {
             tiles[y][x] = std::make_unique<Tile>(x, y);
         }
     }
 }
 
 void Map::ConnectTiles() {
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+    for (int y = 0; y < Height; ++y) {
+        for (int x = 0; x < Width; ++x) {
             Tile* t = GetTile(x, y);
             if (!t) continue;
 

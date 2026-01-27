@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include "Game.h"
+#include "responses.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -25,7 +27,7 @@ static std::string Trim(const std::string& str)
     return str.substr(start, end - start + 1);
 }
 
-static std::string HandleCommand(const std::string& cmd)
+void HandleCommand(const std::string& cmd, SOCKET client)
 {
     // Aquí simulas el server Zappy.
     // Puedes conectarlo luego con tu Map/Tile reales.
@@ -33,46 +35,59 @@ static std::string HandleCommand(const std::string& cmd)
     if (cmd == "inventory")
     {
         // Respuesta estilo Zappy
-        return "{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}";
+        SendLine(client, "{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");
     }
     else if (cmd == "voir")
     {
         // Ejemplo MUY simplificado:
         // En el real, son tiles en forma de cono según nivel/orientación.
-        return "{nourriture linemate, sibur, phiras phiras,}";
+        SendLine(client, "{nourriture linemate, sibur, phiras phiras,}");
     }
     else if (cmd == "avance")
     {
-        return "ok";
+        SendLine(client, "ok");
     }
     else if (cmd == "droite")
     {
-        return "ok";
+        SendLine(client, "ok");
     }
     else if (cmd == "gauche")
     {
-        return "ok";
+        SendLine(client, "ok");
     }
     else if (cmd.rfind("prend ", 0) == 0)
     {
         // prend nourriture / prend linemate ...
-        return "ok";
+        SendLine(client, "ok");
     }
     else if (cmd.rfind("broadcast ", 0) == 0)
     {
-        return "ok";
+        SendLine(client, "ok");
     }
     else if (cmd == "fork")
     {
-        return "ok";
+        SendLine(client, "ok");
     }
     else if (cmd == "incantation")
     {
         // En el server real, esto depende de condiciones del tile
-        return "elevation en cours";
+        SendLine(client, "elevation en cours");
     }
-
-    return "ko";
+    else if (cmd == "msz\n")
+    {
+        Map* map = Game::GetInstance()->WorldMap;
+        std::ostringstream ss;
+        ss << "msz " << map->Width << " " << map->Height;
+        SendLine(client, ss.str());
+    }
+    else if (cmd.find("mct") != std::string::npos) {
+        std::string fullMap = GetMCT();
+        send(client, fullMap.c_str(), fullMap.size(), 0);
+    }
+    else
+    {
+        SendLine(client, "ko");
+    }
 }
 
 static void handle_client(SOCKET clientSocket)
@@ -110,10 +125,7 @@ static void handle_client(SOCKET clientSocket)
 
             std::cout << "[Server] Received: " << line << "\n";
 
-            std::string response = HandleCommand(line);
-            std::cout << "[Server] Responding: " << response << "\n";
-
-            SendLine(clientSocket, response);
+            HandleCommand(line, clientSocket);
         }
     }
 
@@ -137,6 +149,7 @@ int main() {
     std::vector<SOCKET> clients;
 
     std::cout << "Server listening...\n";
+    Game::GetInstance();
 
     while (true) {
         fd_set readSet;
@@ -186,7 +199,7 @@ int main() {
                 else {
                     buffer[ret] = '\0';
                     std::cout << "Received: " << buffer;
-                    // Aquí procesas la línea y envías respuesta
+                    HandleCommand(buffer, s);
                 }
             }
             i++;

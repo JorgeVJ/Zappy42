@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://tdncetxe3mfh"]
+
+[ext_resource type="Script" path="res://Tile.cs" id="1_7sa3n"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_8k3c1"]
+
+[node name="Tile" type="Node3D"]
+script = ExtResource("1_7sa3n")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_8k3c1")

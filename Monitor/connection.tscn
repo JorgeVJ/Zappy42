@@ -4,3 +4,5 @@
 
 [node name="Connection" type="Node"]
 script = ExtResource("1_ayfnv")
+
+[node name="Tiles" type="Node" parent="."]
