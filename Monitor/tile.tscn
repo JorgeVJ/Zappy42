@@ -1,11 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://tdncetxe3mfh"]
+[gd_scene load_steps=4 format=3 uid="uid://tdncetxe3mfh"]
 
 [ext_resource type="Script" path="res://Tile.cs" id="1_7sa3n"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_8k3c1"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_lcbai"]
+
 [node name="Tile" type="Node3D"]
 script = ExtResource("1_7sa3n")
 
-[node name="Floor" type="MeshInstance3D" parent="."]
+[node name="Mesh" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_8k3c1")
+
+[node name="Area3D" type="Area3D" parent="Mesh"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Mesh/Area3D"]
+shape = SubResource("BoxShape3D_lcbai")
+
+[connection signal="input_event" from="Mesh/Area3D" to="." method="_on_area_3d_input_event"]

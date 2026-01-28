@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://doi1r786k7p07"]
+[gd_scene load_steps=9 format=3 uid="uid://doi1r786k7p07"]
 
 [ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://connection.tscn" id="1_2s303"]
 [ext_resource type="Script" path="res://Camera3d.cs" id="2_e05vg"]
 [ext_resource type="Script" path="res://PlayerManager.cs" id="3_rl32t"]
+[ext_resource type="Script" path="res://TileInventoryPanel.cs" id="4_7oswj"]
 [ext_resource type="Script" path="res://EggManager.cs" id="4_108rr"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_cqqmf"]
@@ -27,13 +28,133 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_oamjy")
 
-[node name="Connection" parent="." instance=ExtResource("1_2s303")]
+[node name="Connection" parent="." node_paths=PackedStringArray("inventoryPanel") instance=ExtResource("1_2s303")]
+inventoryPanel = NodePath("TileInventoryPanel")
 
 [node name="PlayerManager" type="Node" parent="Connection"]
 script = ExtResource("3_rl32t")
 
 [node name="EggManager" type="Node" parent="Connection"]
 script = ExtResource("4_108rr")
+
+[node name="TileInventoryPanel" type="Control" parent="Connection" node_paths=PackedStringArray("title", "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame", "titleDetail", "foodDetail", "linemateDetail", "deraumereDetail", "siburDetail", "mendianeDetail", "phirasDetail", "thystameDetail")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 147.0
+offset_bottom = 236.0
+script = ExtResource("4_7oswj")
+title = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Title")
+food = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Food")
+linemate = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Linemate")
+deraumere = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Deraumere")
+sibur = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Sibur")
+mendiane = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Mendiane")
+phiras = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Phiras")
+thystame = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Thystame")
+titleDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Title")
+foodDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Food")
+linemateDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Linemate")
+deraumereDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Deraumere")
+siburDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Sibur")
+mendianeDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Mendiane")
+phirasDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Phiras")
+thystameDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Thystame")
+
+[node name="ColorRect" type="ColorRect" parent="Connection/TileInventoryPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.164706, 0.164706, 0.164706, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="Connection/TileInventoryPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_right = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Connection/TileInventoryPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Title"
+
+[node name="Food" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Food"
+
+[node name="Linemate" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Linemate"
+
+[node name="Deraumere" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Deraumere"
+
+[node name="Sibur" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Sibur"
+
+[node name="Mendiane" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Mendiane"
+
+[node name="Phiras" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Phiras"
+
+[node name="Thystame" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Thystame"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+alignment = 1
+
+[node name="Title" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
+
+[node name="Food" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
+
+[node name="Linemate" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
+
+[node name="Deraumere" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
+
+[node name="Sibur" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
+
+[node name="Mendiane" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
+
+[node name="Phiras" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
+
+[node name="Thystame" type="Label" parent="Connection/TileInventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "X"
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-0.0336959, 0.969257, -0.243731, 0, 0.243869, 0.969808, 0.999433, 0.0326786, -0.00821739, 0, 7.64971, 7.15597)

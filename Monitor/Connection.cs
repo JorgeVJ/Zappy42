@@ -22,7 +22,10 @@ public partial class Connection : Node
 
     private List<string> teams = new List<string>();
     
-    private RandomNumberGenerator rng = new RandomNumberGenerator();
+    [Export] 
+    private TileInventoryPanel inventoryPanel;
+
+    private Tile selectedTile;
 
     public override void _Ready()
     {
@@ -55,6 +58,7 @@ public partial class Connection : Node
             for (int y = 0; y < mapH; y++)
             {
                 Tile tile = Tile.Create(new Vector3(x * 2, 0, y * 2));
+                tile.TileClicked += Tile_TileClicked;
                 tileCollection.AddChild(tile);
 
                 tiles[x, y] = tile;
@@ -62,22 +66,12 @@ public partial class Connection : Node
         }
     }
 
-    private void AddRandomResources()
+    private void Tile_TileClicked(Tile tile)
     {
-        rng.Randomize();
-
-        for (int x = 0; x < mapW; x++)
-        {
-            for (int y = 0; y < mapH; y++)
-            {
-                var tile = tiles[x, y];
-
-                // ejemplo: 0-2 recursos por tipo (solo para test)
-                tile.SetResourceCount(Resource.ResourceType.Nourriture, rng.RandiRange(0, 2));
-                tile.SetResourceCount(Resource.ResourceType.Linemate, rng.RandiRange(0, 2));
-                tile.SetResourceCount(Resource.ResourceType.Deraumere, rng.RandiRange(0, 2));
-            }
-        }
+        selectedTile?.UnHightlight();
+        selectedTile = tile;
+        tile.Highlight();
+        inventoryPanel.ShowForTile(tile);
     }
 
     public void SendMessage(string msg)
@@ -325,7 +319,7 @@ public partial class Connection : Node
         var tile = tiles[tilePos.X, tilePos.Y];
 
         // Color "pre-huevo" (verde amarillento)
-        tile.Highlight(new Color(0.7f, 0.9f, 0.3f, 0.45f));
+        tile.Highlight();
 
         // Opcional: feedback visual en el jugador
         // player.Flash(new Color(1f, 1f, 0.4f));
@@ -354,7 +348,7 @@ public partial class Connection : Node
 
         // elegir color según resultado
         Color color = result == 1 ? new Color(0f, 1f, 0f, 0.5f) : new Color(1f, 0f, 0f, 0.5f);
-        tile.Highlight(color);
+        tile.Highlight();
 
         // opcional: eliminar highlight después de 1 segundo
         _ = FadeOutTile(tile, 1.0f);
@@ -378,7 +372,7 @@ public partial class Connection : Node
             return;
 
         // GrayBox: resaltar tile
-        tiles[x, y].Highlight(new Color(1f, 0.5f, 0f, 0.5f)); // naranja semi-transparente
+        tiles[x, y].Highlight(); // naranja semi-transparente
     }
 
     private async void ShowPlayerMessage(Player player, string msg)
