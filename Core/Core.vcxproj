@@ -145,7 +145,7 @@
     <ClInclude Include="Map.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Point.h" />
-    <ClInclude Include="Socket.h" />
+    <ClInclude Include="Connection.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="TileDataRegistry.h" />
     <ClInclude Include="utils.h" />
@@ -162,7 +162,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Point.cpp" />
-    <ClCompile Include="Socket.cpp" />
+    <ClCompile Include="Connection.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>

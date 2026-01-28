@@ -13,7 +13,12 @@ void AgentChaman::GetBids(Blackboard& bb)
     if (!bb.Inventory.Has(recipe))
         return; // No se añaden Bids ya que no es posible hacer la encantación.
 
-    // TODO: crear bids reales
+    // TODO: Revisar los mensajes recibidos en el bb.
+    // TODO: Revisar si existen los jugadores en el mismo Tile.
+
+    // else enviar broadcast
     bb.Bids.push_back(Bid("broadcast 2", bb.Level <= 1 ? 15.0 : 0.0));
+
+    // Si todo cumple (Recipe + Jugadores), Bid(Incantation);
 }
 

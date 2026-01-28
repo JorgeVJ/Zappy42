@@ -9,6 +9,7 @@
 #include "responses.h"
 #include <utils.h>
 #include "Connection.h"
+#include <cstdlib>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -58,14 +59,14 @@ void HandleCommand(const std::string& cmd, Connection& client)
         // En el server real, esto depende de condiciones del tile
         client.SendLine("elevation en cours");
     }
-    else if (cmd == "msz\n")
+    else if (cmd == "msz")
     {
         Map* map = Game::GetInstance()->WorldMap;
         std::ostringstream ss;
         ss << "msz " << map->Width << " " << map->Height;
         client.SendLine(ss.str());
     }
-    else if (cmd.find("mct") != std::string::npos) {
+    else if (cmd == "mct") {
         std::string fullMap = GetMCT();
         send(client.Get(), fullMap.c_str(), fullMap.size(), 0);
     }
@@ -95,6 +96,7 @@ int main()
 
     std::cout << "Server listening...\n";
     Game::GetInstance();
+    system("start ..\\Monitor\\gfx.exe");
 
     while (true)
     {
