@@ -1,7 +1,7 @@
 #include "Blackboard.h"
 
 double Blackboard::GetHungerNeed() {
-	double value = 40.0 / Inventory.Get(Resource::Food);
+	double value = 40.0 / Me.Inventory.Get(Resource::Food);
 
 	if (value < 0.0)
 		return 0.0;
@@ -68,13 +68,13 @@ void Blackboard::PropagateInfluences(Tile* tile)
 }
 
 Tile* Blackboard::GetPlayerTile() {
-    return Map.GetTile(Position.X, Position.Y);
+    return Map.GetTile(Me.Position.X, Me.Position.Y);
 }
 
 void Blackboard::HandleVoirResponse(const std::string& response)
 {
     std::vector<std::string> cases = ParseVoir(response);
-    std::vector<std::pair<int, int>> offsets = GetVoirOffsets(Level, PlayerDirection);
+    std::vector<std::pair<int, int>> offsets = GetVoirOffsets(Me.Level, Me.Orientation);
 
     Tile* origin = GetPlayerTile();
     

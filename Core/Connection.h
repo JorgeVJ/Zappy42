@@ -4,10 +4,15 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <string>
+#include "Point.h"
+#include "Player.h"
+#include "Direction.h"
 
 class Connection
 {
     public:
+        std::unique_ptr<Player> Player;
+
         Connection();
         explicit Connection(SOCKET s);
         ~Connection();
@@ -17,6 +22,8 @@ class Connection
         Connection& operator=(const Connection&) = delete;
         Connection& operator=(Connection&& other) noexcept;
     
+        bool IsPlayer() const;
+        bool IsMonitor() const;
         bool IsValid() const;
         SOCKET Get() const;
         bool SendLine(const std::string& line);

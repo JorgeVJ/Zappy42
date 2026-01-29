@@ -34,6 +34,19 @@ class TileDataRegistry
             this->data.erase(tile);
         }
 
+        std::vector<T*> GetAll()
+        {
+            std::vector<T*> result;
+            result.reserve(data.size());
+
+            for (auto& pair : data)
+            {
+                result.push_back(&pair.second);
+            }
+
+            return result;
+        }
+
     private:
         std::map<Tile*, T> data;
 };

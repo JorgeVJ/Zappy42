@@ -33,6 +33,16 @@ Connection& Connection::operator=(Connection&& other) noexcept
     return *this;
 }
 
+bool Connection::IsPlayer() const
+{
+    return Player != nullptr;
+}
+
+bool Connection::IsMonitor() const
+{
+    return Player == nullptr;
+}
+
 bool Connection::IsValid() const
 {
     return sock != INVALID_SOCKET;

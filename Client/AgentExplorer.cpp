@@ -6,7 +6,7 @@ double GetVoirScore(Blackboard& bb) {
 	double bias = 100;
 	double voirScore = 0;
 
-	std::vector<std::pair<int, int>> offsets = bb.GetVoirOffsets(bb.Level, bb.PlayerDirection);
+	std::vector<std::pair<int, int>> offsets = bb.GetVoirOffsets(bb.Me.Level, bb.Me.Orientation);
 	Tile* origin = bb.GetPlayerTile();
 
 	for (size_t i = 0; i < offsets.size(); ++i) {

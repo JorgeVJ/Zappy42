@@ -45,17 +45,17 @@ double ResourceNeedScore(
     return 0.5 * (maxAllowed - current) / maxAllowed;
 }
 
-void AgentStoner::GetBids(Blackboard& blackboard)
+void AgentStoner::GetBids(Blackboard& bb)
 {
-    Inventory tileInv = blackboard.GetPlayerTile()->Inventory;
+    Inventory tileInv = bb.GetPlayerTile()->Inventory;
     Inventory max = ComputeMaxNeeded();
-    Inventory lvl = Inventory::IncantationRecipes[blackboard.Level];
+    Inventory lvl = Inventory::IncantationRecipes[bb.Me.Level];
     for (int i = 0; i < (int)Resource::Count; i++) {
         Resource resource = (Resource)i;
         int qtty = tileInv.Get(resource);
         if (qtty > 0) {
-	        Bid bid("prend " + Inventory::ResourceToString(resource), ResourceNeedScore(resource, blackboard.Inventory, lvl, max));
-        	blackboard.Bids.push_back(bid);
+	        Bid bid("prend " + Inventory::ResourceToString(resource), ResourceNeedScore(resource, bb.Me.Inventory, lvl, max));
+        	bb.Bids.push_back(bid);
         }
     }
 }

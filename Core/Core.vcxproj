@@ -144,6 +144,7 @@
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Connection.h" />
     <ClInclude Include="Tile.h" />

@@ -8,6 +8,7 @@
 #include "Map.h"
 #include "InfluenceService.h"
 #include "ExplorationService.h"
+#include <Player.h>
 
 /// <summary>
 /// All the information needed to make decisions.
@@ -16,12 +17,9 @@ class Blackboard
 {
 	public:
 		Map Map;
-		int Level = 1;
-		Point Position;
 		int CurrentTick;
-		Inventory Inventory;
+		Player Me;
 		std::vector<Bid> Bids;
-		Direction PlayerDirection;
 		std::vector<std::string> Messages;
 		InfluenceService InfluenceService;
 		ExplorationService ExplorationService;
