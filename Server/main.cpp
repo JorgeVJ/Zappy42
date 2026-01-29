@@ -7,13 +7,33 @@
 #include <vector>
 #include "Game.h"
 #include "responses.h"
+#include "events.h"
 #include <utils.h>
 #include "Connection.h"
 #include <cstdlib>
+#include "main.h"
 
 #pragma comment(lib, "Ws2_32.lib")
+std::vector<Connection*> clients;
 
-void HandleCommand(const std::string& cmd, Connection& client)
+void HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
+{
+    game->Players.push_back(client);
+    client->Player = new Player();
+    client->Player->TeamName = cmd;
+
+    for (auto* monitor : game->Monitors) {
+        pnw(client, monitor);
+    }
+
+    client->SendLine("1"); // TODO: Enviar valor correcto.
+    Map* map = game->WorldMap;
+    std::ostringstream ss;
+    ss << map->Width << " " << map->Height;
+    client->SendLine(ss.str());
+}
+
+void HandleCommand(const std::string& cmd, Connection* client)
 {
     // Aquí simulas el server Zappy.
     // Puedes conectarlo luego con tu Map/Tile reales.
@@ -21,58 +41,98 @@ void HandleCommand(const std::string& cmd, Connection& client)
     if (cmd == "inventory")
     {
         // Respuesta estilo Zappy
-        client.SendLine("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");
+        client->SendLine("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");
     }
     else if (cmd == "voir")
     {
         // Ejemplo MUY simplificado:
         // En el real, son tiles en forma de cono según nivel/orientación.
-        client.SendLine("{nourriture linemate, sibur, phiras phiras,}");
+        client->SendLine("{nourriture linemate, sibur, phiras phiras,}");
     }
     else if (cmd == "avance")
     {
-        client.SendLine("ok");
+        client->SendLine("ok");
     }
     else if (cmd == "droite")
     {
-        client.SendLine("ok");
+        client->SendLine("ok");
     }
     else if (cmd == "gauche")
     {
-        client.SendLine("ok");
+        client->SendLine("ok");
     }
     else if (cmd.rfind("prend ", 0) == 0)
     {
         // prend nourriture / prend linemate ...
-        client.SendLine("ok");
+        client->SendLine("ok");
     }
     else if (cmd.rfind("broadcast ", 0) == 0)
     {
-        client.SendLine("ok");
+        client->SendLine("ok");
     }
     else if (cmd == "fork")
     {
-        client.SendLine("ok");
+        client->SendLine("ok");
     }
     else if (cmd == "incantation")
     {
         // En el server real, esto depende de condiciones del tile
-        client.SendLine("elevation en cours");
+        client->SendLine("elevation en cours");
     }
     else if (cmd == "msz")
     {
         Map* map = Game::GetInstance()->WorldMap;
         std::ostringstream ss;
         ss << "msz " << map->Width << " " << map->Height;
-        client.SendLine(ss.str());
+        client->SendLine(ss.str());
     }
     else if (cmd == "mct") {
         std::string fullMap = GetMCT();
-        send(client.Get(), fullMap.c_str(), fullMap.size(), 0);
+        send(client->Get(), fullMap.c_str(), fullMap.size(), 0);
+    }
+    else if (cmd == "sgt") {
+    }
+    else if (cmd == "tna") {
+    }
+    else if (cmd == "GRAPHIC")
+    {
+        client->Player = nullptr;
+        HandleCommand("sgt", client);
+        HandleCommand("msz", client);
+        HandleCommand("mct", client);
+        HandleCommand("tna", client);
+        
+        Game* game = Game::GetInstance();
+        for (auto* player : game->Players) {
+            pnw(player, client);
+        }
+
+        for (auto& egg : game->EggRegistry.GetAll()) {
+            enw(egg, client);
+        }
+
+        auto itm = std::find(game->Monitors.begin(), game->Monitors.end(), client);
+        if (itm == game->Monitors.end()) {
+            game->Monitors.push_back(client);
+        }
+
+        auto itp = std::find(game->Players.begin(), game->Players.end(), client);
+        if (itp != game->Players.end()) {
+            game->Players.erase(itp);
+        }
     }
     else
     {
-        client.SendLine("ko");
+        Game* game = Game::GetInstance();
+        auto itp = std::find(game->Players.begin(), game->Players.end(), client);
+        auto itm = std::find(game->Monitors.begin(), game->Monitors.end(), client);
+        
+        if (itp == game->Players.end() && itm == game->Monitors.end()) {
+            HandlePlayerConnection(game, client, cmd);
+        }
+        else {
+            client->SendLine("ko");
+        }
     }
 }
 
@@ -92,7 +152,6 @@ int main()
     bind(listenSocket.Get(), (sockaddr*)&addr, sizeof(addr));
     listen(listenSocket.Get(), SOMAXCONN);
 
-    std::vector<Connection> clients;
 
     std::cout << "Server listening...\n";
     Game::GetInstance();
@@ -108,9 +167,9 @@ int main()
 
         for (auto& c : clients)
         {
-            FD_SET(c.Get(), &readSet);
-            if (c.Get() > maxSock)
-                maxSock = c.Get();
+            FD_SET(c->Get(), &readSet);
+            if (c->Get() > maxSock)
+                maxSock = c->Get();
         }
 
         timeval timeout{};
@@ -130,9 +189,9 @@ int main()
             if (s != INVALID_SOCKET)
             {
                 std::cout << "Client connected!\n";
-                Connection client(s);
-                client.SendLine("WELCOME");
-                clients.push_back(std::move(client));
+                Connection* client = new Connection(s);
+                client->SendLine("WELCOME");
+                clients.push_back(client);
             }
         }
 
@@ -140,10 +199,10 @@ int main()
         for (size_t i = 0; i < clients.size();)
         {
             auto& c = clients[i];
-            if (FD_ISSET(c.Get(), &readSet))
+            if (FD_ISSET(c->Get(), &readSet))
             {
                 std::string msg;
-                if (!c.RecvLine(msg))
+                if (!c->RecvLine(msg))
                 {
                     std::cout << "Client disconnected\n";
                     clients.erase(clients.begin() + i);

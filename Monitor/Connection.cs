@@ -40,8 +40,7 @@ public partial class Connection : Node
 
             GD.Print("Conectado al servidor Zappy!");
 
-            // AddRandomResources();
-            SendMessage("msz");
+            SendMessage("GRAPHIC");
         }
         catch (Exception ex)
         {
@@ -81,6 +80,7 @@ public partial class Connection : Node
             return;
         }
 
+        GD.Print($"Sending: {msg}");
         byte[] data = Encoding.UTF8.GetBytes(msg + "\n");
         _stream.Write(data, 0, data.Length);
     }

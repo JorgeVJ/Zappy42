@@ -11,7 +11,7 @@
 class Connection
 {
     public:
-        std::unique_ptr<Player> Player;
+        Player* Player;
 
         Connection();
         explicit Connection(SOCKET s);

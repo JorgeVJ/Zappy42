@@ -131,12 +131,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="events.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="responses.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EggData.h" />
+    <ClInclude Include="events.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="responses.h" />
   </ItemGroup>
   <ItemGroup>

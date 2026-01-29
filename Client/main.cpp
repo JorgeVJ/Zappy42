@@ -66,6 +66,12 @@ int main()
 
     std::cout << "[Server] " << line << "\n";
 
+    std::string teamName = "TestTeamName";
+    sock.SendLine(teamName);
+
+    // TODO: En este punto se deben recibir dos mensajes del servidor
+    // uno con la posibilidad de conección y
+    // otro con las dimensiones del mapa.
     Blackboard board(5, 5);
     std::vector<IAgent*> agents;
     CreateAgents(agents);

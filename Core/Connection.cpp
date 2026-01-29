@@ -1,21 +1,25 @@
 #include "pch.h"
 #include "Connection.h"
 
-Connection::Connection() = default;
+Connection::Connection() : Player(nullptr) { }
 
-Connection::Connection(SOCKET s)
-    : sock(s)
-{
-}
+Connection::Connection(SOCKET s) : sock(s), Player(nullptr) { }
 
 Connection::~Connection()
 {
     if (sock != INVALID_SOCKET)
         closesocket(sock);
+
+    if (Player)
+    {
+        delete Player;
+        Player = nullptr;
+    }
 }
 
 Connection::Connection(Connection&& other) noexcept
 {
+    Player = nullptr;
     sock = other.sock;
     other.sock = INVALID_SOCKET;
 }
