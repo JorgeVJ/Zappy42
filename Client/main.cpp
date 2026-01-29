@@ -15,6 +15,7 @@
 #include "AgentChaman.h"
 #include "AgentBreeder.h"
 #include "AgentStoner.h"
+#include "CommandHistory.h"
 
 Bid* GetBestBid(std::vector<Bid>& bids)
 {
@@ -76,6 +77,7 @@ int main()
     std::vector<IAgent*> agents;
     CreateAgents(agents);
 
+	CommandHistory commandHistory;
     while (true)
     {
         board.Bids.clear();
@@ -86,17 +88,19 @@ int main()
         if (!bestBid)
             continue;
 
+		commandHistory.AddCommand(bestBid->Type, board.CurrentTick);
         std::cout << "[Client] CMD => " << bestBid->Command << "\n";
 
         if (!sock.SendLine(bestBid->Command))
             break;
 
+		//bucle de recepcion de respuesta
         std::string response;
         if (!sock.RecvLine(response))
             break;
-
+        // CHeck command type and parse response
         std::cout << "[Server] RESP <= " << response << "\n";
-
+        //Do action received
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 
