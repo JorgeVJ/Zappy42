@@ -7,7 +7,10 @@ public partial class PlayerManager : Node
 
 	private Node3D playerContainer;
 
-	public override void _Ready()
+    [Signal]
+    public delegate void PlayerCreatedEventHandler(Player player);
+
+    public override void _Ready()
 	{
 		playerContainer = GetNodeOrNull<Node3D>("Players");
 		if (playerContainer == null)
@@ -25,14 +28,15 @@ public partial class PlayerManager : Node
 
 		var p = Player.Create(pos);
 		p.Init(id, teamName);
+        EmitSignal(nameof(PlayerCreated), p);
 
-		playerContainer.AddChild(p);
+        playerContainer.AddChild(p);
 		players[id] = p;
 
 		return p;
 	}
 
-	public bool TryGet(int id, out Player player)
+    public bool TryGet(int id, out Player player)
 		=> players.TryGetValue(id, out player);
 
 	public void Remove(int id)

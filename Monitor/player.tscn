@@ -1,8 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://cku1rgyxqsgql"]
+[gd_scene load_steps=5 format=3 uid="uid://cku1rgyxqsgql"]
 
 [ext_resource type="Script" path="res://Player.cs" id="1_60xi1"]
+[ext_resource type="PackedScene" uid="uid://br06uvkbmb0eq" path="res://inventory.tscn" id="2_5o15c"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_rb4cl"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_jkd4b"]
 
 [node name="Player" type="Node3D"]
 script = ExtResource("1_60xi1")
@@ -10,3 +13,13 @@ script = ExtResource("1_60xi1")
 [node name="Mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 1, 0)
 mesh = SubResource("CapsuleMesh_rb4cl")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_jkd4b")
+
+[node name="Inventory" parent="." instance=ExtResource("2_5o15c")]
+
+[connection signal="input_event" from="Area3D" to="." method="_on_area_3d_input_event"]
