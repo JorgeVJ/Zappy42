@@ -1,26 +1,38 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cstdlib>
+#include <stdexcept>
+#include "utils.h"
 #include "Game.h"
 #include "responses.h"
 #include "events.h"
-#include <utils.h>
 #include "Connection.h"
-#include <cstdlib>
+#ifdef __linux__
+#include <unistd.h>
+#endif
 #include "main.h"
 
-#pragma comment(lib, "Ws2_32.lib")
 std::vector<Connection*> clients;
 
-void HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
+int HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
 {
     game->Players.push_back(client);
-    client->Player = new Player();
-    client->Player->TeamName = cmd;
+    try {
+      client->player = new Player();
+    }
+    catch ( const  std::exception &e)  {
+      std::cerr << "Exception STL: " << e.what() << std::endl;
+      return (1);
+    }
+    catch ( ... ) {
+      std::cerr << "Exception No STL: " << std::endl;
+      return (1);
+    }
+    if (client->player == nullptr)
+      return (1);
+    client->player->TeamName = cmd;
 
     for (auto* monitor : game->Monitors) {
         pnw(client, monitor);
@@ -31,13 +43,13 @@ void HandlePlayerConnection(Game* game, Connection* client, const std::string& c
     std::ostringstream ss;
     ss << map->Width << " " << map->Height;
     client->SendLine(ss.str());
+	return (0);
 }
 
 void HandleCommand(const std::string& cmd, Connection* client)
 {
-    // Aquí simulas el server Zappy.
+    // AquÃ­ simulas el server Zappy.
     // Puedes conectarlo luego con tu Map/Tile reales.
-
     if (cmd == "inventory")
     {
         // Respuesta estilo Zappy
@@ -46,7 +58,7 @@ void HandleCommand(const std::string& cmd, Connection* client)
     else if (cmd == "voir")
     {
         // Ejemplo MUY simplificado:
-        // En el real, son tiles en forma de cono según nivel/orientación.
+        // En el real, son tiles en forma de cono segÃºn nivel/orientaciÃ³n.
         client->SendLine("{nourriture linemate, sibur, phiras phiras,}");
     }
     else if (cmd == "avance")
@@ -96,12 +108,12 @@ void HandleCommand(const std::string& cmd, Connection* client)
     }
     else if (cmd == "GRAPHIC")
     {
-        client->Player = nullptr;
+        client->player = nullptr;
         HandleCommand("sgt", client);
         HandleCommand("msz", client);
         HandleCommand("mct", client);
         HandleCommand("tna", client);
-        
+
         Game* game = Game::GetInstance();
         for (auto* player : game->Players) {
             pnw(player, client);
@@ -126,7 +138,7 @@ void HandleCommand(const std::string& cmd, Connection* client)
         Game* game = Game::GetInstance();
         auto itp = std::find(game->Players.begin(), game->Players.end(), client);
         auto itm = std::find(game->Monitors.begin(), game->Monitors.end(), client);
-        
+
         if (itp == game->Players.end() && itm == game->Monitors.end()) {
             HandlePlayerConnection(game, client, cmd);
         }
@@ -138,85 +150,161 @@ void HandleCommand(const std::string& cmd, Connection* client)
 
 int main()
 {
-    WSADATA wsaData;
-    WSAStartup(MAKEWORD(2, 2), &wsaData);
+  //Create a Server Class that encapsulate all this.
+#ifdef _WIN32
+  WSADATA wsaData;
+  if (WSAStartup(MAKEWORD(2, 2), &wsaData))
+  {
+    printf("WSAStartup failed: %d\n", iResult);
+    return (-1);
+  }
+  SOCKET rawListen = socket(AF_INET, SOCK_STREAM, 0);
 
-    SOCKET rawListen = socket(AF_INET, SOCK_STREAM, 0);
+#elif defined(__linux__)
+  int rawListen = socket(AF_INET, SOCK_STREAM, 0);
+#endif
+  if (rawListen == INVALID_SOCKET)
+  {
+#ifdef  _WIN32
+    printf("Error at socket(): %ld\n", WSAGetLastError());
+    freeaddrinfo(result);
+    WSACleanup();
+#elif  defined(__linux__)
+    perror("socket failed:");
+#else
+#error "Unexpected OS"
+#endif
+    return (1);
+  }
     Connection listenSocket(rawListen);
-
+    const uint listen_port = 12345;
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(12345);
+    addr.sin_port = htons(listen_port);
 
-    bind(listenSocket.Get(), (sockaddr*)&addr, sizeof(addr));
-    listen(listenSocket.Get(), SOMAXCONN);
-
-
+    if (bind(listenSocket.Get(), (sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
+    {
+#ifdef  _WIN32
+      printf("bind failed with error: %d\n", WSAGetLastError());
+      freeaddrinfo(result);
+      closesocket(ListenSocket.Get());
+      WSACleanup();
+#elif  defined(__linux__)
+      perror("bind failed:");
+#else
+#error "Unexpected OS"
+#endif
+      return (1);
+    }
+    if ( listen( listenSocket.Get(), SOMAXCONN ) == SOCKET_ERROR )
+    {
+#ifdef  _WIN32
+      printf( "Listen failed with error: %ld\n", WSAGetLastError() );
+      closesocket(listenSocket.Get());
+      WSACleanup();
+#elif  defined(__linux__)
+      perror( "Listen failed: " );
+      close(listenSocket.Get());
+#else
+#error "Unexpected OS"
+#endif
+      return 1;
+    }
     std::cout << "Server listening...\n";
     Game::GetInstance();
+#ifdef  _WIN32
     system("start ..\\Monitor\\gfx.exe");
-
+#elif  defined(__linux__)
+    // system(".\\Monitor\\gfx");
+#endif
     while (true)
     {
-        fd_set readSet;
-        FD_ZERO(&readSet);
-        FD_SET(listenSocket.Get(), &readSet);
-
-        SOCKET maxSock = listenSocket.Get();
-
-        for (auto& c : clients)
+      fd_set readSet;
+      FD_ZERO(&readSet);
+      FD_SET(listenSocket.Get(), &readSet);
+#ifdef  _WIN32
+      SOCKET maxSock = listenSocket.Get();
+#elif  defined(__linux__)
+      int maxSock = listenSocket.Get();
+#else
+#error "Unexpected OS"
+#endif
+      for (auto& c : clients)
+      {
+        FD_SET(c->Get(), &readSet);
+        if (c->Get() > maxSock)
+          maxSock = c->Get();
+      }
+      timeval timeout{};
+      timeout.tv_sec = 1;
+      int n = select(int(maxSock + 1), &readSet, nullptr, nullptr, &timeout);
+      if (n == SOCKET_ERROR)
+      {
+        std::cerr << "select() error\n";
+        break;
+      }
+      // Nueva conexiÃ³n
+      if (FD_ISSET(listenSocket.Get(), &readSet))
+      {
+#ifdef  _WIN32
+        SOCKET s = accept(listenSocket.Get(), nullptr, nullptr);
+#elif  defined(__linux__)
+        int s = accept(listenSocket.Get(), nullptr, nullptr);
+#else
+#error "Unexpected OS"
+#endif
+        if (s == INVALID_SOCKET)
         {
-            FD_SET(c->Get(), &readSet);
-            if (c->Get() > maxSock)
-                maxSock = c->Get();
+#ifdef  _WIN32
+          printf("accept failed: %d\n", WSAGetLastError());
+          closesocket(listenSocket);
+          WSACleanup();
+#elif  defined(__linux__)
+          perror( "accept failed:" );
+#else
+#error "Unexpected OS"
+#endif
+          return (1);
         }
-
-        timeval timeout{};
-        timeout.tv_sec = 1;
-
-        int n = select(int(maxSock + 1), &readSet, nullptr, nullptr, &timeout);
-        if (n == SOCKET_ERROR)
+        std::cout << "Client connected!" << std::endl;
+        try {
+          Connection* client = new Connection(s);
+		  if (client == nullptr)
+			  continue;
+        client->SendLine("WELCOME");
+        clients.push_back(client);
+        }
+        catch( const std::exception &e) {
+          std::cerr << "Exception STL: " << e.what() << std::endl;
+        }
+        catch (...) {
+            std::cerr << "Exception No STL: " << std::endl;
+            continue;
+        }
+      }
+      // Clientes existentes
+      for (size_t i = 0; i < clients.size();)
+      {
+        auto& c = clients[i];
+        if (FD_ISSET(c->Get(), &readSet))
         {
-            std::cerr << "select() error\n";
-            break;
-        }
+          std::string msg;
+          if (!c->RecvLine(msg))
+          {
+            std::cout << "Client disconnected" << std::endl ;
+            clients.erase(clients.begin() + i);
+            continue;
+          }
 
-        // Nueva conexión
-        if (FD_ISSET(listenSocket.Get(), &readSet))
-        {
-            SOCKET s = accept(listenSocket.Get(), nullptr, nullptr);
-            if (s != INVALID_SOCKET)
-            {
-                std::cout << "Client connected!\n";
-                Connection* client = new Connection(s);
-                client->SendLine("WELCOME");
-                clients.push_back(client);
-            }
+          std::cout << "Received: " << msg << "\n";
+          HandleCommand(msg.c_str(), c);
         }
-
-        // Clientes existentes
-        for (size_t i = 0; i < clients.size();)
-        {
-            auto& c = clients[i];
-            if (FD_ISSET(c->Get(), &readSet))
-            {
-                std::string msg;
-                if (!c->RecvLine(msg))
-                {
-                    std::cout << "Client disconnected\n";
-                    clients.erase(clients.begin() + i);
-                    continue;
-                }
-
-                std::cout << "Received: " << msg << "\n";
-                HandleCommand(msg.c_str(), c);
-            }
-            ++i;
-        }
+        ++i;
+      }
     }
-
+#ifdef  _WIN32
     WSACleanup();
+#endif
     return 0;
 }
-

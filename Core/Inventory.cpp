@@ -30,11 +30,12 @@ Inventory::Inventory() {
     InnitMap();
 }
 
+
 Inventory::Inventory(std::initializer_list<int> init) {
     data.fill(0);
-    int i = 0;
+    size_t i = 0;
     for (int v : init) {
-        if (i < Size())
+        if (i < Inventory::Size())
             data[i++] = v;
     }
     InnitMap();
@@ -77,10 +78,6 @@ bool Inventory::Has(const Inventory& required) {
 
 void Inventory::Clear() {
     data.fill(0);
-}
-
-constexpr size_t Inventory::Size() {
-    return static_cast<size_t>(Resource::Count);
 }
 
 void Inventory::SetFromServerString(const std::string& str)

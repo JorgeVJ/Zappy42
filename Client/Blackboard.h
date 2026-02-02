@@ -16,13 +16,13 @@
 class Blackboard
 {
 	public:
-		Map Map;
+		Map map;
 		int CurrentTick;
 		Player Me;
 		std::vector<Bid> Bids;
 		std::vector<std::string> Messages;
-		InfluenceService InfluenceService;
-		ExplorationService ExplorationService;
+		InfluenceService influenceService;
+		ExplorationService explorationService;
 
 		Blackboard(int x, int y);
 

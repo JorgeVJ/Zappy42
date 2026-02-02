@@ -1,25 +1,35 @@
 #include "pch.h"
 #include "Connection.h"
 
-Connection::Connection() : Player(nullptr) { }
+Connection::Connection() : player(nullptr), sock(INVALID_SOCKET) { }
 
-Connection::Connection(SOCKET s) : sock(s), Player(nullptr) { }
+#ifdef _WIN32
+Connection::Connection(SOCKET s) : player(nullptr), sock(s) { }
+#elif defined(__linux__)
+Connection::Connection(int s) :  player(nullptr), sock(s) { }
+#else
+#error  "Unexpected OS"
+#endif
 
 Connection::~Connection()
 {
     if (sock != INVALID_SOCKET)
-        closesocket(sock);
+#ifdef _WIN32
+      closesocket(sock);
+#elif defined(__linux__)
+      close(sock);
+#endif
 
-    if (Player)
+    if (player)
     {
-        delete Player;
-        Player = nullptr;
+        delete player;
+        player = nullptr;
     }
 }
 
 Connection::Connection(Connection&& other) noexcept
 {
-    Player = nullptr;
+    player = nullptr;
     sock = other.sock;
     other.sock = INVALID_SOCKET;
 }
@@ -29,8 +39,13 @@ Connection& Connection::operator=(Connection&& other) noexcept
     if (this != &other)
     {
         if (sock != INVALID_SOCKET)
-            closesocket(sock);
-
+#ifdef _WIN32
+          closesocket(sock);
+#elif defined(__linux__)
+          close(sock);
+#else
+#error "Unexpected OS"
+#endif
         sock = other.sock;
         other.sock = INVALID_SOCKET;
     }
@@ -39,12 +54,12 @@ Connection& Connection::operator=(Connection&& other) noexcept
 
 bool Connection::IsPlayer() const
 {
-    return Player != nullptr;
+    return player != nullptr;
 }
 
 bool Connection::IsMonitor() const
 {
-    return Player == nullptr;
+    return player == nullptr;
 }
 
 bool Connection::IsValid() const
@@ -52,7 +67,14 @@ bool Connection::IsValid() const
     return sock != INVALID_SOCKET;
 }
 
+#ifdef _WIN32
 SOCKET Connection::Get() const
+#elif defined(__linux__)
+int Connection::Get() const
+#else
+#error "Unexpected OS"
+#endif
+
 {
     return sock;
 }

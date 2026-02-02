@@ -13,11 +13,11 @@ double GetVoirScore(Blackboard& bb) {
 		std::pair<int, int> pair = offsets[i];
 		int dx = pair.first;
 		int dy = pair.second;
-		Tile* tile = bb.Map.GetTile(origin->X + dx, origin->Y + dy);
+		Tile* tile = bb.map.GetTile(origin->X + dx, origin->Y + dy);
 		if (!tile)
 			continue;
 
-		voirScore += bb.ExplorationService.GetExplorationValue(tile, bb.CurrentTick * voirWeigth);
+		voirScore += bb.explorationService.GetExplorationValue(tile, bb.CurrentTick * voirWeigth);
 	}
 
 	return (bias + voirScore) * (1 - bb.GetHungerNeed());

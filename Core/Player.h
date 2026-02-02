@@ -10,6 +10,6 @@ struct Player
     int Level = 1;
     Point Position;
     Direction Orientation;
-    Inventory Inventory;
+    Inventory inventory;
     std::string TeamName;
 };

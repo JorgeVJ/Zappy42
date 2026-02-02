@@ -20,4 +20,3 @@ class Game
 
 		static Game* instance;
 };
-

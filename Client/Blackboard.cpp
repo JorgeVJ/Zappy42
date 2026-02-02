@@ -1,7 +1,7 @@
 #include "Blackboard.h"
 
 double Blackboard::GetHungerNeed() {
-	double value = 40.0 / Me.Inventory.Get(Resource::Food);
+	double value = 40.0 / this->Me.inventory.Get(Resource::Food);
 
 	if (value < 0.0)
 		return 0.0;
@@ -11,7 +11,7 @@ double Blackboard::GetHungerNeed() {
 	return value;
 }
 
-Blackboard::Blackboard(int x, int y) : Map(x, y)
+Blackboard::Blackboard(int x, int y) : map(x, y)
 {
 }
 
@@ -55,47 +55,46 @@ void Blackboard::PropagateInfluences(Tile* tile)
 {
     for (size_t r = 0; r < Inventory::Size(); ++r) {
         Resource resource = static_cast<Resource>(r);
-        int amount = tile->Inventory.Get(resource);
+        int amount = tile->inventory.Get(resource);
         if (amount > 0) {
             Influence* inf = new Influence{
                 true,
                 resource,
                 tile
             };
-            InfluenceService.BFSPropagate(tile, resource, inf, 5);
+            this->influenceService.BFSPropagate(tile, resource, inf, 5);
         }
     }
 }
 
 Tile* Blackboard::GetPlayerTile() {
-    return Map.GetTile(Me.Position.X, Me.Position.Y);
+    return this->map.GetTile(this->Me.Position.X, this->Me.Position.Y);
 }
 
 void Blackboard::HandleVoirResponse(const std::string& response)
 {
     std::vector<std::string> cases = ParseVoir(response);
-    std::vector<std::pair<int, int>> offsets = GetVoirOffsets(Me.Level, Me.Orientation);
+    std::vector<std::pair<int, int>> offsets = GetVoirOffsets(this->Me.Level, this->Me.Orientation);
 
     Tile* origin = GetPlayerTile();
-    
+
     for (size_t i = 0; i < cases.size() && i < offsets.size(); ++i) {
         std::pair<int, int> pair = offsets[i];
         int dx = pair.first;
         int dy = pair.second;
-        Tile* tile = Map.GetTile(origin->X + dx, origin->Y + dy);
+        Tile* tile = this->map.GetTile(origin->X + dx, origin->Y + dy);
         if (!tile) continue;
 
-        tile->Inventory.Clear();
-        ExplorationService.MarkSeen(tile, CurrentTick);
+        tile->inventory.Clear();
+        this->explorationService.MarkSeen(tile, this->CurrentTick);
 
         std::stringstream ss(cases[i]);
         std::string res;
         while (ss >> res) {
-            tile->Inventory.Add(res, 1);
+            tile->inventory.Add(res, 1);
         }
 
-        InfluenceService.CleanSignals(tile);
+        this->influenceService.CleanSignals(tile);
         PropagateInfluences(tile);
     }
 }
-
