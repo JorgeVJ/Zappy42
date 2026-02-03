@@ -190,7 +190,7 @@ int main()
             {
                 std::cout << "Client connected!\n";
                 Connection* client = new Connection(s);
-                client->SendLine("WELCOME");
+                client->SendLine("BIENVENUE");
                 clients.push_back(client);
             }
         }

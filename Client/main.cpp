@@ -17,6 +17,12 @@
 #include "AgentStoner.h"
 #include "CommandHistory.h"
 
+void WaitForDebug(int seconds = 5)
+{
+    std::cout << "\n[DEBUG] Waiting " << seconds << " seconds before closing..." << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(seconds));
+}
+
 Bid* GetBestBid(std::vector<Bid>& bids)
 {
     if (bids.empty())
@@ -39,8 +45,175 @@ void CreateAgents(std::vector<IAgent*>& agents)
     agents.push_back(new AgentStoner());
 }
 
+int InitServerHandshake(Blackboard& board, const std::string& teamName)
+{
+    std::string line;
+    if (!board.Sock->RecvLine(line))
+    {
+        std::cerr << "Server closed before WELCOME\n";
+        return 1;
+    }
+    else if (line.compare("BIENVENUE") != 0)
+    {
+        std::cerr << "Server message error\n";
+        return 1;
+    }
+    
+    std::cout << "[Server] " << line << std::endl ;
+    board.Sock->SendLine(teamName);
+
+    if (!board.Sock->RecvLine(line)) {
+        std::cerr << "Failed to receive nb-client\n";
+        return 1;
+    }
+    if (line.empty())
+        board.Sock->RecvLine(line);
+
+    int nb_client = std::stoi(line);
+    if (nb_client < 1) {
+        std::cout << "Team is full. Disconnecting..." << std::endl;
+        return -1;
+    }
+    if (!board.Sock->RecvLine(line)) {
+        std::cerr << "Failed to receive map dimensions\n";
+        return 1;
+    }
+    int x = 0, y = 0;
+    std::stringstream ss(line);
+    if (ss >> x >> y) {
+        // Make a better parser? Check if there are more parameters?
+        std::cout << "Map dimensions: X=" << x << ", Y=" << y << "\n";
+    }
+    else {
+        std::cerr << "Error: Failed to parse X and Y from line: " << line << "\n";
+        return 1;
+    }
+	board.setTeamName(teamName);
+	board.InitializeMap(x, y);
+    return 0;
+}
+
+void handleServerResponse(Blackboard& board, const std::string& response)
+{
+    // Obtener el último comando enviado
+    const auto& pendingCommands = board.commandHistory.GetPendingCommands();
+    if (pendingCommands.empty())
+    {
+        // No hay comandos pendientes, solo guardar el mensaje
+        board.Messages.push_back(response);
+        return;
+    }
+
+    CommandType lastCommand = pendingCommands.front().type;
+
+    // Parsear tipo de respuesta
+    if (response == "ok")
+    {
+        switch (lastCommand)
+        {
+            case CommandType::Advance:
+                std::cout << "[Action] Moved forward successfully\n";
+                // Actualizar posición en el Blackboard
+                break;
+            case CommandType::Right:
+                std::cout << "[Action] Turned right successfully\n";
+                // Actualizar orientación en el Blackboard
+                break;
+            case CommandType::Left:
+                std::cout << "[Action] Turned left successfully\n";
+                // Actualizar orientación en el Blackboard
+                break;
+            case CommandType::Take:
+                std::cout << "[Action] Took object successfully\n";
+                // Actualizar inventario en el Blackboard
+                break;
+            case CommandType::Put:
+                std::cout << "[Action] Put object successfully\n";
+                // Actualizar inventario en el Blackboard
+                break;
+            case CommandType::Expulse:
+                std::cout << "[Action] Expelled player successfully\n";
+                break;
+            case CommandType::Fork:
+                std::cout << "[Action] Fork successful\n";
+                break;
+            default:
+                std::cout << "[Action] Command executed successfully\n";
+                break;
+        }
+    }
+    else if (response == "ko")
+    {
+        switch (lastCommand)
+        {
+            case CommandType::Advance:
+                std::cout << "[Action] Failed to move forward\n";
+                break;
+            case CommandType::Take:
+                std::cout << "[Action] Failed to take object (not present)\n";
+                break;
+            case CommandType::Put:
+                std::cout << "[Action] Failed to put object (not in inventory)\n";
+                break;
+            case CommandType::Incantation:
+                std::cout << "[Action] Incantation failed\n";
+                break;
+            default:
+                std::cout << "[Action] Command failed\n";
+                break;
+        }
+    }
+    else if (response.find("elevation en cours") != std::string::npos)
+    {
+        if (lastCommand == CommandType::Incantation)
+        {
+            std::cout << "[Action] Incantation in progress...\n";
+            // Marcar estado de elevación en el Blackboard
+        }
+    }
+    else if (response.find('{') != std::string::npos && response.find('}') != std::string::npos)
+    {
+        // Respuesta con datos (JSON-like o estructura de datos)
+        switch (lastCommand)
+        {
+            case CommandType::See:
+                std::cout << "[Action] Processing vision data\n";
+                board.HandleVoirResponse(response);
+                break;
+            case CommandType::Inventory:
+                std::cout << "[Action] Processing inventory data\n";
+                // Parsear y actualizar inventario en el Blackboard
+                break;
+            case CommandType::ConnectNbr:
+                std::cout << "[Action] Processing connection number\n";
+                // Procesar número de conexiones disponibles
+                break;
+            default:
+                std::cout << "[Action] Received structured data\n";
+                board.Messages.push_back(response);
+                break;
+        }
+    }
+    else
+    {
+        // Otras respuestas (por ejemplo, mensajes de broadcast, muerte, etc.)
+        if (lastCommand == CommandType::Broadcast)
+        {
+            std::cout << "[Action] Broadcast sent\n";
+        }
+        else if (response.find("mort") != std::string::npos)
+        {
+            std::cout << "[Action] Player died\n";
+            // Manejar muerte del jugador
+        }
+        
+        board.Messages.push_back(response);
+    }
+}
+
 int main()
 {
+	//TODO parsear argumentos de linea de comando para ip, puerto y nombre de equipo
     WSADATA wsaData{};
     WSAStartup(MAKEWORD(2, 2), &wsaData);
 
@@ -55,29 +228,28 @@ int main()
     if (connect(sock.Get(), (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
     {
         std::cerr << "connect() failed\n";
+        WaitForDebug();
         return 1;
     }
-
-    std::string line;
-    if (!sock.RecvLine(line))
+    
+    Blackboard board(&sock);
+	int code = InitServerHandshake(board, "TestTeamName");
+    if (code != 0)
     {
-        std::cerr << "Server closed before WELCOME\n";
-        return 1;
+        // clean socket and bb? 
+        if (code == -1)
+        {
+            WaitForDebug();
+            return 0;
+        }
+        std::cerr << "Server handshake failed\n";
+        WaitForDebug();
+		return 1;
     }
-
-    std::cout << "[Server] " << line << "\n";
-
-    std::string teamName = "TestTeamName";
-    sock.SendLine(teamName);
-
-    // TODO: En este punto se deben recibir dos mensajes del servidor
-    // uno con la posibilidad de conección y
-    // otro con las dimensiones del mapa.
-    Blackboard board(5, 5);
+ 
     std::vector<IAgent*> agents;
     CreateAgents(agents);
 
-	CommandHistory commandHistory;
     while (true)
     {
         board.Bids.clear();
@@ -88,19 +260,23 @@ int main()
         if (!bestBid)
             continue;
 
-		commandHistory.AddCommand(bestBid->Type, board.CurrentTick);
+		board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick);
         std::cout << "[Client] CMD => " << bestBid->Command << "\n";
 
-        if (!sock.SendLine(bestBid->Command))
+        if (!board.Sock->SendLine(bestBid->Command))
             break;
 
 		//bucle de recepcion de respuesta
         std::string response;
-        if (!sock.RecvLine(response))
-            break;
-        // CHeck command type and parse response
-        std::cout << "[Server] RESP <= " << response << "\n";
-        //Do action received
+        while (true)
+        {
+            if (!board.Sock->RecvLine(response))
+                break;
+
+            std::cout << "[Server] RESP <= " << response << "\n";
+            handleServerResponse(board, response);
+        }
+        
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 

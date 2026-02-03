@@ -9,6 +9,8 @@
 #include "InfluenceService.h"
 #include "ExplorationService.h"
 #include <Player.h>
+#include <CommandHistory.h>
+#include "Connection.h"
 
 /// <summary>
 /// All the information needed to make decisions.
@@ -23,9 +25,14 @@ class Blackboard
 		std::vector<std::string> Messages;
 		InfluenceService InfluenceService;
 		ExplorationService ExplorationService;
+		CommandHistory commandHistory;
+		Connection* Sock;
+		std::string teamName;
 
-		Blackboard(int x, int y);
+		Blackboard(Connection* connection);
 
+		void InitializeMap(int x, int y);
+		void setTeamName(const std::string& name);
 		double GetHungerNeed();
 		std::vector<std::pair<int, int>> GetVoirOffsets(int level, Direction dir);
 		void PropagateInfluences(Tile* tile);
