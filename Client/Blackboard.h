@@ -27,12 +27,10 @@ class Blackboard
 		ExplorationService ExplorationService;
 		CommandHistory commandHistory;
 		Connection* Sock;
-		std::string teamName;
 
 		Blackboard(Connection* connection);
 
 		void InitializeMap(int x, int y);
-		void setTeamName(const std::string& name);
 		double GetHungerNeed();
 		std::vector<std::pair<int, int>> GetVoirOffsets(int level, Direction dir);
 		void PropagateInfluences(Tile* tile);

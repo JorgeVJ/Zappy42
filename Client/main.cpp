@@ -48,48 +48,99 @@ void CreateAgents(std::vector<IAgent*>& agents)
 int InitServerHandshake(Blackboard& board, const std::string& teamName)
 {
     std::string line;
+    
     if (!board.Sock->RecvLine(line))
     {
-        std::cerr << "Server closed before WELCOME\n";
+        std::cerr << "Server closed before BIENVENUE\n";
         return 1;
     }
-    else if (line.compare("BIENVENUE") != 0)
+    if (line != "BIENVENUE")
     {
-        std::cerr << "Server message error\n";
+        std::cerr << "Server message error: expected 'BIENVENUE', got '" << line << "'\n";
         return 1;
     }
     
-    std::cout << "[Server] " << line << std::endl ;
-    board.Sock->SendLine(teamName);
+    std::cout << "[Server] " << line << std::endl;
+    
+    if (!board.Sock->SendLine(teamName))
+    {
+        std::cerr << "Failed to send team name\n";
+        return 1;
+    }
 
-    if (!board.Sock->RecvLine(line)) {
+    if (!board.Sock->RecvLine(line))
+    {
         std::cerr << "Failed to receive nb-client\n";
         return 1;
     }
-    if (line.empty())
-        board.Sock->RecvLine(line);
+    
+    int nb_client = 0;
+    try
+    {
+        size_t pos = 0;
+        nb_client = std::stoi(line, &pos);
+        
+        // Verificar que toda la linea fue parseada (no hay caracteres extra)
+        if (pos != line.length())
+        {
+            std::cerr << "Invalid nb-client format: '" << line << "' (extra characters)\n";
+            return 1;
+        }
+    }
+    catch (const std::invalid_argument& e)
+    {
+        std::cerr << "Invalid nb-client: '" << line << "' is not a valid integer\n";
+        return 1;
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cerr << "Invalid nb-client: '" << line << "' is out of range\n";
+        return 1;
+    }
 
-    int nb_client = std::stoi(line);
-    if (nb_client < 1) {
-        std::cout << "Team is full. Disconnecting..." << std::endl;
+    if (nb_client < 1)
+    {
+        std::cout << "Team is full (nb-client=" << nb_client << "). Disconnecting...\n";
         return -1;
     }
-    if (!board.Sock->RecvLine(line)) {
+
+    std::cout << "[Server] Available slots: " << nb_client << std::endl;
+
+    if (!board.Sock->RecvLine(line))
+    {
         std::cerr << "Failed to receive map dimensions\n";
         return 1;
     }
-    int x = 0, y = 0;
-    std::stringstream ss(line);
-    if (ss >> x >> y) {
-        // Make a better parser? Check if there are more parameters?
-        std::cout << "Map dimensions: X=" << x << ", Y=" << y << "\n";
-    }
-    else {
-        std::cerr << "Error: Failed to parse X and Y from line: " << line << "\n";
+
+    if (line.empty())
+    {
+        std::cerr << "Received empty map dimensions\n";
         return 1;
     }
-	board.setTeamName(teamName);
-	board.InitializeMap(x, y);
+
+    int x = 0, y = 0;
+    std::stringstream ss(line);
+    if (!(ss >> x >> y))
+    {
+        std::cerr << "Error: Failed to parse X and Y from line: '" << line << "'\n";
+        return 1;
+    }
+    if (x <= 0 || y <= 0)
+    {
+        std::cerr << "Error: Invalid map dimensions: X=" << x << ", Y=" << y << "\n";
+        return 1;
+    }
+    std::string extra;
+    if (ss >> extra)
+    {
+        std::cerr << "Warning: Extra parameters in map dimensions: '" << extra << "'\n";
+    }
+
+    std::cout << "[Server] Map dimensions: X=" << x << ", Y=" << y << "\n";
+
+    board.Me.TeamName = teamName;
+    board.InitializeMap(x, y);
+    
     return 0;
 }
 

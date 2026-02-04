@@ -6,10 +6,17 @@
 
 struct Player
 {
-    int ID;
+    int ID = -1;
     int Level = 1;
-    Point Position;
-    Direction Orientation;
+    Point Position = {0, 0};
+    Direction Orientation = Direction::North;
     Inventory Inventory;
-    std::string TeamName;
+    std::string TeamName = "";
+
+    Player() = default;
+
+    Player(int id, const std::string& teamName, Point position = {0, 0}, Direction orientation = Direction::North)
+        : ID(id), TeamName(teamName), Position(position), Orientation(orientation)
+    {
+    }
 };

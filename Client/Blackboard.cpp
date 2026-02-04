@@ -9,11 +9,6 @@ void Blackboard::InitializeMap(int x, int y)
 	Map = ::Map(x, y);
 }
 
-void Blackboard::setTeamName(const std::string& name)
-{
-    teamName = name;
-}
-
 double Blackboard::GetHungerNeed() {
 	double value = 40.0 / Me.Inventory.Get(Resource::Food);
 
