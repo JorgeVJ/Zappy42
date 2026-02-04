@@ -11,7 +11,7 @@ void AgentChaman::GetBids(Blackboard& bb)
     const Inventory& recipe = it->second;
 
     if (!bb.Me.Inventory.Has(recipe))
-        return; // No se añaden Bids ya que no es posible hacer la encantación.
+        return; // No se añaden Bids ya que no es posible hacer la encantacion.
 
     // TODO: Revisar los mensajes recibidos en el bb.
     // TODO: Revisar si existen los jugadores en el mismo Tile.

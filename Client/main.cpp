@@ -17,10 +17,11 @@
 #include "AgentStoner.h"
 #include "CommandHistory.h"
 
-void WaitForDebug(int seconds = 5)
+void WaitForDebugAndClean(int seconds = 5)
 {
     std::cout << "\n[DEBUG] Waiting " << seconds << " seconds before closing..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(seconds));
+    WSACleanup();
 }
 
 Bid* GetBestBid(std::vector<Bid>& bids)
@@ -100,7 +101,7 @@ int InitServerHandshake(Blackboard& board, const std::string& teamName)
 
     if (nb_client < 1)
     {
-        std::cout << "Team is full (nb-client=" << nb_client << "). Disconnecting...\n";
+        std::cout << "Team is full. Disconnecting...\n";
         return -1;
     }
 
@@ -146,11 +147,11 @@ int InitServerHandshake(Blackboard& board, const std::string& teamName)
 
 void handleServerResponse(Blackboard& board, const std::string& response)
 {
-    // Obtener el último comando enviado
+    // Obtener el ultimo comando enviado
     const auto& pendingCommands = board.commandHistory.GetPendingCommands();
     if (pendingCommands.empty())
     {
-        // No hay comandos pendientes, solo guardar el mensaje
+        // No hay comandos pendientes, solo guardar el mensaje. Guardar cuando se recibio?
         board.Messages.push_back(response);
         return;
     }
@@ -164,15 +165,15 @@ void handleServerResponse(Blackboard& board, const std::string& response)
         {
             case CommandType::Advance:
                 std::cout << "[Action] Moved forward successfully\n";
-                // Actualizar posición en el Blackboard
+                // Actualizar posicion en el Blackboard
                 break;
             case CommandType::Right:
                 std::cout << "[Action] Turned right successfully\n";
-                // Actualizar orientación en el Blackboard
+                // Actualizar orientacion en el Blackboard
                 break;
             case CommandType::Left:
                 std::cout << "[Action] Turned left successfully\n";
-                // Actualizar orientación en el Blackboard
+                // Actualizar orientacion en el Blackboard
                 break;
             case CommandType::Take:
                 std::cout << "[Action] Took object successfully\n";
@@ -219,7 +220,7 @@ void handleServerResponse(Blackboard& board, const std::string& response)
         if (lastCommand == CommandType::Incantation)
         {
             std::cout << "[Action] Incantation in progress...\n";
-            // Marcar estado de elevación en el Blackboard
+            // Marcar estado de elevacion en el Blackboard
         }
     }
     else if (response.find('{') != std::string::npos && response.find('}') != std::string::npos)
@@ -237,7 +238,7 @@ void handleServerResponse(Blackboard& board, const std::string& response)
                 break;
             case CommandType::ConnectNbr:
                 std::cout << "[Action] Processing connection number\n";
-                // Procesar número de conexiones disponibles
+                // Procesar numero de conexiones disponibles
                 break;
             default:
                 std::cout << "[Action] Received structured data\n";
@@ -279,10 +280,12 @@ int main()
     if (connect(sock.Get(), (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
     {
         std::cerr << "connect() failed\n";
-        WaitForDebug();
+        WaitForDebugAndClean();
         return 1;
     }
     
+	// Estructura game deberia tener conexion, current tick counter, 
+
     Blackboard board(&sock);
 	int code = InitServerHandshake(board, "TestTeamName");
     if (code != 0)
@@ -290,11 +293,11 @@ int main()
         // clean socket and bb? 
         if (code == -1)
         {
-            WaitForDebug();
+            WaitForDebugAndClean();
             return 0;
         }
         std::cerr << "Server handshake failed\n";
-        WaitForDebug();
+        WaitForDebugAndClean();
 		return 1;
     }
  
@@ -317,7 +320,6 @@ int main()
         if (!board.Sock->SendLine(bestBid->Command))
             break;
 
-		//bucle de recepcion de respuesta
         std::string response;
         while (true)
         {

@@ -81,7 +81,7 @@ double InfluenceService::GetInfluenceStrength(Tile* tile, Resource resource)
     auto& vec = data->Influences[static_cast<size_t>(resource)];
     double total = 0.0;
 
-    // Limpieza lazy + acumulación
+    // Limpieza lazy + acumulacion
     vec.erase(
         std::remove_if(vec.begin(), vec.end(),
             [&](const std::pair<int, Influence*>& inst) {
