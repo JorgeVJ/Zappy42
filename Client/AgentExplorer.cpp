@@ -30,3 +30,4 @@ void AgentExplorer::GetBids(Blackboard& bb)
 	bb.Bids.push_back(Bid("avance"));
 	bb.Bids.push_back(Bid("voir", GetVoirScore(bb)));
 }
+AgentExplorer::~AgentExplorer() {};

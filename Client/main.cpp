@@ -1,12 +1,7 @@
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <iostream>
 #include <vector>
 #include <thread>
 #include <chrono>
-
-#pragma comment(lib, "Ws2_32.lib")
-
 #include "Connection.h"
 #include "Blackboard.h"
 #include "IAgent.h"
@@ -40,17 +35,21 @@ void CreateAgents(std::vector<IAgent*>& agents)
 
 int main()
 {
-    WSADATA wsaData{};
-    WSAStartup(MAKEWORD(2, 2), &wsaData);
-
+#ifdef _WIN32
+	WSADATA wsaData{};
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
     SOCKET rawSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     Connection sock(rawSock);
 
     sockaddr_in serverAddr{};
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(12345);
+#ifdef _WIN32
     inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
-
+#elif defined(__linux__)
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+#endif
     if (connect(sock.Get(), (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
     {
         std::cerr << "connect() failed\n";
@@ -70,7 +69,7 @@ int main()
     sock.SendLine(teamName);
 
     // TODO: En este punto se deben recibir dos mensajes del servidor
-    // uno con la posibilidad de conecci�n y
+    // uno con la posibilidad de conección y
     // otro con las dimensiones del mapa.
     Blackboard board(5, 5);
     std::vector<IAgent*> agents;
@@ -100,9 +99,20 @@ int main()
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 
+    //Need to test the Fix
+	//Client/main.cpp:103:9: warning: deleting object of abstract class type ‘IAgent’ which has non-virtual destructor will cause undefined behavior [-Wdelete-non-virtual-dtor];
+	// Legacy mode maybe of use is clusters.
     for (auto* a : agents)
         delete a;
+	// No legacy make this way
+	//std::vector<std::unique_ptr<IAgent>> agents;
+	//agents.push_back(std::make_unique<AgentBreeder>());
+	//and STL will call the virtual destructor on each Iagent when is called here destructor.
 
+
+
+#ifdef _WIN32
     WSACleanup();
+#endif
     return 0;
 }

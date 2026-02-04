@@ -11,3 +11,5 @@ void AgentBreeder::GetBids(Blackboard& bb)
 
 	bb.Bids.push_back(Bid("fork", score));
 }
+
+AgentBreeder::~AgentBreeder() {};

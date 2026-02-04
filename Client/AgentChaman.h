@@ -5,7 +5,7 @@
 
 class AgentChaman : public IAgent
 {
-    public:
-        void GetBids(Blackboard& blackboard) override;
+  public:
+	void GetBids(Blackboard& blackboard) override;
+	~AgentChaman() override;
 };
-

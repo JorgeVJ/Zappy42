@@ -8,10 +8,7 @@
 #include "Game.h"
 #include "responses.h"
 #include "events.h"
-#include "Connection.h"
-#ifdef __linux__
-#include <unistd.h>
-#endif
+#include "Connection.h" // Discern Windows && Linux includes.
 #include "main.h"
 
 std::vector<Connection*> clients;
@@ -118,10 +115,9 @@ void HandleCommand(const std::string& cmd, Connection* client)
         for (auto* player : game->Players) {
             pnw(player, client);
         }
-
-        for (auto& egg : game->EggRegistry.GetAll()) {
-            enw(egg, client);
-        }
+		for (auto& egg : game->EggRegistry.GetAll()) {
+			enw(egg, client);//
+		}
 
         auto itm = std::find(game->Monitors.begin(), game->Monitors.end(), client);
         if (itm == game->Monitors.end()) {
@@ -150,32 +146,27 @@ void HandleCommand(const std::string& cmd, Connection* client)
 
 int main()
 {
-  //Create a Server Class that encapsulate all this.
+	//Create a Server Class that encapsulate all this.
 #ifdef _WIN32
-  WSADATA wsaData;
-  if (WSAStartup(MAKEWORD(2, 2), &wsaData))
-  {
-    printf("WSAStartup failed: %d\n", iResult);
-    return (-1);
-  }
-  SOCKET rawListen = socket(AF_INET, SOCK_STREAM, 0);
-
-#elif defined(__linux__)
-  int rawListen = socket(AF_INET, SOCK_STREAM, 0);
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData))
+		{
+			printf("WSAStartup failed: %d\n", iResult);
+			return (-1);
+		}
 #endif
-  if (rawListen == INVALID_SOCKET)
-  {
+	SOCKET rawListen = socket(AF_INET, SOCK_STREAM, 0);
+	if (rawListen == INVALID_SOCKET)
+		{
 #ifdef  _WIN32
-    printf("Error at socket(): %ld\n", WSAGetLastError());
-    freeaddrinfo(result);
-    WSACleanup();
+			printf("Error at socket(): %ld\n", WSAGetLastError());
+			freeaddrinfo(result);
+			WSACleanup();
 #elif  defined(__linux__)
-    perror("socket failed:");
-#else
-#error "Unexpected OS"
+			perror("socket failed:");
 #endif
-    return (1);
-  }
+			return (1);
+		}
     Connection listenSocket(rawListen);
     const uint listen_port = 12345;
     sockaddr_in addr{};
@@ -188,7 +179,6 @@ int main()
 #ifdef  _WIN32
       printf("bind failed with error: %d\n", WSAGetLastError());
       freeaddrinfo(result);
-      closesocket(ListenSocket.Get());
       WSACleanup();
 #elif  defined(__linux__)
       perror("bind failed:");
@@ -205,9 +195,6 @@ int main()
       WSACleanup();
 #elif  defined(__linux__)
       perror( "Listen failed: " );
-      close(listenSocket.Get());
-#else
-#error "Unexpected OS"
 #endif
       return 1;
     }
@@ -223,13 +210,7 @@ int main()
       fd_set readSet;
       FD_ZERO(&readSet);
       FD_SET(listenSocket.Get(), &readSet);
-#ifdef  _WIN32
       SOCKET maxSock = listenSocket.Get();
-#elif  defined(__linux__)
-      int maxSock = listenSocket.Get();
-#else
-#error "Unexpected OS"
-#endif
       for (auto& c : clients)
       {
         FD_SET(c->Get(), &readSet);
@@ -247,40 +228,29 @@ int main()
       // Nueva conexión
       if (FD_ISSET(listenSocket.Get(), &readSet))
       {
-#ifdef  _WIN32
         SOCKET s = accept(listenSocket.Get(), nullptr, nullptr);
-#elif  defined(__linux__)
-        int s = accept(listenSocket.Get(), nullptr, nullptr);
-#else
-#error "Unexpected OS"
-#endif
         if (s == INVALID_SOCKET)
         {
 #ifdef  _WIN32
-          printf("accept failed: %d\n", WSAGetLastError());
-          closesocket(listenSocket);
-          WSACleanup();
+			printf("accept failed: %d\n", WSAGetLastError());
 #elif  defined(__linux__)
-          perror( "accept failed:" );
-#else
-#error "Unexpected OS"
+			perror( "accept failed:" );
 #endif
-          return (1);
+			return (1);
         }
         std::cout << "Client connected!" << std::endl;
         try {
-          Connection* client = new Connection(s);
-		  if (client == nullptr)
-			  continue;
-        client->SendLine("WELCOME");
-        clients.push_back(client);
+			Connection* client = new Connection(s);
+			if (client == nullptr)
+				continue;
+			client->SendLine("WELCOME");
+			clients.push_back(client);
         }
         catch( const std::exception &e) {
-          std::cerr << "Exception STL: " << e.what() << std::endl;
+			std::cerr << "Exception STL: " << e.what() << std::endl;
         }
         catch (...) {
             std::cerr << "Exception No STL: " << std::endl;
-            continue;
         }
       }
       // Clientes existentes

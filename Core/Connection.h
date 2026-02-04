@@ -6,8 +6,11 @@
 #elif defined(__linux__)
 # include <netinet/in.h>
 # include <sys/socket.h>
+# include <unistd.h>
+# include <arpa/inet.h>
 # define INVALID_SOCKET -1
 # define SOCKET_ERROR -1
+# define SOCKET int
 #else
 #error "Unexpected OS"
 #endif
@@ -18,17 +21,11 @@
 
 class Connection
 {
-public:
+  public:
 	Player* player;
 
 	Connection();
-#ifdef  _WIN32
 	explicit Connection(SOCKET s);
-#elif  defined(__linux__)
-	explicit Connection(int s);
-#else
-#error "Unexpected OS"
-#endif
 
 	~Connection();
 	Connection(const Connection&) = delete;
@@ -40,22 +37,10 @@ public:
 	bool IsPlayer() const;
 	bool IsMonitor() const;
 	bool IsValid() const;
-#ifdef  _WIN32
 	SOCKET Get() const;
-#elif  defined(__linux__)
-	int Get() const;
-#else
-#error "Unexpected OS"
-#endif
 	bool SendLine(const std::string& line);
 	bool RecvLine(std::string& outLine);
 
-private:
-#ifdef _WIN32
-    SOCKET sock;
-#elif defined(__linux__)
+  private:
     int sock;
-#else
-#error "Unexpected OS"
-#endif
 };

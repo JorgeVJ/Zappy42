@@ -4,7 +4,7 @@
 class AgentExplorer :
     public IAgent
 {
-    public:
-        void GetBids(Blackboard& blackboard) override;
+  public:
+	void GetBids(Blackboard& blackboard) override;
+	~AgentExplorer() override;
 };
-

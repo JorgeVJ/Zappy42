@@ -1,5 +1,5 @@
 #include "events.h"
-
+#include <iostream> // For placeholder
 /// <summary>
 /// New player connection
 /// </summary>
@@ -23,7 +23,8 @@ void pnw(Connection* connection, Connection* monitor)
 /// The egg is laid on the tile by a player
 /// </summary>
 /// <param name="client"></param>
-// void enw(EggData* egg, Connection* monitor)
-// {
-//    if  (egg&&
-// }
+void enw(EggData* egg, Connection* monitor)
+{
+    if  (egg && monitor)
+		std::cout << egg << monitor << std::endl;
+}

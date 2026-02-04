@@ -3,13 +3,7 @@
 
 Connection::Connection() : player(nullptr), sock(INVALID_SOCKET) { }
 
-#ifdef _WIN32
 Connection::Connection(SOCKET s) : player(nullptr), sock(s) { }
-#elif defined(__linux__)
-Connection::Connection(int s) :  player(nullptr), sock(s) { }
-#else
-#error  "Unexpected OS"
-#endif
 
 Connection::~Connection()
 {
@@ -43,8 +37,6 @@ Connection& Connection::operator=(Connection&& other) noexcept
           closesocket(sock);
 #elif defined(__linux__)
           close(sock);
-#else
-#error "Unexpected OS"
 #endif
         sock = other.sock;
         other.sock = INVALID_SOCKET;
@@ -67,14 +59,8 @@ bool Connection::IsValid() const
     return sock != INVALID_SOCKET;
 }
 
-#ifdef _WIN32
-SOCKET Connection::Get() const
-#elif defined(__linux__)
-int Connection::Get() const
-#else
-#error "Unexpected OS"
-#endif
 
+SOCKET Connection::Get() const
 {
     return sock;
 }

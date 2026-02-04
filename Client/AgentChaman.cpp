@@ -21,3 +21,5 @@ void AgentChaman::GetBids(Blackboard& bb)
 
     // Si todo cumple (Recipe + Jugadores), Bid(Incantation);
 }
+
+AgentChaman::~AgentChaman() {};
