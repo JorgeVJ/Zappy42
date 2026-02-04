@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "framework.h"
 
-// TODO: Ejemplo de una función de biblioteca
+// TODO: Ejemplo de una funcion de biblioteca
 void fnCore()
 {
 }

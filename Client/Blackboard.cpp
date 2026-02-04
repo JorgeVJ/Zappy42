@@ -1,5 +1,14 @@
 #include "Blackboard.h"
 
+Blackboard::Blackboard() : Map(0, 0), Sock(nullptr)
+{
+}
+
+void Blackboard::InitializeMap(int x, int y)
+{
+	Map = ::Map(x, y);
+}
+
 double Blackboard::GetHungerNeed() {
 	double value = 40.0 / Me.Inventory.Get(Resource::Food);
 
@@ -9,10 +18,6 @@ double Blackboard::GetHungerNeed() {
 		return 1.0;
 
 	return value;
-}
-
-Blackboard::Blackboard(int x, int y) : Map(x, y)
-{
 }
 
 std::vector<std::string> ParseVoir(const std::string& str)

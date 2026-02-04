@@ -46,7 +46,7 @@ void HandleCommand(const std::string& cmd, Connection* client)
     else if (cmd == "voir")
     {
         // Ejemplo MUY simplificado:
-        // En el real, son tiles en forma de cono según nivel/orientación.
+        // En el real, son tiles en forma de cono según nivel/orientacion.
         client->SendLine("{nourriture linemate, sibur, phiras phiras,}");
     }
     else if (cmd == "avance")
@@ -182,7 +182,7 @@ int main()
             break;
         }
 
-        // Nueva conexión
+        // Nueva conexion
         if (FD_ISSET(listenSocket.Get(), &readSet))
         {
             SOCKET s = accept(listenSocket.Get(), nullptr, nullptr);
@@ -190,7 +190,7 @@ int main()
             {
                 std::cout << "Client connected!\n";
                 Connection* client = new Connection(s);
-                client->SendLine("WELCOME");
+                client->SendLine("BIENVENUE");
                 clients.push_back(client);
             }
         }

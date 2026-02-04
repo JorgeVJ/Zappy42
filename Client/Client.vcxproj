@@ -43,7 +43,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -140,6 +140,7 @@
     <ClCompile Include="AgentStoner.cpp" />
     <ClCompile Include="Bid.cpp" />
     <ClCompile Include="Blackboard.cpp" />
+    <ClCompile Include="ClientGame.cpp" />
     <ClCompile Include="ExplorationService.cpp" />
     <ClCompile Include="InfluenceService.cpp" />
     <ClCompile Include="main.cpp" />
@@ -152,10 +153,13 @@
     <ClInclude Include="AgentStoner.h" />
     <ClInclude Include="Bid.h" />
     <ClInclude Include="Blackboard.h" />
+    <ClInclude Include="ClientGame.h" />
     <ClInclude Include="ExplorationService.h" />
     <ClInclude Include="IAgent.h" />
     <ClInclude Include="InfluenceService.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="MessageEntry.h" />
+    <ClInclude Include="Result.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.vcxproj">

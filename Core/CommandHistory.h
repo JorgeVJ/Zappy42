@@ -8,7 +8,7 @@ class CommandHistory
 public:
     CommandHistory();
 
-    void AddCommand(CommandType type, long currentTick);
+    void AddCommand(CommandType type, long currentTick, std::string parameter);
     void Update(long currentTick);
     bool IsBusy(long currentTick) const;
     long TimeUntilFree(long currentTick) const;
