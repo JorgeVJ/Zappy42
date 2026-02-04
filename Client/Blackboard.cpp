@@ -1,6 +1,6 @@
 #include "Blackboard.h"
 
-Blackboard::Blackboard(Connection* connection) : Map(0, 0), Sock(connection)
+Blackboard::Blackboard() : Map(0, 0), Sock(nullptr)
 {
 }
 

@@ -11,6 +11,7 @@
 #include <Player.h>
 #include <CommandHistory.h>
 #include "Connection.h"
+#include "MessageEntry.h"
 
 /// <summary>
 /// All the information needed to make decisions.
@@ -18,17 +19,34 @@
 class Blackboard
 {
 	public:
-		Map Map;
+		/// <summary>
+		/// Sum of all Command Ticks.
+		/// </summary>
 		int CurrentTick;
+
+		Map Map;
 		Player Me;
+
+		/// <summary>
+		/// Contiene las pujas de los agentes para el tick actual. Se limpia cada tick despues de elegir la mejor puja.
+		/// </summary>
 		std::vector<Bid> Bids;
-		std::vector<std::string> Messages;
+
+		/// <summary>
+		/// Contain the Broadcasts from other players.
+		/// </summary>
+		std::vector<MessageEntry> Messages;
+		
+		/// <summary>
+		/// Servicio para manejar las influencias de los recursos en el mapa. 
+		/// </summary>
 		InfluenceService InfluenceService;
 		ExplorationService ExplorationService;
+
 		CommandHistory commandHistory;
 		Connection* Sock;
 
-		Blackboard(Connection* connection);
+		Blackboard(); // constructor por defecto
 
 		void InitializeMap(int x, int y);
 		double GetHungerNeed();
