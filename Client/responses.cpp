@@ -62,7 +62,9 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 	}
 	else if (response == "ko")
 	{
-		switch (lastCommand)
+		std::cout << "[Action] Failed to execute " << CommandTypeToString(lastCommand) << "\n";
+		return 0;
+		/*switch (lastCommand)
 		{
 		case CommandType::Advance:
 			std::cout << "[Action] Failed to move forward\n";
@@ -82,6 +84,27 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			break;
 		default:
 			std::cout << "[Action] Undefined LastCommand failed " << CommandTypeToString(lastCommand) << "\n";
+			return 1;
+			break;
+		}*/
+	}
+	else if (response.find('{') != std::string::npos && response.find('}') != std::string::npos)
+	{
+		// Respuesta con datos (JSON-like o estructura de datos)
+		switch (lastCommand)
+		{
+		case CommandType::See:
+			std::cout << "[Action] Processing vision data\n";
+			board.HandleVoirResponse(response);
+			return 0;
+			break;
+		case CommandType::Inventory:
+			std::cout << "[Action] Processing inventory data\n";
+			// Parsear y actualizar inventario en el Blackboard
+			return 0;
+			break;
+		default:
+			std::cout << "[Action] Undefined LastCommand: " << CommandTypeToString(lastCommand) << ". Received structured response: " << response << "\n";
 			return 1;
 			break;
 		}
@@ -104,36 +127,17 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			return 0;
 		}
 	}
-	else if (response.find('{') != std::string::npos && response.find('}') != std::string::npos)
-	{
-		// Respuesta con datos (JSON-like o estructura de datos)
-		switch (lastCommand)
-		{
-		case CommandType::See:
-			std::cout << "[Action] Processing vision data\n";
-			board.HandleVoirResponse(response);
-			return 0;
-			break;
-		case CommandType::Inventory:
-			std::cout << "[Action] Processing inventory data\n";
-			// Parsear y actualizar inventario en el Blackboard
-			return 0;
-			break;
-		case CommandType::ConnectNbr:
-			std::cout << "[Action] Processing connection number\n";
-			// Procesar número de conexiones disponibles
-			return 0;
-		default:
-			std::cout << "[Action] Undefined LastCommand: " << CommandTypeToString(lastCommand) << ". Received structured response: " << response << "\n";
-			return 1;
-			break;
-		}
-	}
 	else
 	{
 		if (lastCommand == CommandType::Broadcast)
 		{
 			std::cout << "[Action] Broadcast answer receive. Handle different. \n";
+			return 0;
+		}
+		else if (lastCommand == CommandType::ConnectNbr)
+		{
+			std::cout << "[Action] Processing connection number\n";
+			// Procesar número de conexiones disponibles
 			return 0;
 		}
 		else if (response.find("mort") != std::string::npos)
