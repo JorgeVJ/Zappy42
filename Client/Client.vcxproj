@@ -144,6 +144,7 @@
     <ClCompile Include="ExplorationService.cpp" />
     <ClCompile Include="InfluenceService.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="responses.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgentBreeder.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="InfluenceService.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="MessageEntry.h" />
+    <ClInclude Include="responses.h" />
     <ClInclude Include="Result.h" />
   </ItemGroup>
   <ItemGroup>

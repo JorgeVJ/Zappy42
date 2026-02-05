@@ -60,6 +60,9 @@
     <ClCompile Include="ClientGame.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="responses.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blackboard.h">
@@ -102,6 +105,9 @@
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="Result.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="responses.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
