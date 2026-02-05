@@ -3,9 +3,9 @@
 #include <thread>
 #include <chrono>
 #include <sstream>
-
+#ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
-
+#endif
 #include "Connection.h"
 #include "Blackboard.h"
 #include "IAgent.h"
@@ -22,7 +22,9 @@ void WaitForDebugAndClean(int seconds = 5)
 {
 	std::cout << "\n[DEBUG] Waiting " << seconds << " seconds before closing..." << std::endl;
 	std::this_thread::sleep_for(std::chrono::seconds(seconds));
+#ifdef _WIN32
 	WSACleanup();
+#endif
 }
 
 Bid* GetBestBid(std::vector<Bid>& bids)
@@ -53,7 +55,7 @@ void CreateAgents(std::vector<IAgent*>& agents)
 Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 {
 	std::string line;
-	Connection* conn = ClientGame::GetInstance()->Connection;
+	Connection* conn = ClientGame::GetInstance()->connection;
 	if (!conn || !conn->IsValid())
 		return Result<Blackboard*>::Fail("No connection available");
 
@@ -266,7 +268,7 @@ int main()
 #endif
     SOCKET rawSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	Connection* conn = new Connection(rawSock);
-	ClientGame::GetInstance()->Connection = conn;
+	ClientGame::GetInstance()->connection = conn;
 
 
     sockaddr_in serverAddr{};
@@ -302,7 +304,7 @@ int main()
 	}
 
 	// Registrar Blackboard en ClientGame y mantener referencia local
-	ClientGame::GetInstance()->Blackboard = result.Value;
+	ClientGame::GetInstance()->blackboard = result.Value;
 	Blackboard& board = *result.Value;
 
 	std::vector<IAgent*> agents;
@@ -339,7 +341,9 @@ int main()
 
 	// Legacy mode maybe of use is clusters.
     for (auto* a : agents)
-        delete a;
+		{
+			delete a;
+		}
 	// No legacy make this way
 	//std::vector<std::unique_ptr<IAgent>> agents;
 	//agents.push_back(std::make_unique<AgentBreeder>());
@@ -349,9 +353,6 @@ int main()
 
 	// Liberar recursos registrados en ClientGame
 	ClientGame::Dispose();
-
-	WSACleanup();
-	return 0;
 #ifdef _WIN32
     WSACleanup();
 #endif

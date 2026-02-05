@@ -35,11 +35,13 @@ SRC-CORE			:=  Connection \
 									Inventory \
 									Map \
 									Point \
+									CommandType \
+
 
 SRC-CLIENT := \
   $(addprefix Client/, main IAgent AgentBreeder AgentExplorer \
     AgentChaman AgentHungry AgentStoner ExplorationService \
-    InfluenceService Bid Blackboard) \
+    InfluenceService Bid Blackboard ClientGame) \
   $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER := \

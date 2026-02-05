@@ -16,7 +16,7 @@ struct Player
     Player() = default;
 
     Player(int id, const std::string& teamName, Point position = {0, 0}, Direction orientation = Direction::North)
-        : ID(id), TeamName(teamName), Position(position), Orientation(orientation)
+        : ID(id),  Position(position), Orientation(orientation), TeamName(teamName)
     {
     }
 };
