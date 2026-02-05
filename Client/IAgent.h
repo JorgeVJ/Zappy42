@@ -4,6 +4,6 @@
 class IAgent
 {
   public:
-	  virtual ~IAgent() = 0;
+	  virtual ~IAgent();
 	  virtual void GetBids(Blackboard& blackboard) = 0;
 };
