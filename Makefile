@@ -88,11 +88,9 @@ $(BUILD-DIR)%.o:        %.cpp
 
 clean:
 	@$(RM) $(BUILD-DIR)
-	$(MAKE) $@ -C $(LIB-DIR)
 
 fclean: clean
-	@$(RM) $(NAME)
-	$(MAKE) $@ -C $(LIB-DIR)
+	@$(RM) $(NAME_CLIENT) $(NAME_SERVER)
 
 re: fclean all
 
