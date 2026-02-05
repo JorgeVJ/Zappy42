@@ -14,3 +14,4 @@ void AgentHungry::GetBids(Blackboard& blackboard)
 
 	blackboard.Bids.push_back(bid);
 }
+AgentHungry::~AgentHungry() {};

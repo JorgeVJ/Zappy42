@@ -3,7 +3,7 @@
 
 class IAgent
 {
-	public:
-		virtual void GetBids(Blackboard& blackboard) = 0;
+  public:
+      virtual ~IAgent() = default;
+      virtual void GetBids(Blackboard& blackboard) = 0;
 };
-

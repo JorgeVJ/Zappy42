@@ -1,12 +1,12 @@
 #include "ExplorationService.h"
 
 void ExplorationService::MarkSeen(Tile* tile, int currentTick) {
-    auto* data = Registry.TryGet(tile);
+    auto* data = this->Registry.TryGet(tile);
     if (!data)
     {
         auto newData = ExplorationData();
         newData.LastSeenTick = currentTick;
-        Registry.Add(tile, newData);
+        this->Registry.Add(tile, newData);
     }
     else
     {
@@ -15,7 +15,7 @@ void ExplorationService::MarkSeen(Tile* tile, int currentTick) {
 }
 
 double ExplorationService::GetExplorationValue(Tile* tile, int currentTick, int decayTicks) const {
-    auto* data = Registry.TryGet(tile);
+    auto* data = this->Registry.TryGet(tile);
     if (!data)
         return 1;
 

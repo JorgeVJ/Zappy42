@@ -28,11 +28,13 @@ class Inventory {
         bool Has(Resource r, int amount = 1);
         bool Has(const Inventory& required);
         void Clear();
-        static constexpr size_t Size();
+
         void SetFromServerString(const std::string& str);
         static std::map<int, Inventory> IncantationRecipes;
         static std::string ResourceToString(Resource resource);
-
+        static constexpr size_t Size() {
+          return static_cast<size_t>(Resource::Count);
+        }
     private:
         void InnitMap();
         std::unordered_map<std::string, Resource> map;

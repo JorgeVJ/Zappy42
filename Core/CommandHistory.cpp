@@ -22,6 +22,7 @@ int GetCommandDelay(CommandType cmd)
     case CommandType::Fork:         return 42;
     case CommandType::ConnectNbr:   return 0;
     case CommandType::Death:        return 0;
+	default: return 0;
     }
     return 0;
 }
