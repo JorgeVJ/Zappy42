@@ -1,8 +1,8 @@
 using Godot;
 using System;
-using System.Collections.Generic;
+using zappy;
 
-public partial class Player : Node3D
+public partial class Player : Node3D, ISelectable, IInventory
 {
     private static PackedScene scene = ResourceLoader.Load("res://player.tscn") as PackedScene;
 
@@ -12,8 +12,13 @@ public partial class Player : Node3D
     public string TeamName { get; private set; } = "";
     public int Level { get; private set; } = 1;
     public int Orientation { get; private set; } = 1; // 1..4 en Zappy
-    public Dictionary<Resource.ResourceType, int> Inventory { get; private set; } = new();
     public Vector2I TilePos { get; private set; } = new Vector2I(0, 0);
+
+    private Inventory inventory;
+    public Inventory Inventory => inventory ??= GetNode<Inventory>("Inventory");
+
+    [Signal]
+    public delegate void PlayerClickedEventHandler(Player player);
 
     public static Player Create(Vector3 pos)
     {
@@ -22,37 +27,28 @@ public partial class Player : Node3D
         return instance;
     }
 
+    private void _on_area_3d_input_event(
+    Node camera,
+    InputEvent @event,
+    Vector3 position,
+    Vector3 normal,
+    int shapeIdx)
+    {
+        if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
+        {
+            EmitSignal(nameof(PlayerClicked), this);
+        }
+    }
+
     public void SetTilePos(int x, int y)
     {
         TilePos = new Vector2I(x, y);
     }
 
-    public void SetInventory(int[] counts)
-    {
-        // counts.Length debe ser 7
-        for (int i = 0; i < 7; i++)
-            Inventory[(Resource.ResourceType)i] = counts[i];
-    }
-
-    public void AddToInventory(Resource.ResourceType type, int amount = 1)
-    {
-        if (!Inventory.ContainsKey(type))
-            Inventory[type] = 0;
-
-        Inventory[type] += amount;
-    }
-
-    public void RemoveFromInventory(Resource.ResourceType type, int amount = 1)
-    {
-        if (!Inventory.ContainsKey(type))
-            Inventory[type] = 0;
-
-        Inventory[type] = Math.Max(0, Inventory[type] - amount);
-    }
-
     public override void _Ready()
     {
         mesh = GetNode<MeshInstance3D>("Mesh");
+        inventory = GetNode<Inventory>("Inventory");
     }
 
     public void Init(int id, string teamName)
@@ -87,5 +83,17 @@ public partial class Player : Node3D
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
+    }
+
+    public void Highlight()
+    {
+        var mat = new StandardMaterial3D();
+        mat.AlbedoColor = Colors.DarkCyan;
+        mesh.MaterialOverlay = mat;
+    }
+
+    public void UnHightlight()
+    {
+        mesh.MaterialOverlay = null;
     }
 }

@@ -11,6 +11,10 @@
 #include "Connection.h" // Discern Windows && Linux includes.
 #include "main.h"
 
+#ifdef _WIN32
+#pragma comment(lib, "Ws2_32.lib")
+#endif
+
 std::vector<Connection*> clients;
 
 int HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
@@ -45,7 +49,7 @@ int HandlePlayerConnection(Game* game, Connection* client, const std::string& cm
 
 void HandleCommand(const std::string& cmd, Connection* client)
 {
-    // Aquí simulas el server Zappy.
+    // Aqu� simulas el server Zappy.
     // Puedes conectarlo luego con tu Map/Tile reales.
     if (cmd == "inventory")
     {
@@ -55,7 +59,7 @@ void HandleCommand(const std::string& cmd, Connection* client)
     else if (cmd == "voir")
     {
         // Ejemplo MUY simplificado:
-        // En el real, son tiles en forma de cono según nivel/orientación.
+        // En el real, son tiles en forma de cono seg�n nivel/orientacion.
         client->SendLine("{nourriture linemate, sibur, phiras phiras,}");
     }
     else if (cmd == "avance")
@@ -151,7 +155,7 @@ int main()
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData))
 		{
-			printf("WSAStartup failed: %d\n", iResult);
+			// printf("WSAStartup failed: %d\n", iResult);
 			return (-1);
 		}
 #endif
@@ -160,7 +164,7 @@ int main()
 		{
 #ifdef  _WIN32
 			printf("Error at socket(): %ld\n", WSAGetLastError());
-			freeaddrinfo(result);
+			// freeaddrinfo(result);
 			WSACleanup();
 #elif  defined(__linux__)
 			perror("socket failed:");
@@ -168,7 +172,7 @@ int main()
 			return (1);
 		}
     Connection listenSocket(rawListen);
-    const uint listen_port = 12345;
+    const int listen_port = 12345;
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
@@ -178,7 +182,7 @@ int main()
     {
 #ifdef  _WIN32
       printf("bind failed with error: %d\n", WSAGetLastError());
-      freeaddrinfo(result);
+      // freeaddrinfo(result);
       WSACleanup();
 #elif  defined(__linux__)
       perror("bind failed:");
@@ -243,7 +247,7 @@ int main()
 			Connection* client = new Connection(s);
 			if (client == nullptr)
 				continue;
-			client->SendLine("WELCOME");
+			client->SendLine("BIENVENUE");
 			clients.push_back(client);
         }
         catch( const std::exception &e) {

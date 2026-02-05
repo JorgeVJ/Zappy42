@@ -4,6 +4,7 @@
 struct CommandEntry
 {
     CommandType type;
+    std::string commandParameter;
     long startTick;
     long endTick;
 };

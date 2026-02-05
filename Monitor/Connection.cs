@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using zappy;
 
 public partial class Connection : Node
 {
     private TcpClient _client;
     private NetworkStream _stream;
     private byte[] _buffer = new byte[4096];
-    private StringBuilder _incoming = new StringBuilder();
 
     private PlayerManager playerManager;
     private EggManager eggManager;
@@ -21,19 +21,23 @@ public partial class Connection : Node
     private int mapH = 5;
 
     private List<string> teams = new List<string>();
-    
-    [Export] 
-    private TileInventoryPanel inventoryPanel;
 
-    private Tile selectedTile;
+    [Export]
+    private InventoryPanel inventoryPanel;
+
+    private Node3D selectedNode;
+
+    private MockServer _mockServer;
 
     public override void _Ready()
     {
         tileCollection = GetNode("Tiles");
         playerManager = GetNode<PlayerManager>("PlayerManager");
+        playerManager.PlayerCreated += (player) => player.PlayerClicked += PlayerClicked;
         eggManager = GetNode<EggManager>("EggManager");
         try
         {
+            _mockServer = new MockServer();
             _client = new TcpClient();
             _client.Connect("127.0.0.1", 12345);
             _stream = _client.GetStream();
@@ -57,7 +61,7 @@ public partial class Connection : Node
             for (int y = 0; y < mapH; y++)
             {
                 Tile tile = Tile.Create(new Vector3(x * 2, 0, y * 2));
-                tile.TileClicked += Tile_TileClicked;
+                tile.TileClicked += TileClicked;
                 tileCollection.AddChild(tile);
 
                 tiles[x, y] = tile;
@@ -65,12 +69,27 @@ public partial class Connection : Node
         }
     }
 
-    private void Tile_TileClicked(Tile tile)
+    private void ShowInventory(Node3D owner)
     {
-        selectedTile?.UnHightlight();
-        selectedTile = tile;
-        tile.Highlight();
-        inventoryPanel.ShowForTile(tile);
+        ((ISelectable)selectedNode)?.UnHightlight();
+        selectedNode = owner;
+
+        ((ISelectable)owner)?.Highlight();
+
+        if (owner is IInventory inventoryOwner)
+        {
+            inventoryPanel.ShowForTile(inventoryOwner);
+        }
+    }
+
+    private void TileClicked(Tile tile)
+    {
+        ShowInventory(tile);
+    }
+
+    private void PlayerClicked(Player player)
+    {
+        ShowInventory(player);
     }
 
     public void SendMessage(string msg)
@@ -87,6 +106,17 @@ public partial class Connection : Node
 
     public override void _Process(double delta)
     {
+        // Mockeo de mensajes para pruebas
+        if (_mockServer != null)
+        {
+            string mockMsg = _mockServer.GetNextCommand(delta);
+            if (!string.IsNullOrEmpty(mockMsg))
+            {
+                GD.Print("[MOCK] " + mockMsg);
+                HandleServerMessage(mockMsg);
+            }
+        }
+
         if (_stream == null || !_stream.DataAvailable)
         {
             return;
@@ -272,9 +302,9 @@ public partial class Connection : Node
         }
 
         // +1 al inventario local (si lo estás usando)
-        player.AddToInventory(type, 1);
+        player.Inventory.Add(type, 1);
         var tilePos = player.TilePos;
-        tiles[tilePos.X, tilePos.Y].PickResource(type);
+        tiles[tilePos.X, tilePos.Y].Inventory.Remove(type, 1);
         GD.Print($"[pgt] Player #{id} tomo {type}");
     }
 
@@ -292,7 +322,7 @@ public partial class Connection : Node
             return;
         }
 
-        player.RemoveFromInventory(type, 1);
+        player.Inventory.Remove(type, 1);
 
         GD.Print($"[pdr] Player #{id} dejo {type}");
     }
@@ -314,7 +344,9 @@ public partial class Connection : Node
         Vector2I tilePos = player.TilePos;
 
         if (tilePos.X < 0 || tilePos.X >= mapW || tilePos.Y < 0 || tilePos.Y >= mapH)
+        {
             return;
+        }
 
         var tile = tiles[tilePos.X, tilePos.Y];
 
@@ -329,7 +361,9 @@ public partial class Connection : Node
     {
         await System.Threading.Tasks.Task.Delay((int)(seconds * 1000));
         if (mesh != null && mesh.IsInsideTree())
+        {
             mesh.QueueFree();
+        }
     }
 
     private void pie(string[] parts)
@@ -342,7 +376,9 @@ public partial class Connection : Node
         GD.Print($"[pie] Incantacion en tile ({x},{y}) {(result == 1 ? "EXITOSA" : "FALLIDA")}");
 
         if (x < 0 || x >= mapW || y < 0 || y >= mapH)
+        {
             return;
+        }
 
         var tile = tiles[x, y];
 
@@ -364,12 +400,16 @@ public partial class Connection : Node
         // jugadores involucrados
         List<int> playerIds = new List<int>();
         for (int i = 4; i < parts.Length; i++)
+        {
             playerIds.Add(int.Parse(parts[i].TrimStart('#')));
+        }
 
         GD.Print($"[pic] Incantacion en tile ({x},{y}) nivel {level} con jugadores: {string.Join(",", playerIds)}");
 
         if (x < 0 || x >= mapW || y < 0 || y >= mapH)
+        {
             return;
+        }
 
         // GrayBox: resaltar tile
         tiles[x, y].Highlight(); // naranja semi-transparente
@@ -431,21 +471,27 @@ public partial class Connection : Node
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[pin] Player #{id} no existe todavia.");
+            GD.PrintErr($"[pin] Player #{id} no existe todavía.");
             return;
         }
 
-        // Actualizamos también su posición (viene incluida en pin)
+        // Posición (pin SIEMPRE incluye posición)
         Vector3 worldPos = new Vector3(x * 2, 0.3f, y * 2);
         player.Position = worldPos;
         player.SetTilePos(x, y);
-        int[] inv = new int[7];
-        for (int i = 0; i < 7; i++)
-            inv[i] = int.Parse(parts[4 + i]);
 
-        player.SetInventory(inv);
+        // Inventario
+        var inv = player.Inventory;
 
-        GD.Print($"[pin] Player #{id} inv=({string.Join(",", inv)})");
+        inv.Set(Resource.ResourceType.Nourriture, int.Parse(parts[4]));
+        inv.Set(Resource.ResourceType.Linemate, int.Parse(parts[5]));
+        inv.Set(Resource.ResourceType.Deraumere, int.Parse(parts[6]));
+        inv.Set(Resource.ResourceType.Sibur, int.Parse(parts[7]));
+        inv.Set(Resource.ResourceType.Mendiane, int.Parse(parts[8]));
+        inv.Set(Resource.ResourceType.Phiras, int.Parse(parts[9]));
+        inv.Set(Resource.ResourceType.Thystame, int.Parse(parts[10]));
+
+        GD.Print($"[pin] Player #{id} inventario actualizado");
     }
 
     private void plv(string[] parts)
@@ -497,7 +543,9 @@ public partial class Connection : Node
 
         string teamName = parts[1];
         if (!teams.Contains(teamName))
+        {
             teams.Add(teamName);
+        }
 
         GD.Print($"[tna] Equipo registrado: {teamName}");
     }
@@ -533,7 +581,7 @@ public partial class Connection : Node
         // Recursos son lo que viene a partir del índice 3
         for (int i = 3; i < parts.Length; i++)
         {
-            tiles[x, y].SetResourceCount((Resource.ResourceType)(i - 3), int.Parse(parts[i]));
+            tiles[x, y].Inventory.Set((Resource.ResourceType)(i - 3), int.Parse(parts[i]));
         }
     }
 

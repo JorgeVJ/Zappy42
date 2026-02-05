@@ -26,7 +26,7 @@ int GetCommandDelay(CommandType cmd)
     return 0;
 }
 
-void CommandHistory::AddCommand(CommandType type, long currentTick)
+void CommandHistory::AddCommand(CommandType type, long currentTick, std::string parameter)
 {
     long start = currentTick;
 
@@ -36,7 +36,7 @@ void CommandHistory::AddCommand(CommandType type, long currentTick)
     long delay = GetCommandDelay(type);
     long end = start + delay;
 
-    commands.push_back({ type, start, end });
+    commands.push_back({ type, parameter, start, end });
 }
 
 void CommandHistory::Update(long currentTick)
