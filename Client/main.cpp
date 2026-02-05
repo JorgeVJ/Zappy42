@@ -99,8 +99,6 @@ int main()
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 
-    //Need to test the Fix
-	//Client/main.cpp:103:9: warning: deleting object of abstract class type ‘IAgent’ which has non-virtual destructor will cause undefined behavior [-Wdelete-non-virtual-dtor];
 	// Legacy mode maybe of use is clusters.
     for (auto* a : agents)
         delete a;
