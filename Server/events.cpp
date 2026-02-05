@@ -26,5 +26,5 @@ void pnw(Connection* connection, Connection* monitor)
 void enw(EggData* egg, Connection* monitor)
 {
     if  (egg && monitor)
-		std::cout << egg << monitor << std::endl;
+		std::cout << egg << monitor << std::endl; // placeholder
 }

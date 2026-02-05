@@ -42,5 +42,5 @@ class Connection
 	bool RecvLine(std::string& outLine);
 
   private:
-    int sock;
+    SOCKET sock;
 };
