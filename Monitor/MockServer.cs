@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class MockServer
 {
     private float _timer = 0f;
-    private float _delay = 2f; // Segundos entre cada mensaje simulado
+    private float _delay = 1f; // Segundos entre cada mensaje simulado
     private int _currentIndex = 0;
 
     // Secuencia de mensajes simulados para probar funcionalidades
@@ -19,7 +19,7 @@ public class MockServer
         "bct 2 4 1 0 0 0 0 0 0\n",
 
         // 2. Conexión de un nuevo jugador (TEAM_A) en (5,5)
-        "pnw #1 5 5 1 1 TEAM_A",
+        "pnw #1 2 2 1 1 TEAM_A",
 
         // 3. Movimiento del jugador (ppo)
         "ppo #1 2 3 1",
@@ -52,7 +52,7 @@ public class MockServer
 
         // 10. Actualización de inventario (Voir/pin)
         // pin #n X Y q0 q1 q2 q3 q4 q5 q6
-        "pin #1 5 3 10 5 2 1 0 0 0",
+        "pin #1 2 4 10 5 2 1 0 0 0",
         
         // 11. Eclosión de huevo (eht)
         "eht #101",

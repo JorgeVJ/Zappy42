@@ -115,6 +115,7 @@ public partial class Connection : Node
                 GD.Print("[MOCK] " + mockMsg);
                 HandleServerMessage(mockMsg);
             }
+            return;
         }
 
         if (_stream == null || !_stream.DataAvailable)
@@ -125,7 +126,21 @@ public partial class Connection : Node
         byte[] buffer = new byte[_client.Available];
         int bytesRead = _stream.Read(buffer, 0, buffer.Length);
 
-        string msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+        string msg;
+        try
+        {
+            // Forzar excepción si hay bytes inválidos para UTF-8, así los detectamos y los registramos.
+            msg = new System.Text.UTF8Encoding(false, true).GetString(buffer, 0, bytesRead);
+        }
+        catch (System.Text.DecoderFallbackException)
+        {
+            // Loguear los bytes crudos en hex para depuración
+            GD.PrintErr($"Unicode parsing error: invalid UTF-8 bytes recibidos. Raw: {BitConverter.ToString(buffer, 0, bytesRead)}");
+
+            // Intentar decodificar con el fallback permissivo para seguir procesando (reemplaza por �)
+            msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+        }
+
         string[] lines = msg.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         foreach (string line in lines)
         {
@@ -476,8 +491,6 @@ public partial class Connection : Node
         }
 
         // Posición (pin SIEMPRE incluye posición)
-        Vector3 worldPos = new Vector3(x * 2, 0.3f, y * 2);
-        player.Position = worldPos;
         player.SetTilePos(x, y);
 
         // Inventario
@@ -525,8 +538,6 @@ public partial class Connection : Node
             return;
         }
 
-        Vector3 worldPos = new Vector3(x * 2, 0.3f, y * 2);
-        player.Position = worldPos;
         player.SetTilePos(x, y);
         player.SetOrientation(o);
 

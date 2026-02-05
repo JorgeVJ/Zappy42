@@ -26,8 +26,8 @@ public partial class PlayerManager : Node
 		if (players.TryGetValue(id, out var existing))
 			return existing;
 
-		var p = Player.Create(pos);
-		p.Init(id, teamName);
+        var p = Player.Create(pos);
+        p.Init(id, teamName);
         EmitSignal(nameof(PlayerCreated), p);
 
         playerContainer.AddChild(p);
