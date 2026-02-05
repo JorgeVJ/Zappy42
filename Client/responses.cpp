@@ -24,33 +24,40 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 				<< ") Direction: " << DirectionToString(board.Me.Orientation)
 				<< " (" << DirectionToInt(board.Me.Orientation) << ")\n";
 			return 0;
+			break;
 		case CommandType::Right:
 			board.Me.Turn(TurnDirection::Right);
 			std::cout << "[Action] Turned right successfully\n";
 			std::cout << "[Player] Now facing: " << DirectionToString(board.Me.Orientation) << "\n";
 			return 0;
+			break;
 		case CommandType::Left:
 			board.Me.Turn(TurnDirection::Left);
 			std::cout << "[Action] Turned left successfully\n";
 			std::cout << "[Player] Now facing: " << DirectionToString(board.Me.Orientation) << "\n";
 			return 0;
+			break;
 		case CommandType::Take:
 			std::cout << "[Action] Took object successfully\n";
 			// Actualizar inventario en el Blackboard
 			return 0;
+			break;
 		case CommandType::Put:
 			std::cout << "[Action] Put object successfully\n";
 			// Actualizar inventario en el Blackboard
 			return 0;
+			break;
 		case CommandType::Expulse:
 			std::cout << "[Action] Expelled player successfully\n";
 			return 0;
+			break;
 		case CommandType::Fork:
 			std::cout << "[Action] Fork successful\n";
 			return 0;
 		default:
 			std::cout << "[Action] Undefined LastCommand " << CommandTypeToString(lastCommand) << "\n";
 			return 1;
+			break;
 		}
 	}
 	else if (response == "ko")
@@ -60,18 +67,23 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		case CommandType::Advance:
 			std::cout << "[Action] Failed to move forward\n";
 			return 0;
+			break;
 		case CommandType::Take:
 			std::cout << "[Action] Failed to take object (not present)\n";
 			return 0;
+			break;
 		case CommandType::Put:
 			std::cout << "[Action] Failed to put object (not in inventory)\n";
 			return 0;
+			break;
 		case CommandType::Incantation:
 			std::cout << "[Action] Incantation failed\n";
 			return 0;
+			break;
 		default:
 			std::cout << "[Action] Undefined LastCommand failed " << CommandTypeToString(lastCommand) << "\n";
 			return 1;
+			break;
 		}
 	}
 	else if (response.find("elevation en cours") != std::string::npos)
@@ -101,10 +113,12 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			std::cout << "[Action] Processing vision data\n";
 			board.HandleVoirResponse(response);
 			return 0;
+			break;
 		case CommandType::Inventory:
 			std::cout << "[Action] Processing inventory data\n";
 			// Parsear y actualizar inventario en el Blackboard
 			return 0;
+			break;
 		case CommandType::ConnectNbr:
 			std::cout << "[Action] Processing connection number\n";
 			// Procesar número de conexiones disponibles
@@ -112,6 +126,7 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		default:
 			std::cout << "[Action] Undefined LastCommand: " << CommandTypeToString(lastCommand) << ". Received structured response: " << response << "\n";
 			return 1;
+			break;
 		}
 	}
 	else

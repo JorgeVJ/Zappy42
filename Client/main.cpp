@@ -193,10 +193,11 @@ int main()
 
 
 		//////test
-		board.commandHistory.AddCommand(ParseCommandType("avance"), board.CurrentTick, "");
+		std::string testCommand = "gauche";
+		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, "");
 		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
 		
-		if (!board.Sock->SendLine("avance"))
+		if (!board.Sock->SendLine(testCommand))
 			break;
 
 			///////
