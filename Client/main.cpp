@@ -19,12 +19,15 @@
 #include "CommandHistory.h"
 #include "ClientGame.h"
 #include "Result.h"
+#include "responses.h"
+
 
 void WaitForDebugAndClean(int seconds = 5)
 {
 	std::cout << "\n[DEBUG] Waiting " << seconds << " seconds before closing..." << std::endl;
 	std::this_thread::sleep_for(std::chrono::seconds(seconds));
 	WSACleanup();
+	ClientGame::Dispose();
 }
 
 Bid* GetBestBid(std::vector<Bid>& bids)
@@ -123,121 +126,7 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 	return Result<Blackboard*>::Success(board);
 }
 
-int handleServerResponse(Blackboard& board, const std::string& response)
-{
-	// Obtener el ultimo comando enviado
-	const auto& pendingCommands = board.commandHistory.GetPendingCommands();
-	CommandType lastCommand = pendingCommands.front().type;
 
-	// Parsear tipo de respuesta
-	if (response == "ok")
-	{
-		switch (lastCommand)
-		{
-		case CommandType::Advance:
-			std::cout << "[Action] Moved forward successfully\n";
-			// Actualizar posicion en el Blackboard
-			return 0;
-		case CommandType::Right:
-			std::cout << "[Action] Turned right successfully\n";
-			// Actualizar orientacion en el Blackboard
-			return 0;
-		case CommandType::Left:
-			std::cout << "[Action] Turned left successfully\n";
-			// Actualizar orientacion en el Blackboard
-			return 0;
-		case CommandType::Take:
-			std::cout << "[Action] Took object successfully\n";
-			// Actualizar inventario en el Blackboard
-			return 0;
-		case CommandType::Put:
-			std::cout << "[Action] Put object successfully\n";
-			// Actualizar inventario en el Blackboard
-			return 0;
-		case CommandType::Expulse:
-			std::cout << "[Action] Expelled player successfully\n";
-			return 0;
-		case CommandType::Fork:
-			std::cout << "[Action] Fork successful\n";
-			return 0;
-		default:
-			std::cout << "[Action] Undefined LastCommand\n";
-			return 1;
-		}
-	}
-	else if (response == "ko")
-	{
-		switch (lastCommand)
-		{
-		case CommandType::Advance:
-			std::cout << "[Action] Failed to move forward\n";
-			return 0;
-		case CommandType::Take:
-			std::cout << "[Action] Failed to take object (not present)\n";
-			return 0;
-		case CommandType::Put:
-			std::cout << "[Action] Failed to put object (not in inventory)\n";
-			return 0;
-		case CommandType::Incantation:
-			std::cout << "[Action] Incantation failed\n";
-			return 0;
-		default:
-			std::cout << "[Action] Undefined LastCommand failed\n";
-			return 1;
-		}
-	}
-	else if (response.find("elevation en cours") != std::string::npos)
-	{
-		if (lastCommand == CommandType::Incantation)
-		{
-			std::cout << "[Action] Incantation in progress...\n";
-			// Marcar estado de elevacion en el Blackboard
-		}
-	}
-	else if (response.find('{') != std::string::npos && response.find('}') != std::string::npos)
-	{
-		// Respuesta con datos (JSON-like o estructura de datos)
-		switch (lastCommand)
-		{
-		case CommandType::See:
-			std::cout << "[Action] Processing vision data\n";
-			board.HandleVoirResponse(response);
-			return 0;
-		case CommandType::Inventory:
-			std::cout << "[Action] Processing inventory data\n";
-			// Parsear y actualizar inventario en el Blackboard
-			return 0;
-		default:
-			std::cout << "[Action] Undefined LastCommand. Received structured response: " <<  response <<"\n";
-			return 1;
-		}
-	}
-	else
-	{
-		if (lastCommand == CommandType::Broadcast)
-		{
-			std::cout << "[Action] Broadcast answer receive. Handle different. \n";
-			return 0;
-		}
-		else if (response.find("mort") != std::string::npos)
-		{
-			std::cout << "[Action] Player died\n";
-			// Manejar muerte del jugador
-			return 0;
-		}
-		else if (response.find("message") != std::string::npos)
-		{
-			// Parse message to save in struct. Save current tick.
-			MessageEntry msg;
-			msg.Message = response;
-			msg.MarcoPolo = false;
-			msg.From = -1;
-			msg.Tick = board.CurrentTick;
-			board.Messages.push_back(msg);
-			return 1;
-		}
-	}
-}
 
 int main()
 {
@@ -296,11 +185,22 @@ int main()
 		if (!bestBid)
 			continue;
 
-		board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick, "");
-		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
+		/*board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick, "");
+		std::cout << "[Client] CMD => " << bestBid->Command << "\n";*/
+		/*if (!board.Sock->SendLine(bestBid->Command))
+			break;*/
 
-		if (!board.Sock->SendLine(bestBid->Command))
+
+
+		//////test
+		board.commandHistory.AddCommand(ParseCommandType("avance"), board.CurrentTick, "");
+		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
+		
+		if (!board.Sock->SendLine("avance"))
 			break;
+
+			///////
+
 
 		std::string response;
 		while (true)
