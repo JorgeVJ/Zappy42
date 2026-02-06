@@ -119,7 +119,6 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 
 	// Crear y configurar Blackboard usando la Connection ya registrada en ClientGame
 	Blackboard* board = new Blackboard();
-	board->Sock = conn;
 	board->Me.TeamName = teamName;
 	board->InitializeMap(x, y);
 
@@ -187,7 +186,7 @@ int main()
 
 		/*board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick, "");
 		std::cout << "[Client] CMD => " << bestBid->Command << "\n";*/
-		/*if (!board.Sock->SendLine(bestBid->Command))
+		/*if (!conn->SendLine(bestBid->Command))
 			break;*/
 
 
@@ -197,7 +196,7 @@ int main()
 		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, "");
 		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
 		
-		if (!board.Sock->SendLine(testCommand))
+		if (!conn->SendLine(testCommand))
 			break;
 
 			///////
@@ -206,7 +205,7 @@ int main()
 		std::string response;
 		while (true)
 		{
-			if (!board.Sock->RecvLine(response))
+			if (!conn->RecvLine(response))
 				break;
 			
 			std::cout << "[Server] RESP <= " << response << "\n";
