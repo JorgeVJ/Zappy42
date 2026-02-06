@@ -24,6 +24,9 @@ class Blackboard
 		/// </summary>
 		Map map;
 		int CurrentTick;
+		int ConnectNbr = 0;
+
+		Map Map;
 		Player Me;
 
 		/// <summary>
