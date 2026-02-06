@@ -1,6 +1,7 @@
 #include "Blackboard.h"
+#include <iostream>
 
-Blackboard::Blackboard() : Map(0, 0)
+Blackboard::Blackboard() : Map(0, 0), CurrentTick(0)
 {
 }
 
@@ -103,3 +104,22 @@ void Blackboard::HandleVoirResponse(const std::string& response)
         PropagateInfluences(tile);
     }
 }
+
+void Blackboard::UpdateTick(int ticks)
+{
+	if (ticks < 0)
+	{
+		std::cerr << "[Warning] Attempted to update tick with negative value: " << ticks << "\n";
+		return;
+	}
+	
+	CurrentTick += ticks;
+	std::cout << "[Blackboard] Tick updated to: " << CurrentTick << "\n";
+}
+
+void Blackboard::ResetTick()
+{
+	CurrentTick = 0;
+	std::cout << "[Blackboard] Tick reset to 0\n";
+}
+
