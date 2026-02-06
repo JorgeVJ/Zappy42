@@ -23,6 +23,7 @@ class Blackboard
 		/// Sum of all Command Ticks.
 		/// </summary>
 		int CurrentTick;
+		int ConnectNbr = 0;
 
 		Map Map;
 		Player Me;

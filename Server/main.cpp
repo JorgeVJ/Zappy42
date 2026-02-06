@@ -12,6 +12,7 @@
 #include "Connection.h"
 #include <cstdlib>
 #include "main.h"
+#include <thread>
 
 #pragma comment(lib, "Ws2_32.lib")
 std::vector<Connection*> clients;
@@ -83,6 +84,13 @@ void HandleCommand(const std::string& cmd, Connection* client)
     {
         // En el server real, esto depende de condiciones del tile
         client->SendLine("elevation en cours");
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        client->SendLine("niveau actuel : 2");
+
+    }
+    else if (cmd == "connect_nbr")
+    {
+        client->SendLine("1");
     }
     else if (cmd == "msz")
     {

@@ -198,14 +198,14 @@ int main()
 
 		if (i == 0)
 		{
-			testCommand = "inventaire";
-			std::cout << "[Client] CMD => inventaire (iteration " << i << ")\n";
+			testCommand = "connect_nbr";
+			std::cout << "[Client] CMD => connect_nbr (iteration " << i << ")\n";
 		}
 		else
 		{
-			testCommand = "pose nourriture";
+			testCommand = "incantation";
 			objectParam = "nourriture";
-			std::cout << "[Client] CMD => pose nourriture (iteration " << i << ")\n";
+			std::cout << "[Client] CMD => incantation (iteration " << i << ")\n";
 		}
 	
 		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);

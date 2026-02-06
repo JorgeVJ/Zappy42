@@ -119,7 +119,7 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		{
 			board.UpdateTick(300);
 			std::cout << "[Action] Incantation has finished. Level: " << board.Me.Level << "\n";
-			// Marcar estado de elevacion en el Blackboard
+			// Marcar estado de elevacion en el Blackboard y actualizar nivel del jugador
 			return 0;
 		}
 	}
@@ -132,8 +132,8 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		}
 		else if (lastCommand.type == CommandType::ConnectNbr)
 		{
-			std::cout << "[Action] Processing connection number\n";
-			// Procesar número de conexiones disponibles
+			board.ConnectNbr = std::stoi(response);
+			std::cout << "[Action] Available connection number: "<< std::stoi(response) <<"\n";
 			return 0;
 		}
 		else if (response.find("mort") != std::string::npos)
