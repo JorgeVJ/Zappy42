@@ -173,6 +173,7 @@ int main()
 
 	std::vector<IAgent*> agents;
 	CreateAgents(agents);
+	int i = 0;
 
 	while (true)
 	{
@@ -192,10 +193,26 @@ int main()
 
 
 		//////test
-		std::string testCommand = "gauche";
-		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, "");
-		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
-		
+		std::string testCommand;
+		std::string objectParam = "";
+
+		if (i == 0)
+		{
+			testCommand = "inventaire";
+			std::cout << "[Client] CMD => inventaire (iteration " << i << ")\n";
+		}
+		else
+		{
+			testCommand = "pose nourriture";
+			objectParam = "nourriture";
+			std::cout << "[Client] CMD => pose nourriture (iteration " << i << ")\n";
+		}
+	
+		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
+		i++;
+		/*board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, "linemate");
+		std::cout << "[Client] CMD => " << bestBid->Command << " i= " << i << "  " << testCommand << "\n";
+		*/
 		if (!conn->SendLine(testCommand))
 			break;
 
@@ -213,7 +230,7 @@ int main()
 				break;
 		}
 
-		std::this_thread::sleep_for(std::chrono::seconds(10));
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
 
 	for (auto* a : agents)

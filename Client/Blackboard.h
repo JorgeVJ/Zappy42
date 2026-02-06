@@ -48,6 +48,18 @@ class Blackboard
 		Blackboard(); // constructor por defecto
 
 		void InitializeMap(int x, int y);
+		
+		/// <summary>
+		/// Incrementa el CurrentTick por la cantidad especificada
+		/// </summary>
+		/// <param name="ticks">Cantidad de ticks a incrementar (debe ser positivo)</param>
+		void UpdateTick(int ticks);
+		
+		/// <summary>
+		/// Resetea el CurrentTick a 0
+		/// </summary>
+		void ResetTick();
+		
 		double GetHungerNeed();
 		std::vector<std::pair<int, int>> GetVoirOffsets(int level, Direction dir);
 		void PropagateInfluences(Tile* tile);

@@ -36,7 +36,7 @@ void CommandHistory::AddCommand(CommandType type, long currentTick, std::string 
     long delay = GetCommandDelay(type);
     long end = start + delay;
 
-    commands.push_back({ type, parameter, start, end });
+    commands.push_front({ type, parameter, start, end });
 }
 
 void CommandHistory::Update(long currentTick)

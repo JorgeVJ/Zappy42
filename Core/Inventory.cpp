@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Inventory.h"
+#include <iostream>
+#include <iomanip>
 
 std::map<int, Inventory> Inventory::IncantationRecipes = {
     //  Level	        linemate	deraumere	sibur	mendiane	phiras	thystame
@@ -47,7 +49,7 @@ int Inventory::Get(Resource r) {
 void Inventory::Add(std::string str, int amount) {
     auto it = map.find(str);
     if (it != map.end()) {
-        data[static_cast<size_t>(it->second)] = amount;
+        data[static_cast<size_t>(it->second)] += amount;
     }
 }
 
@@ -55,10 +57,46 @@ void Inventory::Add(Resource r, int amount) {
     data[static_cast<size_t>(r)] += amount;
 }
 
+bool Inventory::Remove(std::string str, int amount) {
+    auto it = map.find(str);
+    if (it == map.end()) {
+        std::cerr << "[Inventory Error] Resource '" << str << "' not found\n";
+        return false;
+    }
+    
+    Resource res = it->second;
+    int available = Get(res);
+    
+    if (available < amount) {
+        std::cerr << "[Inventory Error] Cannot remove " << amount << " " << str 
+                  << " (" << available << " available)\n";
+        return false;
+    }
+    
+    if (available <= 0) {
+        std::cerr << "[Inventory Error] Cannot remove " << str 
+                  << " (inventory is empty for this resource)\n";
+        return false;
+    }
+    
+    return Remove(res, amount);
+}
+
 bool Inventory::Remove(Resource r, int amount) {
     int& value = data[static_cast<size_t>(r)];
-    if (value < amount)
+    
+    if (value <= 0) {
+        std::cerr << "[Inventory Error] Cannot remove " << ResourceToString(r) 
+                  << " (inventory is empty for this resource)\n";
         return false;
+    }
+    
+    if (value < amount) {
+        std::cerr << "[Inventory Error] Cannot remove " << amount << " " << ResourceToString(r) 
+                  << " (" << value << " available)\n";
+        return false;
+    }
+    
     value -= amount;
     return true;
 }
@@ -110,6 +148,45 @@ void Inventory::SetFromServerString(const std::string& str)
             data[static_cast<size_t>(it->second)] = value;
         }
     }
+}
+
+void Inventory::Print(const std::string& title) const
+{
+    std::cout << "\n" << title << ":\n";
+    std::cout << "+------+------+------+------+------+------+------+\n";
+    std::cout << "| Food | Line | Dera | Sibu | Mend | Phir | Thys |\n";
+    std::cout << "+------+------+------+------+------+------+------+\n";
+    std::cout << "| " << std::setw(4) << std::right << data[static_cast<size_t>(Resource::Food)]
+              << " | " << std::setw(4) << std::right << data[static_cast<size_t>(Resource::Linemate)]
+              << " | " << std::setw(4) << std::right << data[static_cast<size_t>(Resource::Deraumere)]
+              << " | " << std::setw(4) << std::right << data[static_cast<size_t>(Resource::Sibur)]
+              << " | " << std::setw(4) << std::right << data[static_cast<size_t>(Resource::Mendiane)]
+              << " | " << std::setw(4) << std::right << data[static_cast<size_t>(Resource::Phiras)]
+              << " | " << std::setw(4) << std::right << data[static_cast<size_t>(Resource::Thystame)]
+              << " |\n";
+    std::cout << "+------+------+------+------+------+------+------+\n";
+}
+
+std::string Inventory::ToString() const
+{
+    std::stringstream ss;
+    ss << "{ ";
+    
+    bool first = true;
+    for (size_t i = 0; i < Size(); ++i)
+    {
+        Resource res = static_cast<Resource>(i);
+        int quantity = data[i];
+        
+        if (!first)
+            ss << ", ";
+        
+        ss << ResourceToString(res) << ": " << quantity;
+        first = false;
+    }
+    
+    ss << " }";
+    return ss.str();
 }
 
 std::string Inventory::ResourceToString(Resource resource)

@@ -10,15 +10,16 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 {
 	// Obtener el ultimo comando enviado
 	const auto& pendingCommands = board.commandHistory.GetPendingCommands();
-	CommandType lastCommand = pendingCommands.front().type;
+	CommandEntry lastCommand = pendingCommands.front();
 
 	// Tipo de respuesta
 	if (response == "ok")
 	{
-		switch (lastCommand)
+		switch (lastCommand.type)
 		{
 		case CommandType::Advance:
 			board.Me.Move(1);
+			board.UpdateTick(7);
 			std::cout << "[Action] Moved forward successfully\n";
 			std::cout << "[Player] Position: (" << board.Me.Position.X << ", " << board.Me.Position.Y
 				<< ") Direction: " << DirectionToString(board.Me.Orientation)
@@ -27,91 +28,85 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			break;
 		case CommandType::Right:
 			board.Me.Turn(TurnDirection::Right);
+			board.UpdateTick(7);
 			std::cout << "[Action] Turned right successfully\n";
 			std::cout << "[Player] Now facing: " << DirectionToString(board.Me.Orientation) << "\n";
 			return 0;
 			break;
 		case CommandType::Left:
 			board.Me.Turn(TurnDirection::Left);
+			board.UpdateTick(7);
 			std::cout << "[Action] Turned left successfully\n";
 			std::cout << "[Player] Now facing: " << DirectionToString(board.Me.Orientation) << "\n";
 			return 0;
 			break;
 		case CommandType::Take:
-			std::cout << "[Action] Took object successfully\n";
-			// Actualizar inventario en el Blackboard
+			board.Me.Inventory.Add(lastCommand.commandParameter, 1);
+			board.UpdateTick(7);
+			std::cout << "[Action] Took " << lastCommand.commandParameter << " successfully\n";
+			board.Me.Inventory.Print("Updated Inventory");
 			return 0;
 			break;
 		case CommandType::Put:
-			std::cout << "[Action] Put object successfully\n";
-			// Actualizar inventario en el Blackboard
+			board.Me.Inventory.Remove(lastCommand.commandParameter, 1);
+			board.UpdateTick(7);
+			std::cout << "[Action] Put " << lastCommand.commandParameter << " successfully\n";
+			board.Me.Inventory.Print("Updated Inventory");
 			return 0;
 			break;
 		case CommandType::Expulse:
+			board.UpdateTick(7);
 			std::cout << "[Action] Expelled player successfully\n";
 			return 0;
 			break;
+		case CommandType::Broadcast:
+			board.UpdateTick(7);
+			std::cout << "[Action] Message broadcasted successfully\n";
+			return 0;
+			break;
 		case CommandType::Fork:
+			board.UpdateTick(42);
 			std::cout << "[Action] Fork successful\n";
 			return 0;
+			break;
 		default:
-			std::cout << "[Action] Undefined LastCommand " << CommandTypeToString(lastCommand) << "\n";
+			std::cout << "[Action] Undefined LastCommand " << CommandTypeToString(lastCommand.type) << "\n";
 			return 1;
 			break;
 		}
 	}
 	else if (response == "ko")
 	{
-		std::cout << "[Action] Failed to execute " << CommandTypeToString(lastCommand) << "\n";
+		std::cout << "[Action] Failed to execute " << CommandTypeToString(lastCommand.type) << "\n";
 		return 0;
-		/*switch (lastCommand)
-		{
-		case CommandType::Advance:
-			std::cout << "[Action] Failed to move forward\n";
-			return 0;
-			break;
-		case CommandType::Take:
-			std::cout << "[Action] Failed to take object (not present)\n";
-			return 0;
-			break;
-		case CommandType::Put:
-			std::cout << "[Action] Failed to put object (not in inventory)\n";
-			return 0;
-			break;
-		case CommandType::Incantation:
-			std::cout << "[Action] Incantation failed\n";
-			return 0;
-			break;
-		default:
-			std::cout << "[Action] Undefined LastCommand failed " << CommandTypeToString(lastCommand) << "\n";
-			return 1;
-			break;
-		}*/
 	}
 	else if (response.find('{') != std::string::npos && response.find('}') != std::string::npos)
 	{
 		// Respuesta con datos (JSON-like o estructura de datos)
-		switch (lastCommand)
+		switch (lastCommand.type)
 		{
 		case CommandType::See:
-			std::cout << "[Action] Processing vision data\n";
 			board.HandleVoirResponse(response);
+			board.UpdateTick(7);
+			std::cout << "[Action] Processing vision data\n";
 			return 0;
 			break;
 		case CommandType::Inventory:
-			std::cout << "[Action] Processing inventory data\n";
-			// Parsear y actualizar inventario en el Blackboard
+			board.Me.Inventory.SetFromServerString(response);
+			board.UpdateTick(1);
+			std::cout << "[Action] Inventory data updated.\n";
+			board.Me.Inventory.Print("Player Inventory");
 			return 0;
 			break;
 		default:
-			std::cout << "[Action] Undefined LastCommand: " << CommandTypeToString(lastCommand) << ". Received structured response: " << response << "\n";
+			std::cout << "[Action] Undefined LastCommand: " << CommandTypeToString(lastCommand.type) << ". Received structured response: " << response << "\n";
 			return 1;
 			break;
 		}
 	}
 	else if (response.find("elevation en cours") != std::string::npos)
 	{
-		if (lastCommand == CommandType::Incantation)
+		if (lastCommand.type == CommandType::Incantation)
 		{
 			std::cout << "[Action] Incantation in progress...\n";
 			// Se queda esperando respuesta de level up
@@ -120,8 +115,9 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 	}
 	else if (response.find("niveau actuel") != std::string::npos)
 	{
-		if (lastCommand == CommandType::Incantation)
+		if (lastCommand.type == CommandType::Incantation)
 		{
+			board.UpdateTick(300);
 			std::cout << "[Action] Incantation has finished. Level: " << board.Me.Level << "\n";
 			// Marcar estado de elevacion en el Blackboard
 			return 0;
@@ -129,12 +125,12 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 	}
 	else
 	{
-		if (lastCommand == CommandType::Broadcast)
+		if (lastCommand.type == CommandType::Broadcast)
 		{
 			std::cout << "[Action] Broadcast answer receive. Handle different. \n";
 			return 0;
 		}
-		else if (lastCommand == CommandType::ConnectNbr)
+		else if (lastCommand.type == CommandType::ConnectNbr)
 		{
 			std::cout << "[Action] Processing connection number\n";
 			// Procesar número de conexiones disponibles

@@ -38,7 +38,7 @@ void HandleCommand(const std::string& cmd, Connection* client)
     // Aquí simulas el server Zappy.
     // Puedes conectarlo luego con tu Map/Tile reales.
 
-    if (cmd == "inventory")
+    if (cmd == "inventaire")
     {
         // Respuesta estilo Zappy
         client->SendLine("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");
@@ -64,6 +64,11 @@ void HandleCommand(const std::string& cmd, Connection* client)
     else if (cmd.rfind("prend ", 0) == 0)
     {
         // prend nourriture / prend linemate ...
+        client->SendLine("ok");
+    }
+    else if (cmd.rfind("pose ", 0) == 0)
+    {
+        // pose nourriture / prend linemate ...
         client->SendLine("ok");
     }
     else if (cmd.rfind("broadcast ", 0) == 0)
