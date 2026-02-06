@@ -1,6 +1,6 @@
 #include "Blackboard.h"
 
-Blackboard::Blackboard() : map(0, 0), Sock(nullptr)
+Blackboard::Blackboard() : Map(0, 0)
 {
 }
 

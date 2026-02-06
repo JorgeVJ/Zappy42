@@ -43,7 +43,6 @@ class Blackboard
 		ExplorationService explorationService;
 
 		CommandHistory commandHistory;
-		Connection* Sock;
 
 		Blackboard(); // constructor por defecto
 
