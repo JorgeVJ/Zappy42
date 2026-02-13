@@ -11,6 +11,7 @@ bool Opt::Spec::is_repeatable()  const noexcept
 //Generic validation need to create one with each param
 bool validate_arity(const std::vector<Opt::Value> &values,
 			  const std::span<const Opt::Spec> &specs, std::vector<std::string_view> *errors)
+
 {
 	bool ok = true;
 

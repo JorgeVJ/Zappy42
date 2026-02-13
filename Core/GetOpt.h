@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <optional>
+#include "utils.h"
 #include "Errors.h"
 
 
@@ -97,16 +98,7 @@ namespace Opt {
 				}
 				auto id = find(arg);
 				if (!id) {
-					if (errors != nullptr) {
-						try {
-							errors->push_back(Errors::CLI::UnknownOption);
-							//throwable()n
-						} catch (const std::exception& e) {
-							std::cerr << "Exception STL: " << e.what() << std::endl;
-						} catch (...) {
-							std::cerr << "Exception No STL" << std::endl;
-						}
-					}
+					vector_string_view_add(errors, Errors::CLI::UnknownOption);
 					ok = false;
 					continue;
 				}
@@ -116,16 +108,7 @@ namespace Opt {
 				auto& val  = values[idx];
 
 				if (val.present && !spec.is_repeatable()) {
-					if (errors != nullptr) {
-						try {
-							errors->push_back(Errors::CLI::RepeatOption);
-							//throwable();
-						} catch (const std::exception& e) {
-							std::cerr << "Exception STL: " << e.what() << std::endl;
-						} catch (...) {
-							std::cerr << "Exception No STL" << std::endl;
-						}
-					}
+					vector_string_view_add(errors, Errors::CLI::RepeatOption);
 					ok = false;
 					continue;
 				}
@@ -182,22 +165,12 @@ namespace Opt {
 
 			if (arity_accepts(spec.arity, count))
 				return (ok);
-			if (errors != nullptr) {
-				try {
-					errors->push_back(Errors::CLI::InvalidArity);
-					//throwable()
-				} catch (const std::exception& e) {
-					std::cerr << "Exception STL: " << e.what() << std::endl;
-					ok = false;
-				} catch (...) {
-					std::cerr << "Exception No STL" << std::endl;
-					ok = false;
-				}
-			}
+			vector_string_view_add(errors, Errors::CLI::InvalidArity);
 			ok = false;
 			return (ok);
 		}
 	};
 }
+
 bool validate_arity(const std::vector<Opt::Value> &values,
 			  const std::span<const Opt::Spec> &specs, std::vector<std::string_view> *errors);

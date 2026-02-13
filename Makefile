@@ -27,15 +27,12 @@ SERVER-DIR    := ./Server/
 BUILD-DIR			:=	./.build/
 TESTS-DIR			:=	./Tests/
 
-TEST_GETOPT_DIR      := $(TESTS-DIR)GetOpt/
-TEST_GETOPT_SERVER   := $(TEST_GETOPT_DIR)server
-TEST_GETOPT_CLIENT   := $(TEST_GETOPT_DIR)client
+TEST_GETOPT_DIR      		 := $(TESTS-DIR)GetOpt/
+TEST_GETOPT_SERVER	     := $(TEST_GETOPT_DIR)server
+TEST_GETOPT_CLIENT	     := $(TEST_GETOPT_DIR)client
+TEST_VALIDATORS_DIR      := $(TESTS-DIR)Validators/
+TEST_VALIDATORS_SERVER   := $(TEST_VALIDATORS_DIR)server
 
-TEST_GETOPT_SRC_SERVER := $(TEST_GETOPT_DIR)server.cpp \
-                          $(addprefix Core/, $(SRC-CORE))
-
-TEST_GETOPT_SRC_CLIENT := $(TEST_GETOPT_DIR)client.cpp \
-                          $(addprefix Core/, $(SRC-CORE))
 
 SRC-CORE			:=  Connection \
 									Tile \
@@ -48,6 +45,7 @@ SRC-CORE			:=  Connection \
 									Point \
 									CommandType \
 									GetOpt \
+									Validators \
 
 
 SRC-CLIENT := \
@@ -60,12 +58,19 @@ SRC-SERVER := \
   $(addprefix Server/, main Game events responses) \
   $(addprefix Core/, $(SRC-CORE))
 
+TEST_GETOPT_SRC_SERVER := $(TEST_GETOPT_DIR)server.cpp \
+                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))))
 
+TEST_GETOPT_SRC_CLIENT := $(TEST_GETOPT_DIR)client.cpp \
+                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))))
 
+TEST_VALIDATORS_SRC_SERVER := $(TEST_VALIDATORS_DIR)server.cpp \
+                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))))
 BUILD-SERVER := $(SRC-SERVER:%.cpp=$(BUILD-DIR)%.o)
 
 BUILD-CLIENT := $(addsuffix .o, $(addprefix $(BUILD-DIR),  $(SRC-CLIENT)))
 BUILD-SERVER := $(addsuffix .o, $(addprefix $(BUILD-DIR),  $(SRC-SERVER)))
+
 # Set the CXX variable based on the operating system
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -100,6 +105,14 @@ test_get_opt: $(TEST_GETOPT_SERVER) $(TEST_GETOPT_CLIENT)
 	@echo "$(CSI)$(FOREGROUND)$(GREEN)$(END)Running GetOpt tests$(CSI)$(END)"
 	@cd $(TEST_GETOPT_DIR) && bash ./test.sh
 
+test_validators: $(TEST_VALIDATORS_SERVER)
+	@echo "$(CSI)$(FOREGROUND)$(GREEN)$(END)Running Validators tests$(CSI)$(END)"
+	@cd $(TEST_VALIDATORS_DIR) && bash ./test.sh
+
+$(TEST_VALIDATORS_SERVER): $(TEST_VALIDATORS_SRC_SERVER)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+
 $(TEST_GETOPT_SERVER): $(TEST_GETOPT_SRC_SERVER)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
@@ -112,11 +125,12 @@ $(BUILD-DIR)%.o:        %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@$(RM) $(BUILD-DIR) $(TEST_GETOPT_SERVER) $(TEST_GETOPT_CLIENT) $(TEST_GETOPT_DIR)err.log $(TEST_GETOPT_DIR)
+	@$(RM) $(BUILD-DIR) $(TEST_GETOPT_SERVER) $(TEST_GETOPT_CLIENT) $(TEST_GETOPT_DIR)err.log $(TEST_GETOPT_DIR)out.log
 
 fclean: clean
 	@$(RM) $(NAME_CLIENT) $(NAME_SERVER)
-	re: fclean all
+
+re: fclean all
 
 info-%:
 	@$(MAKE) --dry-run --always-make $* | grep -v "info"
@@ -124,4 +138,4 @@ info-%:
 print-%:
 	@$(info '$*'='$($*)')
 
-.PHONY: all clean fclean re info-% print-% test_get_opt
+.PHONY: all clean fclean re info-% print-% test_getopt test_validators

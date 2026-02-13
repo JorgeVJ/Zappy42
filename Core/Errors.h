@@ -23,10 +23,20 @@ namespace Errors {
 	}
 
 	namespace Validation {
+
+		inline constexpr std::string_view MissValue            = "Missing Value";
 		inline constexpr std::string_view InvalidInteger       = "Invalid integer";
 		inline constexpr std::string_view InvalidIntegerFormat = "Invalid integer format";
 		inline constexpr std::string_view InvalidPort          = "Invalid port number";
-		inline constexpr std::string_view InvalidHeight        = "Invalid Height number";
-		inline constexpr std::string_view DuplicateTeamName    = "Invalid Duplicate Team Name";
+		namespace Server {
+			inline constexpr std::string_view InvalidHeightorWidth = "Invalid Height or Width number";
+			inline constexpr std::string_view DuplicateTeamName    = "Invalid Duplicate Team Name";
+			inline constexpr std::string_view Time          = "Invalid Time Nbr";
+			inline constexpr std::string_view Clients     = "Invalid Client Nbr";
+			inline constexpr std::string_view InvalidTeamNbr     = "Invalid Team Nbr";
+			inline constexpr std::string_view InvalidTeamLen     = "Invalid Team Len";
+
+
+		}
 	}
 }
