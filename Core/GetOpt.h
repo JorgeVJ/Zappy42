@@ -7,21 +7,7 @@
 #include <optional>
 #include "Errors.h"
 
-struct Error {
-    size_t pos;
-    std::string_view msg;
-};
 
-
-class ErrorReporter {
- public:
-	void add(size_t pos, std::string_view msg);
-	bool has_errors() const noexcept;
-	const std::vector<Error>& all() const noexcept;
-	void clean() noexcept ;
- private:
-  std::vector<Error> errors_;
-};
 
 namespace Opt {
 	constexpr std::string_view Delimiter_Options    = "--";
@@ -42,34 +28,6 @@ namespace Opt {
 		Any
     };
 
-	constexpr bool arity_stop(Arity a, std::size_t n) noexcept {
-		switch (a)
-		{
-		case Arity::Zero:
-			return (true);
-		case Arity::ZeroOrOne:
-		case Arity::One:
-			return (n >= 1);
-		case Arity::OneOrMore:
-		case Arity::Any:
-			return (false);
-		}
-		return (true);
-	}
-
-	constexpr bool arity_required(Arity a) noexcept {
-		switch (a)
-		{
-		case Arity::Zero:
-		case Arity::ZeroOrOne:
-		case Arity::Any:
-			return (false);
-		default:
-			break;
-		}
-		return (true);
-	}
-
 	constexpr bool arity_accepts(Arity a, std::size_t n) noexcept {
 		switch (a) {
 		case Arity::Zero:
@@ -86,15 +44,17 @@ namespace Opt {
 		return false;
 	}
 
+	constexpr bool arity_stop(Arity a, std::size_t n) noexcept {
+		return  (!arity_accepts(a, n + 1));
+	}
+
+	constexpr bool arity_required(Arity a) noexcept {
+		return  (!arity_accepts(a, 0));
+	}
+
   	struct Value {
 		bool present = false;
 		std::vector<std::string_view> values;
-
-		bool is_present() const noexcept;
-
-		bool has_values() const noexcept;
-
-		bool missing() const noexcept;
 	};
 
 	enum class RepeatPolicy {
@@ -105,40 +65,9 @@ namespace Opt {
 	struct Spec {
 		std::span<const std::string_view> keys;
 		Arity arity;
-		//bool (*validator)(const Value&, ErrorReporter &errors);
 		RepeatPolicy repeat;
 		bool is_repeatable()  const noexcept;
 	};
-
-	bool validate(const std::vector<Value> &values,
-				  const std::span<const Spec> &specs, ErrorReporter &errors) {
-		bool ok = true;
-
-		for (std::size_t i = 0; i < specs.size(); ++i) {
-			const auto& spec = specs[i];
-			const auto& val  = values[i];
-
-			//Required but miss
-			if (arity_required(spec.arity) && !val.present)
-			{
-				errors.add(0, Errors::CLI::MissingOption);  //throw
-				ok = false;
-				continue;
-			}
-
-			if (val.present && !arity_accepts(spec.arity, val.values.size())) {
-				errors.add(0, Errors::CLI::InvalidArity); //throw
-				ok = false;
-				continue;
-			}
-			// 3. Semantic validation should got another thing for validators
-			//			if (val.present && spec.validator) {
-			//				ok &= spec.validator(val, errors);
-			//			}
-		}
-		return (ok);
-	}
-
 
 	template<typename OptId>
 	struct KeyEntry {
@@ -152,12 +81,11 @@ namespace Opt {
 	class GetOpt {
 	public:
 		GetOpt(std::span<const Spec> specs,
-			   std::span<const KeyEntry<OptId>> keys,
-			   ErrorReporter &errors)
-			: specs_(specs), keys_(keys), errors_(errors) {}
+			   std::span<const KeyEntry<OptId>> keys)
+			: specs(specs), keys(keys), values(specs.size()) {}
 
 
-		bool parse(int argc, char** argv) {
+		bool parse(int argc, char** argv, std::vector<std::string_view> *errors) {
 			bool ok = true;
 			bool end_of_options = false;
 
@@ -165,78 +93,56 @@ namespace Opt {
 				std::string_view arg = argv[i];
 
 				if (!end_of_options && arg == Delimiter_Options) {
-					end_of_options = true;
-					continue;
-				}
-
-				if (end_of_options) {
-					this->positionals_.push_back(arg);
-					continue;
+					return (ok);
 				}
 				auto id = find(arg);
 				if (!id) {
-					errors_.add(i, Errors::CLI::UnknownOption);
+					if (errors != nullptr) {
+						try {
+							errors->push_back(Errors::CLI::UnknownOption);
+							//throwable()n
+						} catch (const std::exception& e) {
+							std::cerr << "Exception STL: " << e.what() << std::endl;
+						} catch (...) {
+							std::cerr << "Exception No STL" << std::endl;
+						}
+					}
 					ok = false;
 					continue;
 				}
 
 				auto idx = static_cast<size_t>(*id);
-				auto& spec = specs_[idx];
-				auto& val  = values_[idx];
+				auto& spec = specs[idx];
+				auto& val  = values[idx];
 
 				if (val.present && !spec.is_repeatable()) {
-					errors_.add(i, Errors::CLI::RepeatOption);
+					if (errors != nullptr) {
+						try {
+							errors->push_back(Errors::CLI::RepeatOption);
+							//throwable();
+						} catch (const std::exception& e) {
+							std::cerr << "Exception STL: " << e.what() << std::endl;
+						} catch (...) {
+							std::cerr << "Exception No STL" << std::endl;
+						}
+					}
 					ok = false;
 					continue;
 				}
 				val.present = true;
-				if (!consume(spec, val, i, argc, argv)) {
+				if (!consume(spec, val, i, errors, argc, argv)) {
 					ok = false;
 				}
 			}
 			return (ok);
 		}
 
-		bool validate() {
-			bool ok = true;
-
-			for (std::size_t i = 0; i < specs_.size(); ++i) {
-				const auto& spec = specs_[i];
-				const auto& val  = values_[i];
-
-				//Required but miss
-				if (arity_required(spec.arity) && !val.present)
-				{
-					this->errors_.add(i, Errors::CLI::MissingOption);  //throw
-					ok = false;
-					continue;
-				}
-
-				if (val.present && !arity_accepts(spec.arity, val.values.size())) {
-					this->errors_.add(i, Errors::CLI::InvalidArity); //throw
-					ok = false;
-					continue;
-				}
-				// 3. Semantic validation
-				// if (val.present && spec.validator) {
-				// 	ok &= spec.validator(val, errors_);
-				// }
-			}
-			return (ok);
-		}
-
-
-		const std::vector<Value>& getValues() const noexcept {
-			return (this->values_);
-		}
-
-		const std::span<const Spec>& getSpecs() const noexcept {
-			return (this->specs_);
-		}
-
+		std::span<const Spec> specs;
+		std::span<const KeyEntry<OptId>> keys;
+		std::vector<Value> values;
 	private:
 		std::optional<OptId> find(std::string_view key) const noexcept {
-			for (const auto& e : this->keys_) {
+			for (const auto& e : this->keys) {
 				if (e.key == key)
 					return (e.id);
 			}
@@ -247,9 +153,11 @@ namespace Opt {
 		bool consume(const Spec& spec,
                      Value& val,
                      int& i,
+					 std::vector<std::string_view> *errors,
                      int argc,
                      char** argv)
 		{
+			bool ok = true;
 			std::size_t count = 0;
 
 			while (i + 1 < argc && !arity_stop(spec.arity, count))
@@ -258,22 +166,38 @@ namespace Opt {
 				if (!next.empty() && next[0] == '-')
 					break;
 
-				val.values.push_back(next); //throw
+				try {
+					val.values.push_back(next); //throw
+					//throwable();
+				} catch (const std::exception& e) {
+					std::cerr << "Exception STL: " << e.what() << std::endl;
+					ok = false;
+				} catch (...) {
+					std::cerr << "Exception No STL" << std::endl;
+					ok = false;
+				}
 				++i;
 				++count;
 			}
 
 			if (arity_accepts(spec.arity, count))
-				return (true);
-			errors_.add(i, Errors::CLI::InvalidArity);
-			return (false);
+				return (ok);
+			if (errors != nullptr) {
+				try {
+					errors->push_back(Errors::CLI::InvalidArity);
+					//throwable()
+				} catch (const std::exception& e) {
+					std::cerr << "Exception STL: " << e.what() << std::endl;
+					ok = false;
+				} catch (...) {
+					std::cerr << "Exception No STL" << std::endl;
+					ok = false;
+				}
+			}
+			ok = false;
+			return (ok);
 		}
-
-		std::span<const Spec> specs_;
-		std::span<const KeyEntry<OptId>> keys_;
-		ErrorReporter& errors_;
-
-		std::vector<Value> values_{specs_.size()};
-		std::vector<std::string_view> positionals_{specs_.size()};
 	};
 }
+bool validate_arity(const std::vector<Opt::Value> &values,
+			  const std::span<const Opt::Spec> &specs, std::vector<std::string_view> *errors);
