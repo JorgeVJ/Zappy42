@@ -1,5 +1,7 @@
-#include "Blackboard.h"
+﻿#include "Blackboard.h"
 #include <iostream>
+#include <sstream>
+#include <string>
 
 Blackboard::Blackboard() : Map(0, 0), CurrentTick(0)
 {
@@ -114,12 +116,84 @@ void Blackboard::UpdateTick(int ticks)
 	}
 	
 	CurrentTick += ticks;
-	std::cout << "[Blackboard] Tick updated to: " << CurrentTick << "\n";
+	std::cout << "[Debbug] Tick updated to: " << CurrentTick << "\n";
 }
 
 void Blackboard::ResetTick()
 {
-	CurrentTick = 0;
-	std::cout << "[Blackboard] Tick reset to 0\n";
+    CurrentTick = 0;
+    std::cout << "[Debbug] Tick reset to 0\n";
+}
+
+bool Blackboard::HandleIncantationResponse(const std::string& response)
+{
+    // Buscar el patron "niveau actuel : "
+    const std::string pattern = "niveau actuel : ";
+    size_t pos = response.find(pattern);
+    
+    if (pos == std::string::npos)
+    {
+        std::cerr << "[Error] Invalid incantation response format: '" << response << "'\n";
+        return false;
+    }
+    
+    // Extraer la parte despues del patron
+    std::string levelStr = response.substr(pos + pattern.length());
+    
+    // Limpiar espacios en blanco
+    levelStr.erase(0, levelStr.find_first_not_of(" \t\n\r"));
+    levelStr.erase(levelStr.find_last_not_of(" \t\n\r") + 1);
+    
+    if (levelStr.empty())
+    {
+        std::cerr << "[Error] No level value found in response: '" << response << "'\n";
+        return false;
+    }
+    
+    // Parsear el nivel
+    try
+    {
+        size_t parsePos = 0;
+        int newLevel = std::stoi(levelStr, &parsePos);
+        
+        // Verificar que se parseo toda la string
+        if (parsePos != levelStr.length())
+        {
+            std::cerr << "[Error] Invalid level format: '" << levelStr << "'\n";
+            return false;
+        }
+        
+        // Validar rango de nivel (1-8 segun Zappy)
+        if (newLevel < 1 || newLevel > 8)
+        {
+            std::cerr << "[Error] Level out of expected range (1-8): " << newLevel << "\n";
+            return false;
+        }
+        
+        int oldLevel = Me.Level;
+        Me.Level = newLevel;
+        
+        std::cout << "[Blackboard] Player level updated: " << oldLevel << " -> " << newLevel << "\n";
+        
+        if (newLevel <= oldLevel)
+        {
+            std::cout << "[Debbug] Something went wrong!\n";
+            return false;
+        }
+        
+        return true;
+    }
+    catch (const std::invalid_argument& e)
+    {
+        std::cerr << "[Error] Cannot parse level from: '" << levelStr << "'\n";
+        return false;
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cerr << "[Error] Level value out of range: '" << levelStr << "'\n";
+        return false;
+    }
+    
+    return false;
 }
 

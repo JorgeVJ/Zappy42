@@ -117,9 +117,18 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 	{
 		if (lastCommand.type == CommandType::Incantation)
 		{
-			board.UpdateTick(300);
-			std::cout << "[Action] Incantation has finished. Level: " << board.Me.Level << "\n";
-			// Marcar estado de elevacion en el Blackboard y actualizar nivel del jugador
+			std::cout << "[Action] Incantation completed!\n";
+			if (board.HandleIncantationResponse(response))
+			{
+				board.UpdateTick(300);
+				board.Me.Inventory.Print("Inventory after Level Up");
+				return 0;
+			}
+			else
+			{
+				std::cerr << "[Action] Failed to process incantation response\n";
+				return 1;
+			}
 			return 0;
 		}
 	}
