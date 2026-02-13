@@ -17,6 +17,10 @@
 #pragma comment(lib, "Ws2_32.lib")
 std::vector<Connection*> clients;
 
+
+int LEVEL = 1;
+
+
 void HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
 {
     game->Players.push_back(client);
@@ -85,7 +89,14 @@ void HandleCommand(const std::string& cmd, Connection* client)
         // En el server real, esto depende de condiciones del tile
         client->SendLine("elevation en cours");
         std::this_thread::sleep_for(std::chrono::seconds(5));
-        client->SendLine("niveau actuel : 2");
+        std::ostringstream ss;
+        LEVEL++;
+        ss << "niveau actuel : " << LEVEL;
+        if (LEVEL > 8) {
+            ss.str("");
+            ss << "ko";
+        }
+        client->SendLine(ss.str());
 
     }
     else if (cmd == "connect_nbr")

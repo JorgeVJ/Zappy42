@@ -66,4 +66,11 @@ class Blackboard
 		void PropagateInfluences(Tile* tile);
 		Tile* GetPlayerTile();
 		void HandleVoirResponse(const std::string& response);
+		
+		/// <summary>
+		/// Parsea la respuesta de incantación y actualiza el nivel del jugador
+		/// </summary>
+		/// <param name="response">Respuesta del servidor: "niveau actuel : K"</param>
+		/// <returns>true si se parseó correctamente, false si hubo error</returns>
+		bool HandleIncantationResponse(const std::string& response);
 };

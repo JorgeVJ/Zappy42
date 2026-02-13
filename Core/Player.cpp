@@ -7,16 +7,16 @@ void Player::Move(int steps)
     switch (Orientation)
     {
         case Direction::North:
-            Position.Y += steps; // Norte: Y aumenta (arriba)
+            Position.Y += steps;
             break;
         case Direction::East:
-            Position.X += steps; // Este: X aumenta (derecha)
+            Position.X += steps;
             break;
         case Direction::South:
-            Position.Y -= steps; // Sur: Y disminuye (abajo)
+            Position.Y -= steps;
             break;
         case Direction::West:
-            Position.X -= steps; // Oeste: X disminuye (izquierda)
+            Position.X -= steps;
             break;
         default:
             // Si hay una orientación diagonal, no se mueve
