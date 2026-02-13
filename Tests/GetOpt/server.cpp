@@ -12,41 +12,40 @@ namespace Opt {
 			Time,
 		};
 		constexpr Spec specs[] = {
-			{ port_keys, Arity::One, Validators::port, RepeatPolicy::Reject },
-			{ width_keys, Arity::One, nullptr, RepeatPolicy::Reject },  //Validate > 1
-			{ height_keys, Arity::One, Validators::height, RepeatPolicy::Reject }, //Validate > 1
-			{ teams_keys, Arity::OneOrMore, Validators::unique_strings, RepeatPolicy::Accumulate },
-			{ clients_keys, Arity::One, nullptr, RepeatPolicy::Reject },  // Validate > 1.
-			{ time_keys, Arity::One, nullptr, RepeatPolicy::Reject },//Validate > 1
+			{ port_keys, Arity::One, RepeatPolicy::Reject },
+			{ width_keys, Arity::One, RepeatPolicy::Reject },
+			{ height_keys, Arity::One, RepeatPolicy::Reject },
+			{ teams_keys, Arity::OneOrMore, RepeatPolicy::Accumulate },
+			{ clients_keys, Arity::One, RepeatPolicy::Reject },
+			{ time_keys, Arity::One, RepeatPolicy::Reject },
 		};
 
-		constexpr KeyEntry<Opt> key_table[] = {
-			{ "-p", Opt::Port },
-			{ "-x", Opt::Width },
-			{ "-y", Opt::Height },
-			{ "-n", Opt::Teams },
-			{ "-c", Opt::Clients },
-			{ "-t", Opt::Time },
+		constexpr KeyEntry<Server::Id> key_table[] = {
+			{ "-p", Opt::Server::Id::Port },
+			{ "-x", Opt::Server::Id::Width },
+			{ "-y", Opt::Server::Id::Height },
+			{ "-n", Opt::Server::Id::Teams },
+			{ "-c", Opt::Server::Id::Clients },
+			{ "-t", Opt::Server::Id::Time },
 		};
 	}
 }
+
 int main(int argc, char** argv) {
-    ErrorReporter errors;
-
-
-    Opt::GetOpt<Opt::Server::Opt> opts(
+	std::vector<std::string_view> errors;
+    Opt::GetOpt<Opt::Server::Id> opts(
         std::span{Opt::Server::specs},
-        std::span{Opt::Server::key_table},
-        errors);
+        std::span{Opt::Server::key_table});
 
-    bool ok = opts.parse(argc, argv);
+    bool ok = opts.parse(argc, argv, &errors);
 
 	if (ok == false)
 	{
       std::cerr << "Parsing Error" << std::endl;
-      for (auto& e : errors.all())
+      for (auto& e : errors)
 		  std::cerr << e << std::endl;
       ok = true;
     }
-	return (0);
+	ok &= validate_arity(opts.values, opts.specs, &errors);
+	return (ok == false || errors.size());
 }

@@ -1,43 +1,60 @@
 #include "GetOpt.h"
 
-
-void ErrorReporter::add(size_t pos,  std::string_view  msg)
-{
-        this->errors_.push_back({pos, msg});
-}
-
-bool ErrorReporter::has_errors() const noexcept {
-    return (!this->errors_.empty());
-}
-
-const std::vector<Error>& ErrorReporter::all() const noexcept {
-    return this->errors_;
-  }
-
-void ErrorReporter::clean() noexcept {
-	this->errors_.clear();
-}
-
 bool Opt::Spec::is_repeatable()  const noexcept
 {
 	return (this->repeat == RepeatPolicy::Accumulate
 			&& (this->arity == Arity::OneOrMore
 				|| this->arity == Arity::Any));
 }
-std::ostream &operator<<(std::ostream &os, const Error &e)
+
+
+//Generic validation need to create one with each param
+bool validate_arity(const std::vector<Opt::Value> &values,
+			  const std::span<const Opt::Spec> &specs, std::vector<std::string_view> *errors)
+
 {
-	return (os << "Pos argument: " << e.pos << " Msg: " << e.msg);
+	bool ok = true;
+
+	for (std::size_t i = 0; i < specs.size(); ++i) {
+		const auto& spec = specs[i];
+		const auto& val  = values[i];
+
+		//Required but miss
+		if (arity_required(spec.arity) && !val.present)
+		{
+			if (errors != nullptr) {
+				try {
+					errors->push_back(Errors::CLI::MissingOption);  //throw
+					//throwable();
+				} catch (const std::exception& e) {
+					std::cerr << "Exception STL: " << e.what() << std::endl;
+				} catch (...) {
+					std::cerr << "Exception No STL" << std::endl;
+				}
+			}
+			ok = false;
+			continue;
+		}
+		if (val.present && !arity_accepts(spec.arity, val.values.size())) {
+			if (errors != nullptr) {
+				try {
+					errors->push_back(Errors::CLI::InvalidArity); //throw
+					//throwable();
+				} catch (const std::exception& e) {
+					std::cerr << "Exception STL: " << e.what() << std::endl;
+				} catch (...) {
+					std::cerr << "Exception No STL" << std::endl;
+				}
+			}
+			ok = false;
+			continue;
+		}
+
+	}
+	return (ok);
 }
 
-bool Opt::Value::is_present() const noexcept
-{
-	return (this->present);
-}
-
-bool Opt::Value::has_values() const noexcept {
-	return !values.empty();
-}
-
-bool Opt::Value::missing() const noexcept {
-	return !present;
-}
+		// 3. Semantic validation should got another thing for validators
+		//			if (val.present && spec.validator) {
+		//				ok &= spec.validator(val, errors);
+		//			}
