@@ -12,20 +12,24 @@ enum class Direction {
     NorthWest
 };
 
-/// <summary>
-/// Dirección de giro para el jugador
-/// </summary>
 enum class TurnDirection {
-    Right,  // Giro a la derecha (sentido horario)
-    Left    // Giro a la izquierda (sentido antihorario)
+    Right,
+    Left
 };
 
-/// <summary>
-/// Convierte una dirección a su representación en string
-/// </summary>
 std::string DirectionToString(Direction dir);
+int DirectionToInt(Direction dir);
 
 /// <summary>
-/// Convierte una dirección a su índice numérico (0-7)
+/// Convierte un número de broadcast (1-8) a una dirección absoluta
+/// considerando la orientación actual del jugador
 /// </summary>
-int DirectionToInt(Direction dir);
+/// <param name="soundNumber">Número del cuadrado (1-8, o 0 si está en el mismo tile)</param>
+/// <param name="playerOrientation">Orientación actual del jugador</param>
+/// <returns>Dirección absoluta desde donde viene el sonido</returns>
+Direction BroadcastNumberToDirection(int soundNumber, Direction playerOrientation);
+
+/// <summary>
+/// Obtiene la dirección opuesta a la dada
+/// </summary>
+Direction GetOppositeDirection(Direction dir);

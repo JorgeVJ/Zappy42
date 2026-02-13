@@ -132,6 +132,59 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			return 0;
 		}
 	}
+	else if (response.find("deplacement") != std::string::npos)
+	{
+		// receive expulse command from other client
+		// Parsear "deplacement <K>"
+		std::stringstream ss(response);
+		std::string keyword;
+		int soundNumber;
+		
+		ss >> keyword >> soundNumber;
+		
+		if (keyword != "deplacement" || ss.fail())
+		{
+			std::cerr << "[Error] Failed to parse deplacement response: '" << response << "'\n";
+			return 1;
+		}
+		
+		// Validar rango (0-8 según el subject)
+		if (soundNumber < 0 || soundNumber > 8)
+		{
+			std::cerr << "[Error] Invalid deplacement number: " << soundNumber << "\n";
+			return 1;
+		}
+		
+		
+		
+		// Obtener la dirección DESDE donde viene el sonido/empujón
+		Direction soundFromDirection = BroadcastNumberToDirection(soundNumber, board.Me.Orientation);
+		
+		// Calcular hacia dónde nos empujan (dirección opuesta)
+		Direction pushToDirection = GetOppositeDirection(soundFromDirection);
+		
+		// Caso especial: si es 0, el expulsor está en el mismo tile
+		if (soundNumber == 0)
+		{
+			pushToDirection = board.Me.Orientation; // Nos empujan hacia donde estamos mirando
+			
+		}
+		// Guardar posición anterior
+		Point oldPos = board.Me.Position;
+		
+		// Mover al jugador en la dirección opuesta (puede ser diagonal)
+		board.Me.MoveInDirection(pushToDirection, 1);
+		
+		std::cout << "[Action] Expelled by another player!\n";
+		std::cout << "[Player] Sound direction number: " << soundNumber << " (relative to orientation)\n";
+		std::cout << "[Player] Sound came from: " << DirectionToString(soundFromDirection) << " (absolute)\n";
+		std::cout << "[Player] Pushed towards: " << DirectionToString(pushToDirection) << " (absolute)\n";
+		std::cout << "[Player] Moved from (" << oldPos.X << ", " << oldPos.Y 
+				  << ") to (" << board.Me.Position.X << ", " << board.Me.Position.Y << ")\n";
+		std::cout << "[Player] Still facing: " << DirectionToString(board.Me.Orientation) << "\n";
+		
+		return 0;
+	}
 	else
 	{
 		if (lastCommand.type == CommandType::Broadcast)

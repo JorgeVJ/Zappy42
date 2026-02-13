@@ -13,13 +13,20 @@ struct Player
     Inventory Inventory;
     std::string TeamName = "";
 
+    // Constructor por defecto
     Player() = default;
 
-    /// <summary>
     /// Mueve al jugador en la dirección en la que está mirando
     /// </summary>
     /// <param name="steps">Número de pasos (positivo avanza, negativo retrocede)</param>
     void Move(int steps = 1);
+
+    /// <summary>
+    /// Mueve al jugador en una dirección específica (soporta diagonales)
+    /// </summary>
+    /// <param name="dir">Dirección del movimiento</param>
+    /// <param name="steps">Número de pasos</param>
+    void MoveInDirection(Direction dir, int steps = 1);
 
     /// <summary>
     /// Gira al jugador en la dirección especificada

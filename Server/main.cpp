@@ -99,6 +99,20 @@ void HandleCommand(const std::string& cmd, Connection* client)
         client->SendLine(ss.str());
 
     }
+    else if (cmd == "expulse")
+    {
+        client->SendLine("deplacement");
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::ostringstream ss;
+        LEVEL++;
+        ss << "niveau actuel : " << LEVEL;
+        if (LEVEL > 8) {
+            ss.str("");
+            ss << "ko";
+        }
+        client->SendLine(ss.str());
+
+    }
     else if (cmd == "connect_nbr")
     {
         client->SendLine("1");

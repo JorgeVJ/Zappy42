@@ -25,6 +25,43 @@ void Player::Move(int steps)
     }
 }
 
+void Player::MoveInDirection(Direction dir, int steps)
+{
+    switch (dir)
+    {
+    case Direction::North:
+        Position.Y += steps;
+        break;
+    case Direction::NorthEast:
+        Position.X += steps;
+        Position.Y += steps;
+        break;
+    case Direction::East:
+        Position.X += steps;
+        break;
+    case Direction::SouthEast:
+        Position.X += steps;
+        Position.Y -= steps;
+        break;
+    case Direction::South:
+        Position.Y -= steps;
+        break;
+    case Direction::SouthWest:
+        Position.X -= steps;
+        Position.Y -= steps;
+        break;
+    case Direction::West:
+        Position.X -= steps;
+        break;
+    case Direction::NorthWest:
+        Position.X -= steps;
+        Position.Y += steps;
+        break;
+    default:
+        break;
+    }
+}
+
 void Player::Turn(TurnDirection turnDir)
 {
     int currentIndex = GetDirectionIndex();

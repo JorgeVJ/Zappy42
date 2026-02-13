@@ -198,14 +198,14 @@ int main()
 
 		if (i == 0)
 		{
-			testCommand = "connect_nbr";
-			std::cout << "[Client] CMD => connect_nbr (iteration " << i << ")\n";
+			testCommand = "expulse";
+			std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
 		}
 		else
 		{
-			testCommand = "incantation";
+			testCommand = "expulse";
 			objectParam = "nourriture";
-			std::cout << "[Client] CMD => incantation (iteration " << i << ")\n";
+			std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
 		}
 	
 		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
