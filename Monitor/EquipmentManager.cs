@@ -8,8 +8,8 @@ using System.Collections.Generic;
 /// </summary>
 public class EquipmentManager
 {
-    private readonly Dictionary<string, PackedScene> _sceneCache = new();
-    private readonly Dictionary<string, List<BoneAttachment3D>> _attachments = new();
+    private readonly Dictionary<string, PackedScene> sceneCache = new();
+    private readonly Dictionary<string, List<BoneAttachment3D>> attachments = new();
 
     /// <summary>
     /// Registers and preloads a scene for later use.
@@ -23,14 +23,14 @@ public class EquipmentManager
             return;
         }
 
-        var ps = ResourceLoader.Load<PackedScene>(scenePath);
-        if (ps == null)
+        PackedScene scene = ResourceLoader.Load<PackedScene>(scenePath);
+        if (scene == null)
         {
             GD.PrintErr($"EquipmentManager.RegisterScene: failed to load scene at '{scenePath}'");
             return;
         }
 
-        _sceneCache[key] = ps;
+        sceneCache[key] = scene;
         GD.Print($"EquipmentManager: scene '{scenePath}' registered as '{key}'");
     }
 
@@ -43,16 +43,15 @@ public class EquipmentManager
         if (string.IsNullOrEmpty(keyOrPath))
             return null;
 
-        if (_sceneCache.TryGetValue(keyOrPath, out var ps))
-            return ps;
+        if (sceneCache.TryGetValue(keyOrPath, out var scene))
+            return scene;
 
-        // Try treat the key as a path
-        ps = ResourceLoader.Load<PackedScene>(keyOrPath);
-        if (ps != null)
-        {
-            _sceneCache[keyOrPath] = ps;
+        scene = ResourceLoader.Load<PackedScene>(keyOrPath);
+        if (scene != null)
+        {   
+            sceneCache[keyOrPath] = scene;
             GD.Print($"EquipmentManager: implicitly loaded scene from path '{keyOrPath}'");
-            return ps;
+            return scene;
         }
 
         return null;
@@ -60,14 +59,14 @@ public class EquipmentManager
 
     private Skeleton3D FindSkeleton3D(Node node)
     {
-        if (node is Skeleton3D sk)
+        if (node is Skeleton3D skeleton)
         {
-            return sk;
+            return skeleton;
         }
 
         foreach (Node child in node.GetChildren())
         {
-            var found = FindSkeleton3D(child);
+            Skeleton3D found = FindSkeleton3D(child);
             if (found != null)
             {
                 return found;
@@ -103,15 +102,14 @@ public class EquipmentManager
             return null;
         }
 
-        var ps = ResolveScene(sceneKey);
-        if (ps == null)
+        PackedScene scene = ResolveScene(sceneKey);
+        if (scene == null)
         {
             GD.PrintErr($"EquipmentManager: scene not found for key/path '{sceneKey}'");
             return null;
         }
 
-        // Create attachment and add it to the skeleton
-        var boneAttach = new BoneAttachment3D();
+        BoneAttachment3D boneAttach = new();
         boneAttach.BoneName = boneName;
         skeleton.AddChild(boneAttach);
 
@@ -119,7 +117,7 @@ public class EquipmentManager
         Node3D inst;
         try
         {
-            inst = ps.Instantiate<Node3D>();
+            inst = scene.Instantiate<Node3D>();
         }
         catch (Exception ex)
         {
@@ -145,10 +143,10 @@ public class EquipmentManager
         }
 
         // Store reference
-        if (!_attachments.TryGetValue(boneName, out var list))
+        if (!attachments.TryGetValue(boneName, out var list))
         {
             list = new List<BoneAttachment3D>();
-            _attachments[boneName] = list;
+            attachments[boneName] = list;
         }
         list.Add(boneAttach);
 
@@ -162,7 +160,7 @@ public class EquipmentManager
     public List<BoneAttachment3D> GetAttachments(string boneName)
     {
         if (string.IsNullOrEmpty(boneName)) return null;
-        return _attachments.TryGetValue(boneName, out var list) ? list : null;
+        return attachments.TryGetValue(boneName, out var list) ? list : null;
     }
 
     /// <summary>
@@ -172,7 +170,7 @@ public class EquipmentManager
     {
         if (string.IsNullOrEmpty(boneName)) return;
 
-        if (!_attachments.TryGetValue(boneName, out var list)) return;
+        if (!attachments.TryGetValue(boneName, out var list)) return;
 
         foreach (var attach in list)
         {
@@ -180,7 +178,7 @@ public class EquipmentManager
                 attach.QueueFree();
         }
 
-        _attachments.Remove(boneName);
+        attachments.Remove(boneName);
         GD.Print($"EquipmentManager: removed attachments for bone '{boneName}'");
     }
 
@@ -189,7 +187,7 @@ public class EquipmentManager
     /// </summary>
     public void ClearAll()
     {
-        foreach (var kv in _attachments)
+        foreach (var kv in attachments)
         {
             foreach (var attach in kv.Value)
             {
@@ -197,7 +195,7 @@ public class EquipmentManager
                     attach.QueueFree();
             }
         }
-        _attachments.Clear();
+        attachments.Clear();
         GD.Print("EquipmentManager: cleared all attachments");
     }
 }

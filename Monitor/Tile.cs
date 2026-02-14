@@ -2,19 +2,14 @@ using Godot;
 using System;
 using zappy;
 
-public partial class Tile : Node3D, ISelectable, IInventory
+public partial class Tile : SelectableInventoryNode3D, IInventory
 {
     private static PackedScene scene = ResourceLoader.Load("res://tile.tscn") as PackedScene;
 
     private Node3D resourceContainer;
 
-    private MeshInstance3D mesh;
-
     [Signal]
     public delegate void TileClickedEventHandler(Tile tile);
-
-    private Inventory inventory;
-    public Inventory Inventory => inventory ??= GetNode<Inventory>("Inventory");
 
     public static Tile Create(Vector3 pos)
     {
@@ -23,23 +18,12 @@ public partial class Tile : Node3D, ISelectable, IInventory
         return tile;
     }
 
-    private void _on_area_3d_input_event(
-        Node camera,
-        InputEvent @event,
-        Vector3 position,
-        Vector3 normal,
-        int shapeIdx)
-    {
-        if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
-        {
-            EmitSignal(nameof(TileClicked), this);
-        }
-    }
-
     public override void _Ready()
     {
+        // Inicializaciones comunes (mesh, Inventory) en la clase base
+        base._Ready();
+
         resourceContainer = GetNodeOrNull<Node3D>("Resources");
-        mesh = GetNode<MeshInstance3D>("Mesh");
         if (resourceContainer == null)
         {
             resourceContainer = new Node3D();
@@ -73,17 +57,7 @@ public partial class Tile : Node3D, ISelectable, IInventory
         }
     }
 
-    public void Highlight()
-    {
-        var mat = new StandardMaterial3D();
-        mat.AlbedoColor = Colors.DarkCyan;
-        mesh.MaterialOverlay = mat;
-    }
-
-    public void UnHightlight()
-    {
-        mesh.MaterialOverlay = null;
-    }
+    // El resaltado/unresaltado provienen de la clase base
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)

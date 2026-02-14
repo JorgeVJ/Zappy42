@@ -2,15 +2,14 @@ using Godot;
 using System;
 using zappy;
 
-public partial class Player : Node3D, ISelectable, IInventory
+public partial class Player : SelectableInventoryNode3D, IInventory
 {
     private static PackedScene scene = ResourceLoader.Load("res://player.tscn") as PackedScene;
-
-    private MeshInstance3D mesh;
 
     private Tween moveTween;
 
     private AnimationPlayer creatureAnim;
+    private AnimationPlayer droneAnim;
 
     private EquipmentManager equipmentManager;
 
@@ -19,9 +18,6 @@ public partial class Player : Node3D, ISelectable, IInventory
     public int Level { get; private set; } = 1;
     public int Orientation { get; private set; } = 1; // 1..4 en Zappy
     public Vector2I TilePos { get; private set; } = new Vector2I(0, 0);
-
-    private Inventory inventory;
-    public Inventory Inventory => inventory ??= GetNode<Inventory>("Inventory");
 
     [Signal]
     public delegate void PlayerClickedEventHandler(Player player);
@@ -32,20 +28,6 @@ public partial class Player : Node3D, ISelectable, IInventory
         instance.Position = pos;
         GD.Print($"Player.Create: created instance at {pos}");
         return instance;
-    }
-
-    private void _on_area_3d_input_event(
-    Node camera,
-    InputEvent @event,
-    Vector3 position,
-    Vector3 normal,
-    int shapeIdx)
-    {
-        if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
-        {
-            EmitSignal(nameof(PlayerClicked), this);
-            GD.Print($"Player._on_area_3d_input_event: player {Id} clicked");
-        }
     }
 
     public void SetTilePos(int x, int y)
@@ -78,14 +60,15 @@ public partial class Player : Node3D, ISelectable, IInventory
         // Start creature animation if available
         if (creatureAnim != null)
         {
-            if (creatureAnim.HasAnimation("ArmatureAction"))
+            string animName = "Armature|Walk2";
+            if (creatureAnim.HasAnimation(animName))
             {
-                creatureAnim.Play("ArmatureAction");
-                GD.Print($"SetTilePos: playing animation 'ArmatureAction' for player {Id}");
+                creatureAnim.Play(animName);
+                GD.Print($"SetTilePos: playing animation {animName} for player {Id}");
             }
             else
             {
-                GD.Print($"SetTilePos: animation 'ArmatureAction' not found for player {Id}");
+                GD.Print($"SetTilePos: animation {animName} not found for player {Id}");
             }
         }
         else
@@ -126,13 +109,13 @@ public partial class Player : Node3D, ISelectable, IInventory
 
     public override void _Ready()
     {
-        mesh = GetNode<MeshInstance3D>("Mesh");
-        inventory = GetNode<Inventory>("Inventory");
+        // Inicializaciones comunes (mesh, Inventory) en la clase base
+        base._Ready();
 
         GD.Print($"_Ready: player node ready, Id placeholder = {Id}");
 
         equipmentManager = new EquipmentManager();
-        equipmentManager.RegisterScene("armor", "res://ArmorLvl1.glb");
+        equipmentManager.RegisterScene("armor", "res://ArmorLvl1.fbx");
 
         var creatureNode = GetNodeOrNull<Node3D>("Creature");
         if (creatureNode != null)
@@ -156,6 +139,38 @@ public partial class Player : Node3D, ISelectable, IInventory
         else
         {
             GD.Print("No Creature node found as child of Player.");
+        }
+
+        var droneNode = GetNodeOrNull<Node3D>("Drone");
+        if (droneNode != null)
+        {
+            GD.Print("Searching for AnimationPlayer in Drone node...");
+            droneAnim = FindAnimationPlayer(droneNode);
+            if (droneAnim != null)
+            {
+                GD.Print("Drone AnimationPlayer found!");
+
+                const string droneIdle = "ArmatureDrone|Dron_Idle_Bake2";
+                var anim = droneAnim.GetAnimation(droneIdle);
+                if (anim != null)
+                {
+                    anim.LoopMode = Animation.LoopModeEnum.Linear;
+                    droneAnim.Play(droneIdle);
+                    GD.Print($"Drone: playing '{droneIdle}' in loop.");
+                }
+                else
+                {
+                    GD.Print($"Drone: animation '{droneIdle}' not found in Drone AnimationPlayer.");
+                }
+            }
+            else
+            {
+                GD.Print("No AnimationPlayer found in Drone node.");
+            }
+        }
+        else
+        {
+            GD.Print("No Drone node found as child of Player.");
         }
     }
 
@@ -213,19 +228,5 @@ public partial class Player : Node3D, ISelectable, IInventory
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
-    }
-
-    public void Highlight()
-    {
-        var mat = new StandardMaterial3D();
-        mat.AlbedoColor = Colors.DarkCyan;
-        mesh.MaterialOverlay = mat;
-        GD.Print($"Highlight: player {Id} highlighted");
-    }
-
-    public void UnHightlight()
-    {
-        mesh.MaterialOverlay = null;
-        GD.Print($"UnHightlight: player {Id} unhighlighted");
     }
 }
