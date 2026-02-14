@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c1yp0txgs1232"
-path="res://.godot/imported/Creature.glb-a0b5a4c390c7253a86b2496c2c1a1620.scn"
+uid="uid://bhqvawba20cfh"
+path="res://.godot/imported/ArmorLvl1.fbx-8cf0d276dc6f3073f6cb963d27c852b8.scn"
 
 [deps]
 
-source_file="res://Creature.glb"
-dest_files=["res://.godot/imported/Creature.glb-a0b5a4c390c7253a86b2496c2c1a1620.scn"]
+source_file="res://ArmorLvl1.fbx"
+dest_files=["res://.godot/imported/ArmorLvl1.fbx-8cf0d276dc6f3073f6cb963d27c852b8.scn"]
 
 [params]
 
@@ -27,10 +27,11 @@ meshes/force_disable_compression=false
 skins/use_named_skins=true
 animation/import=true
 animation/fps=30
-animation/trimming=false
+animation/trimming=true
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={}
-gltf/naming_version=1
-gltf/embedded_image_handling=1
+fbx/importer=0
+fbx/allow_geometry_helper_nodes=false
+fbx/embedded_image_handling=1
