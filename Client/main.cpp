@@ -225,14 +225,23 @@ int main()
 
 
 		std::string response;
+		int responseCode;
 		while (true)
 		{
 			if (!conn->RecvLine(response))
 				break;
 			
 			std::cout << "[Server] RESP <= " << response << "\n";
-			if (handleServerResponse(board, response) == 0)
+			responseCode = handleServerResponse(board, response);
+			if (responseCode == 0)
 				break;
+			else if (responseCode == -1)
+			{
+				WaitForDebugAndClean();
+				ClientGame::Dispose();
+				return 0;
+			}
+
 		}
 
 		std::this_thread::sleep_for(std::chrono::seconds(5));

@@ -135,7 +135,6 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 	else if (response.find("deplacement") != std::string::npos)
 	{
 		// receive expulse command from other client
-		// Parsear "deplacement <K>"
 		std::stringstream ss(response);
 		std::string keyword;
 		int soundNumber;
@@ -148,14 +147,11 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			return 1;
 		}
 		
-		// Validar rango (0-8 según el subject)
 		if (soundNumber < 0 || soundNumber > 8)
 		{
 			std::cerr << "[Error] Invalid deplacement number: " << soundNumber << "\n";
 			return 1;
 		}
-		
-		
 		
 		// Obtener la dirección DESDE donde viene el sonido/empujón
 		Direction soundFromDirection = BroadcastNumberToDirection(soundNumber, board.Me.Orientation);
@@ -176,12 +172,12 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		board.Me.MoveInDirection(pushToDirection, 1);
 		
 		std::cout << "[Action] Expelled by another player!\n";
-		std::cout << "[Player] Sound direction number: " << soundNumber << " (relative to orientation)\n";
-		std::cout << "[Player] Sound came from: " << DirectionToString(soundFromDirection) << " (absolute)\n";
-		std::cout << "[Player] Pushed towards: " << DirectionToString(pushToDirection) << " (absolute)\n";
-		std::cout << "[Player] Moved from (" << oldPos.X << ", " << oldPos.Y 
-				  << ") to (" << board.Me.Position.X << ", " << board.Me.Position.Y << ")\n";
-		std::cout << "[Player] Still facing: " << DirectionToString(board.Me.Orientation) << "\n";
+		//std::cout << "[Player] Sound direction number: " << soundNumber << " (relative to orientation)\n";
+		//std::cout << "[Player] Sound came from: " << DirectionToString(soundFromDirection) << " (absolute)\n";
+		//std::cout << "[Player] Pushed towards: " << DirectionToString(pushToDirection) << " (absolute)\n";
+		//std::cout << "[Player] Moved from (" << oldPos.X << ", " << oldPos.Y 
+		//		  << ") to (" << board.Me.Position.X << ", " << board.Me.Position.Y << ")\n";
+		//std::cout << "[Player] Still facing: " << DirectionToString(board.Me.Orientation) << "\n";
 		
 		return 0;
 	}
@@ -202,7 +198,7 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		{
 			std::cout << "[Action] Player died\n";
 			// Manejar muerte del jugador
-			return 0;
+			return -1;
 		}
 		else if (response.find("message") != std::string::npos)
 		{
