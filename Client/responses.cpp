@@ -19,7 +19,7 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		{
 		case CommandType::Advance:
 			board.Me.Move(1);
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::Advance));
 			std::cout << "[Action] Moved forward successfully\n";
 			std::cout << "[Player] Position: (" << board.Me.Position.X << ", " << board.Me.Position.Y
 				<< ") Direction: " << DirectionToString(board.Me.Orientation)
@@ -28,49 +28,50 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			break;
 		case CommandType::Right:
 			board.Me.Turn(TurnDirection::Right);
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::Right));
 			std::cout << "[Action] Turned right successfully\n";
 			std::cout << "[Player] Now facing: " << DirectionToString(board.Me.Orientation) << "\n";
 			return 0;
 			break;
 		case CommandType::Left:
 			board.Me.Turn(TurnDirection::Left);
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::Left));
 			std::cout << "[Action] Turned left successfully\n";
 			std::cout << "[Player] Now facing: " << DirectionToString(board.Me.Orientation) << "\n";
 			return 0;
 			break;
 		case CommandType::Take:
 			board.Me.Inventory.Add(lastCommand.commandParameter, 1);
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::Take));
 			std::cout << "[Action] Took " << lastCommand.commandParameter << " successfully\n";
 			board.Me.Inventory.Print("Updated Inventory");
 			return 0;
 			break;
 		case CommandType::Put:
 			board.Me.Inventory.Remove(lastCommand.commandParameter, 1);
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::Put));
 			std::cout << "[Action] Put " << lastCommand.commandParameter << " successfully\n";
 			board.Me.Inventory.Print("Updated Inventory");
 			return 0;
 			break;
 		case CommandType::Expulse:
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::Expulse));
 			std::cout << "[Action] Expelled players successfully\n";
 			return 0;
 			break;
 		case CommandType::Broadcast:
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::Broadcast));
 			std::cout << "[Action] Message broadcasted successfully\n";
 			// Check if chaman is in Marco o Polo mode.
 			// Check last messages or keep a count of message sent to change strategy
 			return 0;
 			break;
 		case CommandType::Fork:
-			board.UpdateTick(42);
+			board.UpdateTick(GetCommandDuration(CommandType::Fork));
 			// Update on chaman to start call partners?
 			// Check for Team available connections? Or try to level up with others?
 			std::cout << "[Action] Fork successful\n";
+			board.TeamNbr += 1;
 			return 0;
 			break;
 		default:
@@ -91,13 +92,13 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 		{
 		case CommandType::See:
 			board.HandleVoirResponse(response);
-			board.UpdateTick(7);
+			board.UpdateTick(GetCommandDuration(CommandType::See));
 			std::cout << "[Action] Processing vision data\n";
 			return 0;
 			break;
 		case CommandType::Inventory:
 			board.Me.Inventory.SetFromServerString(response);
-			board.UpdateTick(1);
+			board.UpdateTick(GetCommandDuration(CommandType::Inventory));
 			std::cout << "[Action] Inventory data updated.\n";
 			board.Me.Inventory.Print("Player Inventory");
 			return 0;
@@ -124,7 +125,7 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			std::cout << "[Action] Incantation completed!\n";
 			if (board.HandleIncantationResponse(response))
 			{
-				board.UpdateTick(300);
+				board.UpdateTick(GetCommandDuration(CommandType::Incantation));
 				board.Me.Inventory.Print("Inventory after Level Up");
 				return 0;
 			}

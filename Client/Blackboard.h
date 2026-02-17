@@ -26,6 +26,9 @@ class Blackboard
 		int CurrentTick;
 		int ConnectNbr = 0;
 
+		// Number of players we are breeding
+		int TeamNbr = 0;
+
 		Map Map;
 		Player Me;
 
@@ -62,6 +65,21 @@ class Blackboard
 		/// </summary>
 		void ResetTick();
 		
+		/// <summary>
+		/// Calcula los ticks de vida restantes basándose en la comida actual
+		/// </summary>
+		/// <returns>Ticks de vida restantes</returns>
+		int GetRemainingLifeTicks() const;
+		
+		/// <summary>
+		/// Calcula el porcentaje de vida restante (0.0 - 1.0)
+		/// </summary>
+		/// <returns>Porcentaje de vida (1.0 = lleno, 0.0 = muerte inminente)</returns>
+		double GetLifePercentage() const;
+		
+		/// <summary>
+		/// Calcula la urgencia de conseguir comida (0.0 - 1.0, más alto = más urgente)
+		/// </summary>
 		double GetHungerNeed();
 		std::vector<std::pair<int, int>> GetVoirOffsets(int level, Direction dir);
 		void PropagateInfluences(Tile* tile);
