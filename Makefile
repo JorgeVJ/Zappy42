@@ -45,7 +45,7 @@ SRC-CORE			:=  Connection \
 									Point \
 									CommandType \
 									GetOpt \
-									Validators \
+									validators \
 
 
 SRC-CLIENT := \

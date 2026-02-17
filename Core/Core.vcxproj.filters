@@ -72,7 +72,7 @@
     <ClInclude Include="Player.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="Errors.h">
+    <ClInclude Include="errors.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="GetOpt.h">
@@ -81,7 +81,7 @@
     <ClInclude Include="Result.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="Validators.h">
+    <ClInclude Include="validators.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>

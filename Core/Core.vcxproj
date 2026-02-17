@@ -140,7 +140,7 @@
     <ClInclude Include="CommandHistory.h" />
     <ClInclude Include="CommandType.h" />
     <ClInclude Include="Direction.h" />
-    <ClInclude Include="Errors.h" />
+    <ClInclude Include="errors.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GetOpt.h" />
@@ -154,7 +154,7 @@
     <ClInclude Include="Tile.h" />
     <ClInclude Include="TileDataRegistry.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="Validators.h" />
+    <ClInclude Include="validators.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommandHistory.cpp" />

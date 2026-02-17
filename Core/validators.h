@@ -3,7 +3,7 @@
 #include <charconv>
 #include <vector>
 #include "Result.h"
-#include "Errors.h"
+#include "errors.h"
 #include "utils.h"
 
 namespace Validators {
