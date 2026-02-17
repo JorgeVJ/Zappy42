@@ -56,16 +56,20 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			break;
 		case CommandType::Expulse:
 			board.UpdateTick(7);
-			std::cout << "[Action] Expelled player successfully\n";
+			std::cout << "[Action] Expelled players successfully\n";
 			return 0;
 			break;
 		case CommandType::Broadcast:
 			board.UpdateTick(7);
 			std::cout << "[Action] Message broadcasted successfully\n";
+			// Check if chaman is in Marco o Polo mode.
+			// Check last messages or keep a count of message sent to change strategy
 			return 0;
 			break;
 		case CommandType::Fork:
 			board.UpdateTick(42);
+			// Update on chaman to start call partners?
+			// Check for Team available connections? Or try to level up with others?
 			std::cout << "[Action] Fork successful\n";
 			return 0;
 			break;
