@@ -12,15 +12,44 @@ void Blackboard::InitializeMap(int x, int y)
 	Map = ::Map(x, y);
 }
 
-double Blackboard::GetHungerNeed() {
-	double value = 40.0 / Me.Inventory.Get(Resource::Food);
+int Blackboard::GetRemainingLifeTicks() const
+{
+	const int TICKS_PER_FOOD = 126;
+	int food = Me.Inventory.Get(Resource::Food);
+	return food * TICKS_PER_FOOD;
+}
 
-	if (value < 0.0)
-		return 0.0;
-	else if (value > 1.0)
-		return 1.0;
+double Blackboard::GetLifePercentage() const
+{
+	const int MAX_REASONABLE_LIFE = 1260; // 10 unidades de comida
+	int remaining = GetRemainingLifeTicks();
+	double percentage = static_cast<double>(remaining) / MAX_REASONABLE_LIFE;
+	
+	// Clamped entre 0 y 1
+	if (percentage < 0.0) return 0.0;
+	if (percentage > 1.0) return 1.0;
+	return percentage;
+}
 
-	return value;
+double Blackboard::GetHungerNeed()
+{
+	int remainingTicks = GetRemainingLifeTicks();
+	
+	// Escala de urgencia basada en ticks restantes
+	if (remainingTicks <= 0)
+		return 1.0; // MUERTE INMINENTE
+	else if (remainingTicks < 200)
+		return 0.95; // CRÍTICO (menos de 2 comandos de comida)
+	else if (remainingTicks < 400)
+		return 0.85; // URGENTE
+	else if (remainingTicks < 600)
+		return 0.70; // ALTO
+	else if (remainingTicks < 800)
+		return 0.50; // MEDIO
+	else if (remainingTicks < 1000)
+		return 0.30; // BAJO
+	else
+		return 0.15; // MUY BAJO (bien de comida)
 }
 
 std::vector<std::string> ParseVoir(const std::string& str)

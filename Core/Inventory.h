@@ -17,6 +17,20 @@ enum class Resource {
     Count
 };
 
+/// <summary>
+/// Receta para realizar una incantación y subir de nivel
+/// </summary>
+struct IncantationRecipe
+{
+    Inventory RequiredResources;
+    int RequiredPlayers;
+    
+    IncantationRecipe(Inventory resources, int players)
+        : RequiredResources(resources), RequiredPlayers(players)
+    {
+    }
+};
+
 class Inventory {
     public:
         Inventory();
@@ -32,18 +46,13 @@ class Inventory {
         static constexpr size_t Size();
         void SetFromServerString(const std::string& str);
         
-        /// <summary>
         /// Imprime el inventario en formato tabla para debugging
-        /// </summary>
-        /// <param name="title">Título opcional para la tabla</param>
         void Print(const std::string& title = "Inventory") const;
-        
-        /// <summary>
+
         /// Devuelve una representación en string del inventario
-        /// </summary>
         std::string ToString() const;
         
-        static std::map<int, Inventory> IncantationRecipes;
+        static std::map<int, IncantationRecipe> IncantationRecipes;
         static std::string ResourceToString(Resource resource);
 
     private:

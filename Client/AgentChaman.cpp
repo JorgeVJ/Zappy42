@@ -1,24 +1,41 @@
 #include "AgentChaman.h"
-#include "Inventory.h"
 #include "Bid.h"
+#include "CommandEntry.h"
+#include <iostream>
 
 void AgentChaman::GetBids(Blackboard& bb)
 {
-    auto it = bb.Me.Inventory.IncantationRecipes.find(bb.Me.Level);
-    if (it == bb.Me.Inventory.IncantationRecipes.end())
-        return; // no se puede incantar a este nivel
-
-    const Inventory& recipe = it->second;
-
-    if (!bb.Me.Inventory.Has(recipe))
-        return; // No se añaden Bids ya que no es posible hacer la encantacion.
-
-    // TODO: Revisar los mensajes recibidos en el bb.
-    // TODO: Revisar si existen los jugadores en el mismo Tile.
-
-    // else enviar broadcast
-    bb.Bids.push_back(Bid("broadcast 2", bb.Me.Level <= 1 ? 15.0 : 0.0));
-
-    // Si todo cumple (Recipe + Jugadores), Bid(Incantation);
+	// Verificar si puede hacer incantación
+	if (bb.Me.Level < 8)
+	{
+		auto it = Inventory::IncantationRecipes.find(bb.Me.Level);
+		if (it != Inventory::IncantationRecipes.end())
+		{
+			const IncantationRecipe& recipe = it->second;
+			
+			// Verificar si tiene los recursos necesarios
+			if (bb.Me.Inventory.Has(recipe.RequiredResources))
+			{
+				// TODO: Verificar también si hay suficientes jugadores en el tile
+				std::cout << "[Chaman] Can perform incantation to level " << (bb.Me.Level + 1) << "\n";
+				std::cout << "[Chaman] Required players: " << recipe.RequiredPlayers << "\n";
+				
+				bb.Bids.push_back(Bid(
+					CommandEntry::Create(CommandType::Incantation, bb.CurrentTick),
+					200.0
+				));
+			}
+			else
+			{
+				std::cout << "[Chaman] Missing resources for level " << (bb.Me.Level + 1) << "\n";
+			}
+		}
+	}
+	
+	// Broadcast para coordinar
+	bb.Bids.push_back(Bid(
+		CommandEntry::Create(CommandType::Broadcast, "Marco", bb.CurrentTick),
+		50.0
+	));
 }
 

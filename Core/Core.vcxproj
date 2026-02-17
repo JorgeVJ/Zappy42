@@ -152,6 +152,7 @@
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommandEntry.cpp" />
     <ClCompile Include="CommandHistory.cpp" />
     <ClCompile Include="CommandType.cpp" />
     <ClCompile Include="Core.cpp" />

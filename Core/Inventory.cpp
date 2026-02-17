@@ -3,15 +3,16 @@
 #include <iostream>
 #include <iomanip>
 
-std::map<int, Inventory> Inventory::IncantationRecipes = {
-    //  Level	        linemate	deraumere	sibur	mendiane	phiras	thystame
-        {1, Inventory({ 1,          0,          0,      0,          0,      0})},
-        {2, Inventory({ 1,          1,          1,      0,          0,      0})},
-        {3, Inventory({ 2,          0,          1,      0,          2,      0})},
-        {4, Inventory({ 1,          1,          2,      0,          1,      0})},
-        {5, Inventory({ 1,          2,          1,      3,          0,      0})},
-        {6, Inventory({ 1,          2,          3,      0,          1,      0})},
-        {7, Inventory({ 2,          2,          2,      2,          2,      1})},
+// Recetas de incantación: nivel -> (recursos necesarios, jugadores necesarios)
+std::map<int, IncantationRecipe> Inventory::IncantationRecipes = {
+    //  Level                         Linemate  Derau  Sibur  Mend  Phiras  Thys   Players
+    {   1,IncantationRecipe(Inventory({ 1,      0,      0,      0,      0,  0}),    1)},
+    {   2,IncantationRecipe(Inventory({ 1,      1,      1,      0,      0,  0}),    2)},
+    {   3,IncantationRecipe(Inventory({ 2,      0,      1,      0,      2,  0}),    2)},
+    {   4,IncantationRecipe(Inventory({ 1,      1,      2,      0,      1,  0}),    4)},
+    {   5,IncantationRecipe(Inventory({ 1,      2,      1,      3,      0,  0}),    4)},
+    {   6,IncantationRecipe(Inventory({ 1,      2,      3,      0,      1,  0}),    6)},
+    {   7,IncantationRecipe(Inventory({ 2,      2,      2,      2,      2,  1}),    6)},
 };
 
 void Inventory::InnitMap() {

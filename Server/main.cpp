@@ -101,10 +101,7 @@ void HandleCommand(const std::string& cmd, Connection* client)
     }
     else if (cmd == "expulse")
     {
-        if (LEVEL == 3) {
-            client->SendLine("mort");
-		}
-        std::ostringstream ss;
+       std::ostringstream ss;
         ss << "deplacement " << LEVEL;
         if (LEVEL > 8) {
             ss.str("");

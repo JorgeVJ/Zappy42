@@ -1,5 +1,6 @@
 #include "AgentExplorer.h"
 #include "Bid.h"
+#include "CommandEntry.h"
 
 double GetVoirScore(Blackboard& bb) {
 	double voirWeigth = 42;
@@ -25,8 +26,9 @@ double GetVoirScore(Blackboard& bb) {
 
 void AgentExplorer::GetBids(Blackboard& bb)
 {
-	bb.Bids.push_back(Bid("gauche"));
-	bb.Bids.push_back(Bid("droite"));
-	bb.Bids.push_back(Bid("avance"));
-	bb.Bids.push_back(Bid("voir", GetVoirScore(bb)));
+	int score = 12;
+	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Left, bb.CurrentTick), score));
+	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Right, bb.CurrentTick), score));
+	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Advance, bb.CurrentTick), score));
+	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::See, bb.CurrentTick), GetVoirScore(bb)));
 }

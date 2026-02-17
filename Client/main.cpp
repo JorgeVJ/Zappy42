@@ -185,36 +185,34 @@ int main()
 		if (!bestBid)
 			continue;
 
-		/*board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick, "");
-		std::cout << "[Client] CMD => " << bestBid->Command << "\n";*/
-		/*if (!conn->SendLine(bestBid->Command))
-			break;*/
+		board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick, bestBid->Value);
+		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
+		if (!conn->SendLine(bestBid->Command))
+			break;
 
 
 
 		//////test
-		std::string testCommand;
-		std::string objectParam = "";
+		//std::string testCommand;
+		//std::string objectParam = "";
 
-		if (i == 0)
-		{
-			testCommand = "expulse";
-			std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
-		}
-		else
-		{
-			testCommand = "expulse";
-			objectParam = "nourriture";
-			std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
-		}
+		//if (i == 0)
+		//{
+		//	testCommand = "expulse";
+		//	std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
+		//}
+		//else
+		//{
+		//	testCommand = "expulse";
+		//	objectParam = "nourriture";
+		//	std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
+		//}
 	
-		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
-		i++;
-		/*board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, "linemate");
-		std::cout << "[Client] CMD => " << bestBid->Command << " i= " << i << "  " << testCommand << "\n";
-		*/
-		if (!conn->SendLine(testCommand))
-			break;
+		//board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
+		//i++;
+
+		//if (!conn->SendLine(testCommand))
+		//	break;
 
 			///////
 
