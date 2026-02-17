@@ -25,7 +25,6 @@ CORE-DIR      := ./Core/
 CLIENT-DIR    := ./Client/
 SERVER-DIR    := ./Server/
 BUILD-DIR			:=	./.build/
-TESTS-DIR			:=	./Tests/
 
 SRC-CORE			:=  Connection \
 									Tile \
@@ -93,7 +92,7 @@ clean:
 fclean: clean
 	@$(RM) $(NAME_CLIENT) $(NAME_SERVER)
 
-	re: fclean all
+re: fclean all
 
 info-%:
 	@$(MAKE) --dry-run --always-make $* | grep -v "info"
