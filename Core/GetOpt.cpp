@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "GetOpt.h"
 
 bool Opt::Spec::is_repeatable()  const noexcept
