@@ -110,6 +110,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -139,22 +140,27 @@
     <ClInclude Include="CommandHistory.h" />
     <ClInclude Include="CommandType.h" />
     <ClInclude Include="Direction.h" />
+    <ClInclude Include="errors.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GetOpt.h" />
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Connection.h" />
+    <ClInclude Include="Result.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="TileDataRegistry.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="validators.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommandHistory.cpp" />
     <ClCompile Include="CommandType.cpp" />
     <ClCompile Include="Core.cpp" />
+    <ClCompile Include="GetOpt.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="pch.cpp">
@@ -167,6 +173,7 @@
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="Validators.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
