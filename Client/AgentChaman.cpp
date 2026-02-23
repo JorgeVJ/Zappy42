@@ -12,9 +12,9 @@ void AgentChaman::GetBids(Blackboard& bb)
 		if (it != Inventory::IncantationRecipes.end())
 		{
 			const IncantationRecipe& recipe = it->second;
-			
+
 			// Verificar si tiene los recursos necesarios
-			if (bb.Me.Inventory.Has(recipe.RequiredResources))
+			if (bb.Me.inventory.Has(recipe.RequiredResources))
 			{
 				// TODO: Verificar también si hay suficientes jugadores en el tile
 				std::cout << "[Chaman] Can perform incantation to level " << (bb.Me.Level + 1) << "\n";

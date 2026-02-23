@@ -29,7 +29,6 @@ class Blackboard
 		// Number of players we are breeding
 		int TeamNbr = 0;
 
-		Map Map;
 		Player Me;
 
 		/// <summary>

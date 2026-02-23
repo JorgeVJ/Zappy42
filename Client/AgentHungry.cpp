@@ -14,15 +14,15 @@ void AgentHungry::GetBids(Blackboard& bb)
 	Tile* playerTile = bb.GetPlayerTile();
 	if (!playerTile)
 		return;
-	
+
 	// Verificar si hay comida en el tile actual
-	int foodOnTile = playerTile->Inventory.Get(Resource::Food);
+	int foodOnTile = playerTile->inventory.Get(Resource::Food);
 	if (foodOnTile <= 0)
 		return; // No hay comida que recoger
-	
+
 	// Obtener estado de vida
 	int remainingTicks = bb.GetRemainingLifeTicks();
-	int currentFood = bb.Me.Inventory.Get(Resource::Food);
+	int currentFood = bb.Me.inventory.Get(Resource::Food);
 	double lifePercentage = bb.GetLifePercentage();
 	
 	const int TICKS_PER_FOOD = 126;
@@ -89,10 +89,14 @@ void AgentHungry::GetBids(Blackboard& bb)
 	
 	// Información adicional de debugging
 	std::cout << "[Hungry] Life: " << (lifePercentage * 100) << "% | "
-	          << "Can survive: ~" << (remainingTicks / 7) << " commands\n";
-	
+			  << "Can survive: ~" << (remainingTicks / 7) << " commands\n";
+
 	bb.Bids.push_back(Bid(
 		CommandEntry::Create(CommandType::Take, "nourriture", bb.CurrentTick),
 		priority
 	));
+}
+
+AgentHungry::~AgentHungry()
+{
 }

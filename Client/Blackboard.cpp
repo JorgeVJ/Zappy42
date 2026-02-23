@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 
-Blackboard::Blackboard() : Map(0, 0), CurrentTick(0)
+Blackboard::Blackboard() : map(0, 0), CurrentTick(0)
 {
 }
 
@@ -15,7 +15,7 @@ void Blackboard::InitializeMap(int x, int y)
 int Blackboard::GetRemainingLifeTicks() const
 {
 	const int TICKS_PER_FOOD = 126;
-	int food = Me.Inventory.Get(Resource::Food);
+	int food = Me.inventory.Get(Resource::Food);
 	return food * TICKS_PER_FOOD;
 }
 

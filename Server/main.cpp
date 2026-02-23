@@ -22,33 +22,33 @@ std::vector<Connection*> clients;
 int LEVEL = 1;
 
 
-void HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
+int HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
 {
-    game->Players.push_back(client);
-    try {
-      client->player = new Player();
-    }
-    catch ( const  std::exception &e)  {
-      std::cerr << "Exception STL: " << e.what() << std::endl;
-      return (1);
-    }
-    catch ( ... ) {
-      std::cerr << "Exception No STL: " << std::endl;
-      return (1);
-    }
-    if (client->player == nullptr)
-      return (1);
-    client->player->TeamName = cmd;
+	game->Players.push_back(client);
+	try {
+	  client->player = new Player();
+	}
+	catch ( const  std::exception &e)  {
+	  std::cerr << "Exception STL: " << e.what() << std::endl;
+	  return (1);
+	}
+	catch ( ... ) {
+	  std::cerr << "Exception No STL: " << std::endl;
+	  return (1);
+	}
+	if (client->player == nullptr)
+	  return (1);
+	client->player->TeamName = cmd;
 
-    for (auto* monitor : game->Monitors) {
-        pnw(client, monitor);
-    }
+	for (auto* monitor : game->Monitors) {
+		pnw(client, monitor);
+	}
 
-    client->SendLine("1"); // TODO: Enviar valor correcto.
-    Map* map = game->WorldMap;
-    std::ostringstream ss;
-    ss << map->Width << " " << map->Height;
-    client->SendLine(ss.str());
+	client->SendLine("1"); // TODO: Enviar valor correcto.
+	Map* map = game->WorldMap;
+	std::ostringstream ss;
+	ss << map->Width << " " << map->Height;
+	client->SendLine(ss.str());
 	return (0);
 }
 

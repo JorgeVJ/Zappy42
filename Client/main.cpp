@@ -183,43 +183,47 @@ int main()
 	while (true)
 	{
 		board.Bids.clear();
-		for (auto& agent : agents)
-			agent->GetBids(board);
+		//for (auto& agent : agents)
+		//	agent->GetBids(board);
 
-		Bid* bestBid = GetBestBid(board.Bids);
-		if (!bestBid)
-			continue;
+		//Bid* bestBid = GetBestBid(board.Bids);
+		//if (!bestBid)
+		//	continue;
 
-		board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick, bestBid->Value);
-		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
-		if (!conn->SendLine(bestBid->Command))
-			break;
+		//std::string commandStr = CommandTypeToString(bestBid->Command.type);
+		//if (!bestBid->Command.commandParameter.empty())
+		//	commandStr += " " + bestBid->Command.commandParameter;
 
-
-
-		//////test
-		//std::string testCommand;
-		//std::string objectParam = "";
-
-		//if (i == 0)
-		//{
-		//	testCommand = "expulse";
-		//	std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
-		//}
-		//else
-		//{
-		//	testCommand = "expulse";
-		//	objectParam = "nourriture";
-		//	std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
-		//}
-	
-		//board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
-		//i++;
-
-		//if (!conn->SendLine(testCommand))
+		//board.commandHistory.AddCommand(bestBid->Command.type, board.CurrentTick, bestBid->Command.commandParameter);
+		//std::cout << "[Client] CMD => " << commandStr << "\n";
+		//if (!conn->SendLine(commandStr))
 		//	break;
 
-			///////
+
+
+		////test
+		std::string testCommand;
+		std::string objectParam = "";
+
+		if (i == 0)
+		{
+			testCommand = "avance";
+			std::cout << "[Client] CMD => avance (iteration " << i << ")\n";
+		}
+		else
+		{
+			testCommand = "prend nourriture";
+			objectParam = "nourriture";
+			std::cout << "[Client] CMD => prend nourriture (iteration " << i << ")\n";
+		}
+	
+		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
+		i++;
+
+		if (!conn->SendLine(testCommand))
+			break;
+
+			/////
 
 
 		std::string response;

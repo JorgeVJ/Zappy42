@@ -22,11 +22,6 @@ enum class CommandType
     Invalid
 };
 
-enum class TurnDirection {
-    Right,
-    Left
-};
-
 // Parsea un comando y devuelve su tipo
 CommandType ParseCommandType(const std::string& command);
 
