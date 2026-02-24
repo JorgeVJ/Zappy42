@@ -12,8 +12,8 @@ Imagina un tablero lleno de recursos donde diferentes "tribus" de personajes deb
 El proyecto se divide en tres pilares principales:
 
 1. **El Servidor (C++):** El cerebro del juego. Gestiona las reglas, el paso del tiempo y la comunicación entre todos los participantes.
-2. **Los Clientes (IA):** Los jugadores. Deben buscar comida para no morir y recolectar minerales para evolucionar. No usamos servicios externos; cada comportamiento, desde la recolección de comida hasta la estrategia de grupo, nace de nuestro código.
-3. **El Visualizador (Godot):** Nuestra ventana al mundo. Una interfaz gráfica que permite a los humanos observar la competencia en tiempo real.
+2. **Los Clientes (IA, C++):** Los jugadores. Deben buscar comida para no morir y recolectar minerales para evolucionar. No usamos servicios externos; cada comportamiento, desde la recolección de comida hasta la estrategia de grupo, nace de nuestro código.
+3. **El Visualizador (Godot, C#):** Nuestra ventana al mundo. Una interfaz gráfica que permite a los humanos observar la competencia en tiempo real.
 
 ---
 
@@ -83,9 +83,10 @@ Es el juez supremo del juego. Gestiona las conexiones TCP, el paso del tiempo y 
 
 Nuestras IA no son servicios externos, son algoritmos diseñados desde cero por nosotros para tomar decisiones complejas bajo incertidumbre.
 
+* **Singleton:** Para la gestión única de recursos y estados críticos del cliente.
 * **Patrón Blackboard:** Actúa como una memoria centralizada donde la IA anota sus objetivos, nivel de hambre y descubrimientos para decidir su siguiente paso.
 * **Grafos:** Utilizados para la navegación y optimización de rutas hacia los recursos detectados.
-* **Singleton:** Para la gestión única de recursos y estados críticos del cliente.
+* **Utility-Based Decision System (Sistema de puntuación de acciones):** Cada agente genera acciones potenciales (Bids) que son evaluadas mediante funciones de utilidad dinámicas basadas en el estado del Blackboard (hambre, exploración, recursos, etc.), seleccionando siempre la acción con mayor puntuación.
 
 ### El Visualizador Gráfico (Godot)
 
