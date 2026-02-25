@@ -67,19 +67,19 @@ Subir de nivel requiere un **Ritual de Elevación**:
 
 2. Tener a un número específico de jugadores de su mismo nivel en esa misma casilla trabajando juntos.
 
-3. **El problema:** ¿Cómo coordinas a 6 jugadores para que se encuentren en el mismo punto del mapa si no saben dónde están ni quién es quién? Aquí es donde brilla el código de comunicación que hemos diseñado.
+**El problema:** ¿Cómo coordinas a 6 jugadores para que se encuentren en el mismo punto del mapa si no saben dónde están ni quién es quién? Aquí es donde brilla el código de comunicación que hemos diseñado.
 
 ---
 
 ## 🛠️ Arquitectura y Desarrollo
 
-Esta sección detalla cómo hemos construido el cerebro y el cuerpo de este proyecto utilizando **C++** y **Godot**.
+Esta sección detalla cómo hemos construido el cerebro y el cuerpo de este proyecto utilizando **C++**, **C#** y **Godot**.
 
 ### El Servidor (C++)
 
 Es el juez supremo del juego. Gestiona las conexiones TCP, el paso del tiempo y valida que nadie rompa las reglas de Trantor. Está diseñado para ser extremadamente eficiente, manejando múltiples IA simultáneamente sin bloqueos.
 
-### El Cliente IA (C++ - Desarrollo In-house)
+### El Cliente IA (C++, IA Desarrollo In-house)
 
 Nuestras IA no son servicios externos, son algoritmos diseñados desde cero por nosotros para tomar decisiones complejas bajo incertidumbre.
 
@@ -88,9 +88,9 @@ Nuestras IA no son servicios externos, son algoritmos diseñados desde cero por 
 * **Grafos:** Utilizados para la navegación y optimización de rutas hacia los recursos detectados.
 * **Utility-Based Decision System (Sistema de puntuación de acciones):** Cada agente genera acciones potenciales (Bids) que son evaluadas mediante funciones de utilidad dinámicas basadas en el estado del Blackboard (hambre, exploración, recursos, etc.), seleccionando siempre la acción con mayor puntuación.
 
-### El Visualizador Gráfico (Godot)
+### El Visualizador Gráfico (C#, Godot)
 
-Para que los humanos podamos disfrutar de la competencia, hemos desarrollado un cliente gráfico en **Godot**. Este se conecta al servidor y traduce los datos técnicos en una representación visual fluida donde se pueden ver los rituales, los movimientos y las muertes de los personajes en tiempo real.
+Para que los humanos podamos disfrutar de la competencia, hemos desarrollado un cliente gráfico en **Godot** y **C#**. Este se conecta al servidor y traduce los datos técnicos en una representación visual fluida donde se pueden ver los rituales, los movimientos y las muertes de los personajes en tiempo real.
 
 ---
 
