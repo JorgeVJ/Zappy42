@@ -10,7 +10,7 @@ struct Player
     int Level = 1;
     Point Position = {0, 0};
     Direction Orientation = Direction::North;
-    Inventory Inventory;
+    Inventory inventory;
     std::string TeamName = "";
 
     // Constructor por defecto

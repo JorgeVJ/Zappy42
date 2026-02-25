@@ -1,13 +1,11 @@
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <iostream>
 #include <vector>
 #include <thread>
 #include <chrono>
 #include <sstream>
-
+#ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
-
+#endif
 #include "Connection.h"
 #include "Blackboard.h"
 #include "IAgent.h"
@@ -26,8 +24,10 @@ void WaitForDebugAndClean(int seconds = 5)
 {
 	std::cout << "\n[DEBUG] Waiting " << seconds << " seconds before closing..." << std::endl;
 	std::this_thread::sleep_for(std::chrono::seconds(seconds));
+#ifdef _WIN32
 	WSACleanup();
 	ClientGame::Dispose();
+#endif
 }
 
 Bid* GetBestBid(std::vector<Bid>& bids)
@@ -58,7 +58,7 @@ void CreateAgents(std::vector<IAgent*>& agents)
 Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 {
 	std::string line;
-	Connection* conn = ClientGame::GetInstance()->Connection;
+	Connection* conn = ClientGame::GetInstance()->connection;
 	if (!conn || !conn->IsValid())
 		return Result<Blackboard*>::Fail("No connection available");
 
@@ -91,7 +91,7 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 
 	if (nb_client < 1)
 	{
-		// equipo lleno -> no error técnico, pero queremos notificar que no se puede unir
+		// equipo lleno -> no error tï¿½cnico, pero queremos notificar que no se puede unir
 		return Result<Blackboard*>::Fail("TeamFull");
 	}
 
@@ -130,19 +130,24 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 int main()
 {
 	//TODO parsear argumentos de linea de comando para ip, puerto y nombre de equipo
+	// Crear Connection y registrarla en ClientGame
+#ifdef _WIN32
 	WSADATA wsaData{};
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
-
-	SOCKET rawSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	// Crear Connection y registrarla en ClientGame
+#endif
+    SOCKET rawSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	Connection* conn = new Connection(rawSock);
-	ClientGame::GetInstance()->Connection = conn;
+	ClientGame::GetInstance()->connection = conn;
 
-	sockaddr_in serverAddr{};
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(12345);
-	inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
 
+    sockaddr_in serverAddr{};
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(12345);
+#ifdef _WIN32
+    inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
+#elif defined(__linux__)
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+#endif
 	if (connect(conn->Get(), (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
 	{
 		std::cerr << "connect() failed\n";
@@ -150,7 +155,7 @@ int main()
 		return 1;
 	}
 
-	// Handshake: InitServerHandshake creará el Blackboard e internamente usará la Connection en ClientGame
+	// Handshake: InitServerHandshake crearï¿½ el Blackboard e internamente usarï¿½ la Connection en ClientGame
 	auto result = InitServerHandshake("TestTeamName");
 	if (!result.Ok)
 	{
@@ -168,7 +173,7 @@ int main()
 	}
 
 	// Registrar Blackboard en ClientGame y mantener referencia local
-	ClientGame::GetInstance()->Blackboard = result.Value;
+	ClientGame::GetInstance()->blackboard = result.Value;
 	Blackboard& board = *result.Value;
 
 	std::vector<IAgent*> agents;
@@ -178,43 +183,47 @@ int main()
 	while (true)
 	{
 		board.Bids.clear();
-		for (auto& agent : agents)
-			agent->GetBids(board);
+		//for (auto& agent : agents)
+		//	agent->GetBids(board);
 
-		Bid* bestBid = GetBestBid(board.Bids);
-		if (!bestBid)
-			continue;
+		//Bid* bestBid = GetBestBid(board.Bids);
+		//if (!bestBid)
+		//	continue;
 
-		board.commandHistory.AddCommand(bestBid->Type, board.CurrentTick, bestBid->Value);
-		std::cout << "[Client] CMD => " << bestBid->Command << "\n";
-		if (!conn->SendLine(bestBid->Command))
-			break;
+		//std::string commandStr = CommandTypeToString(bestBid->Command.type);
+		//if (!bestBid->Command.commandParameter.empty())
+		//	commandStr += " " + bestBid->Command.commandParameter;
 
-
-
-		//////test
-		//std::string testCommand;
-		//std::string objectParam = "";
-
-		//if (i == 0)
-		//{
-		//	testCommand = "expulse";
-		//	std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
-		//}
-		//else
-		//{
-		//	testCommand = "expulse";
-		//	objectParam = "nourriture";
-		//	std::cout << "[Client] CMD => expulse (iteration " << i << ")\n";
-		//}
-	
-		//board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
-		//i++;
-
-		//if (!conn->SendLine(testCommand))
+		//board.commandHistory.AddCommand(bestBid->Command.type, board.CurrentTick, bestBid->Command.commandParameter);
+		//std::cout << "[Client] CMD => " << commandStr << "\n";
+		//if (!conn->SendLine(commandStr))
 		//	break;
 
-			///////
+
+
+		////test
+		std::string testCommand;
+		std::string objectParam = "";
+
+		if (i == 0)
+		{
+			testCommand = "avance";
+			std::cout << "[Client] CMD => avance (iteration " << i << ")\n";
+		}
+		else
+		{
+			testCommand = "prend nourriture";
+			objectParam = "nourriture";
+			std::cout << "[Client] CMD => prend nourriture (iteration " << i << ")\n";
+		}
+	
+		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
+		i++;
+
+		if (!conn->SendLine(testCommand))
+			break;
+
+			/////
 
 
 		std::string response;
@@ -240,12 +249,22 @@ int main()
 		std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
 
-	for (auto* a : agents)
-		delete a;
+	// Legacy mode maybe of use is clusters.
+    for (auto* a : agents)
+		{
+			delete a;
+		}
+	// No legacy make this way
+	//std::vector<std::unique_ptr<IAgent>> agents;
+	//agents.push_back(std::make_unique<AgentBreeder>());
+	//and STL will call the virtual destructor on each Iagent when is called here destructor.
+
+
 
 	// Liberar recursos registrados en ClientGame
 	ClientGame::Dispose();
-
-	WSACleanup();
-	return 0;
+#ifdef _WIN32
+    WSACleanup();
+#endif
+    return 0;
 }

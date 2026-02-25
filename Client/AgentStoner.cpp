@@ -37,16 +37,16 @@ void AgentStoner::GetBids(Blackboard& bb)
 	};
 	
 	std::cout << "[Stoner] Analyzing resources for level " << bb.Me.Level << " incantation\n";
-	
+
 	// FASE 1: RECOGER recursos prioritarios
 	for (const auto& res : resources)
 	{
-		int onTile = playerTile->Inventory.Get(res.enumVal);
+		int onTile = playerTile->inventory.Get(res.enumVal);
 		if (onTile <= 0)
 			continue; // No hay en el tile
-		
+
 		int needed = required.Get(res.enumVal);
-		int current = bb.Me.Inventory.Get(res.enumVal);
+		int current = bb.Me.inventory.Get(res.enumVal);
 		int missing = needed - current;
 		
 		double priority = 0.0;
@@ -89,3 +89,5 @@ void AgentStoner::GetBids(Blackboard& bb)
 		));
 	}
 }
+
+AgentStoner::~AgentStoner() {};

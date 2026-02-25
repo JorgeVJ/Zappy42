@@ -17,22 +17,22 @@ void ClientGame::Dispose()
 }
 
 ClientGame::ClientGame()
-	: Connection(nullptr)
-	, Blackboard(nullptr)
+	: connection(nullptr)
+	, blackboard(nullptr)
 {
 }
 
 ClientGame::~ClientGame()
 {
-	if (Connection)
+	if (connection)
 	{
-		delete Connection;
-		Connection = nullptr;
+		delete connection;
+		connection = nullptr;
 	}
 
-	if (Blackboard)
+	if (blackboard)
 	{
-		delete Blackboard;
-		Blackboard = nullptr;
+		delete blackboard;
+		blackboard = nullptr;
 	}
 }

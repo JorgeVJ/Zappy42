@@ -10,7 +10,7 @@
 
 class Tile : public Point {
     public:
-        Inventory Inventory;
+        Inventory inventory;
 
         Tile(int x, int y);
 

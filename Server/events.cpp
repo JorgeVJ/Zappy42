@@ -1,5 +1,5 @@
 #include "events.h"
-
+#include <iostream> // For placeholder
 /// <summary>
 /// New player connection
 /// </summary>
@@ -10,12 +10,12 @@ void pnw(Connection* connection, Connection* monitor)
 		return;
 
 	std::ostringstream ss;
-	ss << "pnw " << connection->Player->ID << " "
-		<< connection->Player->Position.X << " "
-		<< connection->Player->Position.Y << " "
-		<< (int)connection->Player->Orientation << " "
-		<< connection->Player->Level << " "
-		<< connection->Player->TeamName;
+	ss << "pnw " << connection->player->ID << " "
+		<< connection->player->Position.X << " "
+		<< connection->player->Position.Y << " "
+		<< (int)connection->player->Orientation << " "
+		<< connection->player->Level << " "
+		<< connection->player->TeamName;
 	monitor->SendLine(ss.str());
 }
 
@@ -25,5 +25,6 @@ void pnw(Connection* connection, Connection* monitor)
 /// <param name="client"></param>
 void enw(EggData* egg, Connection* monitor)
 {
-
+    if  (egg && monitor)
+		std::cout << egg << monitor << std::endl; // placeholder
 }

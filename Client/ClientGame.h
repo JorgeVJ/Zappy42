@@ -5,8 +5,8 @@
 class ClientGame
 {
 public:
-	Connection* Connection;
-	Blackboard* Blackboard;
+	Connection* connection;
+	Blackboard* blackboard;
 
 	static ClientGame* GetInstance();
 	static void Dispose();
@@ -18,4 +18,3 @@ private:
 
 	static ClientGame* instance;
 };
-

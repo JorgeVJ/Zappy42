@@ -6,7 +6,7 @@
 
 struct Influence {
     bool IsActive;
-    Resource Resource;
+    Resource resource;
     Tile* Origin;
 };
 
@@ -33,4 +33,3 @@ class InfluenceService
         double GetInfluenceStrength(Tile* tile, Resource resource);
         std::vector<std::pair<int, Influence*>>& GetInfluences(Tile* tile, Resource resource);
 };
-

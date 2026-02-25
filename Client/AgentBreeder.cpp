@@ -57,3 +57,5 @@ void AgentBreeder::GetBids(Blackboard& bb)
 		}
 	}
 }
+
+AgentBreeder::~AgentBreeder() {};

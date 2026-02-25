@@ -41,17 +41,17 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			return 0;
 			break;
 		case CommandType::Take:
-			board.Me.Inventory.Add(lastCommand.commandParameter, 1);
+			board.Me.inventory.Add(lastCommand.commandParameter, 1);
 			board.UpdateTick(GetCommandDuration(CommandType::Take));
 			std::cout << "[Action] Took " << lastCommand.commandParameter << " successfully\n";
-			board.Me.Inventory.Print("Updated Inventory");
+			board.Me.inventory.Print("Updated Inventory");
 			return 0;
 			break;
 		case CommandType::Put:
-			board.Me.Inventory.Remove(lastCommand.commandParameter, 1);
+			board.Me.inventory.Remove(lastCommand.commandParameter, 1);
 			board.UpdateTick(GetCommandDuration(CommandType::Put));
 			std::cout << "[Action] Put " << lastCommand.commandParameter << " successfully\n";
-			board.Me.Inventory.Print("Updated Inventory");
+			board.Me.inventory.Print("Updated Inventory");
 			return 0;
 			break;
 		case CommandType::Expulse:
@@ -97,10 +97,10 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			return 0;
 			break;
 		case CommandType::Inventory:
-			board.Me.Inventory.SetFromServerString(response);
+			board.Me.inventory.SetFromServerString(response);
 			board.UpdateTick(GetCommandDuration(CommandType::Inventory));
 			std::cout << "[Action] Inventory data updated.\n";
-			board.Me.Inventory.Print("Player Inventory");
+			board.Me.inventory.Print("Player Inventory");
 			return 0;
 			break;
 		default:
@@ -126,7 +126,7 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			if (board.HandleIncantationResponse(response))
 			{
 				board.UpdateTick(GetCommandDuration(CommandType::Incantation));
-				board.Me.Inventory.Print("Inventory after Level Up");
+				board.Me.inventory.Print("Inventory after Level Up");
 				return 0;
 			}
 			else

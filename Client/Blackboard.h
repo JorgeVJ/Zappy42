@@ -22,13 +22,13 @@ class Blackboard
 		/// <summary>
 		/// Sum of all Command Ticks.
 		/// </summary>
+		Map map;
 		int CurrentTick;
 		int ConnectNbr = 0;
 
 		// Number of players we are breeding
 		int TeamNbr = 0;
 
-		Map Map;
 		Player Me;
 
 		/// <summary>
@@ -44,8 +44,8 @@ class Blackboard
 		/// <summary>
 		/// Servicio para manejar las influencias de los recursos en el mapa. 
 		/// </summary>
-		InfluenceService InfluenceService;
-		ExplorationService ExplorationService;
+		InfluenceService influenceService;
+		ExplorationService explorationService;
 
 		CommandHistory commandHistory;
 

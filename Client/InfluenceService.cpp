@@ -13,14 +13,14 @@ void InfluenceService::BFSPropagate(Tile* origin, Resource resource, Influence* 
 {
     using Node = std::pair<int, Tile*>;
     std::queue<Node> q;
-    TileInfluenceState* data = Registry.TryGet(origin);
+    TileInfluenceState* data = this->Registry.TryGet(origin);
     if (data)
         data->Signals.push_back(influence);
     else
     {
         TileInfluenceState state;
         state.Signals.push_back(influence);
-        Registry.Add(origin, state);
+        this->Registry.Add(origin, state);
     }
 
     q.push({ 0, origin });
@@ -60,7 +60,7 @@ void InfluenceService::BFSPropagate(Tile* origin, Resource resource, Influence* 
 
 void InfluenceService::CleanSignals(Tile* tile)
 {
-    auto* data = Registry.TryGet(tile);
+    auto* data = this->Registry.TryGet(tile);
     if (!data)
         return;
 
@@ -74,7 +74,7 @@ void InfluenceService::CleanSignals(Tile* tile)
 
 double InfluenceService::GetInfluenceStrength(Tile* tile, Resource resource)
 {
-    auto* data = Registry.TryGet(tile);
+    auto* data = this->Registry.TryGet(tile);
     if (!data)
         return 0;
 
@@ -99,7 +99,7 @@ double InfluenceService::GetInfluenceStrength(Tile* tile, Resource resource)
 
 std::vector<std::pair<int, Influence*>>& InfluenceService::GetInfluences(Tile* tile, Resource resource)
 {
-    auto& vec = Registry.Get(tile)->Influences[static_cast<size_t>(resource)];
+    auto& vec = this->Registry.Get(tile)->Influences[static_cast<size_t>(resource)];
 
     // Limpieza lazy
     vec.erase(

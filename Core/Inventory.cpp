@@ -33,17 +33,18 @@ Inventory::Inventory() {
     InnitMap();
 }
 
+
 Inventory::Inventory(std::initializer_list<int> init) {
     data.fill(0);
-    int i = 0;
+    size_t i = 0;
     for (int v : init) {
-        if (i < Size())
+        if (i < Inventory::Size())
             data[i++] = v;
     }
     InnitMap();
 }
 
-int Inventory::Get(Resource r) {
+int Inventory::Get(Resource r) const {
     return data[static_cast<size_t>(r)];
 }
 
@@ -102,11 +103,11 @@ bool Inventory::Remove(Resource r, int amount) {
     return true;
 }
 
-bool Inventory::Has(Resource r, int amount) {
+bool Inventory::Has(Resource r, int amount) const {
     return Get(r) >= amount;
 }
 
-bool Inventory::Has(const Inventory& required) {
+bool Inventory::Has(const Inventory& required) const {
     for (size_t i = 0; i < Size(); ++i) {
         if (data[i] < required.data[i])
             return false;
@@ -116,10 +117,6 @@ bool Inventory::Has(const Inventory& required) {
 
 void Inventory::Clear() {
     data.fill(0);
-}
-
-constexpr size_t Inventory::Size() {
-    return static_cast<size_t>(Resource::Count);
 }
 
 void Inventory::SetFromServerString(const std::string& str)

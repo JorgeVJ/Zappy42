@@ -12,8 +12,8 @@ std::string GetTileBCT(int x, int y)
     std::stringstream ss;
     ss << "bct " << x << " " << y;
 
-    for (int i = 0; i < Inventory::Size(); ++i) {
-        ss << " " << tile->Inventory.Get(static_cast<Resource>(i));
+    for (size_t i = 0; i < Inventory::Size(); ++i) {
+        ss << " " << tile->inventory.Get(static_cast<Resource>(i));
     }
 
     ss << "\n";

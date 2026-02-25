@@ -5,6 +5,7 @@ class AgentHungry :
     public IAgent
 {
     // Heredado vía IAgent
-    void GetBids(Blackboard& blackboard) override;
+  public:
+	  void GetBids(Blackboard& blackboard) override;
+	  ~AgentHungry() override;
 };
-
