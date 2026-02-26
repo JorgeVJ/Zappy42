@@ -62,7 +62,7 @@ namespace Validators {
 			static constexpr size_t NameLenMin = 1;
 			static constexpr size_t NameLenMax = 32;
 			static constexpr size_t Min = 1;
-			static constexpr size_t Max = Clients::Max / Player::Max_per_team;
+			static constexpr size_t Max = Clients::Max_Initial / Player::Max_per_team;
 		};
 		Result<size_t> valid_heigth_or_weight(const std::vector<std::string_view> &values, std::vector<std::string_view> *errors)
 		{
@@ -96,12 +96,8 @@ namespace Validators {
 			}
 			for (std::size_t i = 0; i < values.size(); ++i) {
 				for (std::size_t j = i + 1; j < values.size(); ++j) {
-					if (!Utils::within_bounds(values[i].size(), Teams::NameLenMin, Teams::NameLenMax))
-					{
-						vector_string_view_add(errors, Errors::Validation::Server::InvalidTeamLen);
-						return (false);
-					}
-					if (!Utils::within_bounds(values[j].size(), Teams::NameLenMin, Teams::NameLenMax))
+					if (!Utils::within_bounds(values[i].size(), Teams::NameLenMin, Teams::NameLenMax)
+              || !Utils::within_bounds(values[j].size(), Teams::NameLenMin, Teams::NameLenMax)
 					{
 						vector_string_view_add(errors, Errors::Validation::Server::InvalidTeamLen);
 						return (false);
@@ -113,7 +109,6 @@ namespace Validators {
 				}
 			}
 			return  (values.size() <= clientnbr);
-
 		}
 
 		Result<size_t> time(const std::vector<std::string_view> &values, std::vector<std::string_view> *errors) {
@@ -212,7 +207,9 @@ int main(int argc, char** argv) {
 		std::cerr << "Validation Error" << std::endl;
 		for (auto& e : errors)
 			std::cerr << e << std::endl;
-    }
-	std::cout <<  "Teams: " << args.teams << std::endl;
+  }
+  	for (auto& e : opts.values[static_cast<size_t>(Opt::Server::Id::Teams)].values)
+      std::cout <<  "TeamName: " << e << std::endl;
+
 	return (ok == false || !errors.empty());
 }
