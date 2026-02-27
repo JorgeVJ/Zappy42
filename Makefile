@@ -55,20 +55,22 @@ SRC-CLIENT := \
   $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER := \
-  $(addprefix Server/, main Game events responses) \
+  $(addprefix Server/, main Game events responses servervalidators ) \
   $(addprefix Core/, $(SRC-CORE))
 
 TEST_GETOPT_SRC_SERVER := $(TEST_GETOPT_DIR)server.cpp \
-                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))))
+                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))	$(addprefix Server/, Game events responses servervalidators)))
+
 
 TEST_GETOPT_SRC_CLIENT := $(TEST_GETOPT_DIR)client.cpp \
                           $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))))
 
 TEST_VALIDATORS_SRC_SERVER := $(TEST_VALIDATORS_DIR)server.cpp \
-                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))))
-BUILD-SERVER := $(SRC-SERVER:%.cpp=$(BUILD-DIR)%.o)
+                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))	$(addprefix Server/, Game events responses servervalidators)))
+
 
 BUILD-CLIENT := $(addsuffix .o, $(addprefix $(BUILD-DIR),  $(SRC-CLIENT)))
+# Same as below BUILD-SERVER := $(SRC-SERVER:%.cpp=$(BUILD-DIR)%.o)
 BUILD-SERVER := $(addsuffix .o, $(addprefix $(BUILD-DIR),  $(SRC-SERVER)))
 
 # Set the CXX variable based on the operating system
@@ -125,7 +127,7 @@ $(BUILD-DIR)%.o:        %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@$(RM) $(BUILD-DIR) $(TEST_GETOPT_SERVER) $(TEST_GETOPT_CLIENT) $(TEST_GETOPT_DIR)err.log $(TEST_GETOPT_DIR)out.log $(TEST_VALIDATORS_SRC_SERVER)
+	@$(RM) $(BUILD-DIR) $(TEST_GETOPT_SERVER) $(TEST_GETOPT_CLIENT) $(TEST_GETOPT_DIR)err.log $(TEST_GETOPT_DIR)out.log $(TEST_VALIDATORS_SERVER)
 
 fclean: clean
 	@$(RM) $(NAME_CLIENT) $(NAME_SERVER)

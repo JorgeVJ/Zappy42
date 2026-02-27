@@ -11,7 +11,7 @@ struct Player
     Point Position = {0, 0};
     Direction Orientation = Direction::North;
     Inventory inventory;
-    std::string TeamName = "";
+    std::string TeamName = "";//std::string_view  should use the argv.
 
     Player() = default;
 

@@ -1,162 +1,15 @@
 #include <iostream>
 #include "GetOpt.h"
-#include "validators.h"
-
-namespace Opt {
-	namespace Server {
-		enum class Id {
-			Port,
-			Width,
-			Height,
-			Teams,
-			Clients,
-			Time,
-		};
-		constexpr Spec specs[] = {
-			{ port_keys, Arity::One, RepeatPolicy::Reject },
-			{ width_keys, Arity::One, RepeatPolicy::Reject },
-			{ height_keys, Arity::One, RepeatPolicy::Reject },
-			{ teams_keys, Arity::OneOrMore, RepeatPolicy::Accumulate },
-			{ clients_keys, Arity::One, RepeatPolicy::Reject },
-			{ time_keys, Arity::One, RepeatPolicy::Reject },
-		};
-
-		constexpr KeyEntry<Server::Id> key_table[] = {
-			{ "-p", Opt::Server::Id::Port },
-			{ "-x", Opt::Server::Id::Width },
-			{ "-y", Opt::Server::Id::Height },
-			{ "-n", Opt::Server::Id::Teams },
-			{ "-c", Opt::Server::Id::Clients },
-			{ "-t", Opt::Server::Id::Time },
-		};
-		struct Args {
-			int port;
-			int width;
-			int height;
-			int time;
-			int clients;
-			std::vector<std::string_view> *teams;
-		};
-	}
-}
-
-namespace Validators {
-	namespace Server {
-		struct WidthorHeight {
-			static constexpr size_t Min = 17;
-			static constexpr size_t Max = 64;
-		};
-		struct Time {
-			static constexpr size_t Min = 1;
-			static constexpr size_t Max = 120;
-		};
-		struct Clients {
-			static constexpr size_t Min = 1;
-			static constexpr size_t Max_Initial = 16;
-			static constexpr size_t Max = 64;
-		};
-		struct Player {
-			static constexpr size_t Max_per_team = 6;
-		};
-		struct Teams {
-			static constexpr size_t NameLenMin = 1;
-			static constexpr size_t NameLenMax = 32;
-			static constexpr size_t Min = 1;
-			static constexpr size_t Max = Clients::Max_Initial / Player::Max_per_team;
-		};
-		Result<size_t> valid_heigth_or_weight(const std::vector<std::string_view> &values, std::vector<std::string_view> *errors)
-		{
-			if (values.empty())
-			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
-				return Result<size_t>::Fail(Errors::Validation::MissValue);
-			}
-			auto r = Utils::parse_int(values[0]);
-			if (!r.Ok) {
-				vector_string_view_add(errors, r.Message);
-				return (Result<size_t>::Fail(r.Message));
-			}
-			if (!Utils::within_bounds(static_cast<size_t>(r.Value), WidthorHeight::Min, WidthorHeight::Max)) {
-				vector_string_view_add(errors, Errors::Validation::Server::InvalidHeightorWidth);
-				return (Result<size_t>::Fail(Errors::Validation::Server::InvalidHeightorWidth));
-			}
-			return (Result<size_t>::Success(static_cast<size_t>(r.Value)));
-		}
-
-		bool teams(const std::vector<std::string_view> &values, size_t clientnbr,std::vector<std::string_view> *errors) {
-			if (values.empty())
-			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
-				return (false);
-			}
-			if (!Utils::within_bounds(values.size(), Teams::Min, Teams::Max))
-			{
-				vector_string_view_add(errors, Errors::Validation::Server::InvalidTeamNbr);
-				return (false);
-			}
-			for (std::size_t i = 0; i < values.size(); ++i) {
-				for (std::size_t j = i + 1; j < values.size(); ++j) {
-					if (!Utils::within_bounds(values[i].size(), Teams::NameLenMin, Teams::NameLenMax)
-              || !Utils::within_bounds(values[j].size(), Teams::NameLenMin, Teams::NameLenMax)
-					{
-						vector_string_view_add(errors, Errors::Validation::Server::InvalidTeamLen);
-						return (false);
-					}
-					if (values[i] == values[j]) {
-						vector_string_view_add(errors, Errors::Validation::Server::DuplicateTeamName);
-						return (false);
-					}
-				}
-			}
-			return  (values.size() <= clientnbr);
-		}
-
-		Result<size_t> time(const std::vector<std::string_view> &values, std::vector<std::string_view> *errors) {
-			if (values.empty())
-			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
-				return Result<size_t>::Fail(Errors::Validation::MissValue);
-			}
-			auto r = Utils::parse_int(values[0]);
-			if (!r.Ok) {
-				vector_string_view_add(errors, r.Message);
-				return (Result<size_t>::Fail(r.Message));
-			}
-			if (!Utils::within_bounds(static_cast<size_t>(r.Value), Time::Min, Time::Max)) {
-				vector_string_view_add(errors, Errors::Validation::Server::Time);
-				return (Result<size_t>::Fail(Errors::Validation::Server::Time));
-			}
-			return (Result<size_t>::Success(static_cast<size_t>(r.Value)));
-		}
-
-	Result<size_t> clients(const std::vector<std::string_view> &values, std::vector<std::string_view> *errors) {
-			if (values.empty())
-			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
-				return Result<size_t>::Fail(Errors::Validation::MissValue);
-			}
-			auto r = Utils::parse_int(values[0]);
-			if (!r.Ok) {
-				vector_string_view_add(errors, r.Message);
-				return (Result<size_t>::Fail(r.Message));
-			}
-			if (!Utils::within_bounds(static_cast<size_t>(r.Value), Clients::Min, Clients::Max_Initial)) {
-				vector_string_view_add(errors, Errors::Validation::Server::Clients);
-				return (Result<size_t>::Fail(Errors::Validation::Server::Clients));
-			}
-			return (Result<size_t>::Success(static_cast<size_t>(r.Value)));
-		}
-	}
-}
+#include "servervalidators.h"
+#include "serveroptions.h"
 
 int main(int argc, char** argv) {
-	std::vector<std::string_view> errors;
-    Opt::GetOpt<Opt::Server::Id> opts(
-									  std::span{Opt::Server::specs},
-									  std::span{Opt::Server::key_table});
-	Opt::Server::Args args;
-    bool ok = opts.parse(argc, argv, &errors);
 
+  Opt::GetOpt<Opt::Server::Id> opts(std::span{Opt::Server::specs},
+                                    std::span{Opt::Server::key_table});
+  std::vector<std::string_view> errors;
+  //Parsing
+  bool ok = opts.parse(argc, argv, &errors);
 	if (ok == false)
 	{
 		std::cerr << "Parsing Error" << std::endl;
@@ -166,6 +19,9 @@ int main(int argc, char** argv) {
     }
 	ok &= validate_arity(opts.values, opts.specs, &errors);
 	errors.clear();
+  // Validation
+  Opt::Server::Args args = {};
+
 	if (ok == true) {
 		auto &val = opts.values[static_cast<size_t>(Opt::Server::Id::Port)].values;
 		auto port = Validators::port(val, &errors);
@@ -200,7 +56,7 @@ int main(int argc, char** argv) {
 	if (ok == true) {
 		ok &= Validators::Server::teams(opts.values[static_cast<size_t>(Opt::Server::Id::Teams)].values, static_cast<size_t>(args.clients), &errors);
 		if (ok)
-			args.teams = &opts.values[static_cast<size_t>(Opt::Server::Id::Teams)].values;
+			args.teams = opts.values[static_cast<size_t>(Opt::Server::Id::Teams)].values;
 	}
 	if (ok == false)
 	{
