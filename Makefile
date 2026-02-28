@@ -54,19 +54,23 @@ SRC-CLIENT := \
     InfluenceService Bid Blackboard ClientGame) \
   $(addprefix Core/, $(SRC-CORE))
 
+SRC-SERVER-NO-MAIN := \
+	  $(addprefix Server/, Game events responses servervalidators ArgValidation ) \
+	  $(addprefix Core/, $(SRC-CORE))
+
 SRC-SERVER := \
-  $(addprefix Server/, main Game events responses servervalidators ) \
-  $(addprefix Core/, $(SRC-CORE))
+  $(addprefix Server/, main) $(SRC-SERVER-NO-MAIN)
+
 
 TEST_GETOPT_SRC_SERVER := $(TEST_GETOPT_DIR)server.cpp \
-                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))	$(addprefix Server/, Game events responses servervalidators)))
+                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(SRC-SERVER-NO-MAIN)))
 
 
 TEST_GETOPT_SRC_CLIENT := $(TEST_GETOPT_DIR)client.cpp \
                           $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))))
 
 TEST_VALIDATORS_SRC_SERVER := $(TEST_VALIDATORS_DIR)server.cpp \
-                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(addprefix Core/, $(SRC-CORE))	$(addprefix Server/, Game events responses servervalidators)))
+                          $(addsuffix .o, $(addprefix $(BUILD-DIR), $(SRC-SERVER-NO-MAIN)))
 
 
 BUILD-CLIENT := $(addsuffix .o, $(addprefix $(BUILD-DIR),  $(SRC-CLIENT)))
