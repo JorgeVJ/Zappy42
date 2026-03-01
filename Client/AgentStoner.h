@@ -3,7 +3,7 @@
 
 class AgentStoner : public IAgent
 {
-	// Heredado vía IAgent
+	// Heredado via IAgent
   public:
 	void GetBids(Blackboard& blackboard) override;
 	~AgentStoner() override;

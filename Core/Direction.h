@@ -21,15 +21,15 @@ std::string DirectionToString(Direction dir);
 int DirectionToInt(Direction dir);
 
 /// <summary>
-/// Convierte un número de broadcast (1-8) a una dirección absoluta
-/// considerando la orientación actual del jugador
+/// Convierte un numero de broadcast (1-8) a una direccion absoluta
+/// considerando la orientacion actual del jugador
 /// </summary>
-/// <param name="soundNumber">Número del cuadrado (1-8, o 0 si está en el mismo tile)</param>
-/// <param name="playerOrientation">Orientación actual del jugador</param>
-/// <returns>Dirección absoluta desde donde viene el sonido</returns>
+/// <param name="soundNumber">Numero del cuadrado (1-8, o 0 si esta en el mismo tile)</param>
+/// <param name="playerOrientation">Orientacion actual del jugador</param>
+/// <returns>Direccion absoluta desde donde viene el sonido</returns>
 Direction BroadcastNumberToDirection(int soundNumber, Direction playerOrientation);
 
 /// <summary>
-/// Obtiene la dirección opuesta a la dada
+/// Obtiene la direccion opuesta a la dada
 /// </summary>
 Direction GetOppositeDirection(Direction dir);

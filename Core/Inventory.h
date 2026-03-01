@@ -38,7 +38,7 @@ class Inventory {
         /// Imprime el inventario en formato tabla para debugging
         void Print(const std::string& title = "Inventory") const;
 
-        /// Devuelve una representación en string del inventario
+        /// Devuelve una representacion en string del inventario
         std::string ToString() const;
         
         static std::map<int, IncantationRecipe> IncantationRecipes;
@@ -53,7 +53,7 @@ class Inventory {
 };
 
 /// <summary>
-/// Receta para realizar una incantación y subir de nivel
+/// Receta para realizar una incantacion y subir de nivel
 /// </summary>
 struct IncantationRecipe
 {

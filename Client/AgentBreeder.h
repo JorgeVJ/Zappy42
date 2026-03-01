@@ -4,7 +4,7 @@
 class AgentBreeder :
     public IAgent
 {
-    // Heredado vía IAgent
+    // Heredado via IAgent
   public:
 	  void GetBids(Blackboard& blackboard) override;
 	  ~AgentBreeder() override;

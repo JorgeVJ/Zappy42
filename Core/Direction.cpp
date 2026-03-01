@@ -25,11 +25,11 @@ int DirectionToInt(Direction dir)
 
 Direction BroadcastNumberToDirection(int soundNumber, Direction playerOrientation)
 {
-    // Si soundNumber es 0, está en el mismo tile (no hay dirección)
+    // Si soundNumber es 0, esta en el mismo tile (no hay direccion)
     if (soundNumber == 0)
     {
         std::cerr << "[Warning] Check Handle sound from same tile (number 0)\n";
-        return playerOrientation; // Retorna la misma orientación
+        return playerOrientation; // Retorna la misma orientacion
     }
     
     // Validar rango
@@ -39,25 +39,25 @@ Direction BroadcastNumberToDirection(int soundNumber, Direction playerOrientatio
         return playerOrientation;
     }
     
-    // Mapeo de números a direcciones relativas (antihorario desde enfrente)
-    // 1 = enfrente, 2 = enfrente-izquierda, 3 = izquierda, 4 = atrás-izquierda
-    // 5 = atrás, 6 = atrás-derecha, 7 = derecha, 8 = enfrente-derecha
+    // Mapeo de numeros a direcciones relativas (antihorario desde enfrente)
+    // 1 = enfrente, 2 = enfrente-izquierda, 3 = izquierda, 4 = atras-izquierda
+    // 5 = atras, 6 = atras-derecha, 7 = derecha, 8 = enfrente-derecha
     static const Direction relativeDirections[8] = {
         Direction::North,      // 1: enfrente
         Direction::NorthWest,  // 2: enfrente-izquierda (antihorario)
         Direction::West,       // 3: izquierda
-        Direction::SouthWest,  // 4: atrás-izquierda
-        Direction::South,      // 5: atrás
-        Direction::SouthEast,  // 6: atrás-derecha
+        Direction::SouthWest,  // 4: atras-izquierda
+        Direction::South,      // 5: atras
+        Direction::SouthEast,  // 6: atras-derecha
         Direction::East,       // 7: derecha
         Direction::NorthEast   // 8: enfrente-derecha
     };
     
-    // Obtener dirección relativa
+    // Obtener direccion relativa
     Direction relativeDir = relativeDirections[soundNumber - 1];
     
-    // Calcular rotación necesaria basada en la orientación del jugador
-    // Solo consideramos las 4 direcciones cardinales para la orientación
+    // Calcular rotacion necesaria basada en la orientacion del jugador
+    // Solo consideramos las 4 direcciones cardinales para la orientacion
     int rotation = 0;
     switch (playerOrientation)
     {
@@ -79,7 +79,7 @@ Direction BroadcastNumberToDirection(int soundNumber, Direction playerOrientatio
             break;
     }
     
-    // Aplicar rotación a la dirección relativa
+    // Aplicar rotacion a la direccion relativa
     int relativeIndex = static_cast<int>(relativeDir);
     int absoluteIndex = (relativeIndex + rotation) % 8;
     

@@ -14,6 +14,9 @@ void ExplorationService::MarkSeen(Tile* tile, int currentTick) {
     }
 }
 
+//• 	GetExplorationValue devuelve un valor mas alto cuanto mas tiempo hace que no se ha explorado ese tile
+//• 	Si el tile nunca se ha visto o hace mucho tiempo, su valor de exploracion es alto
+//•	    Si se acaba de ver, su valor es bajo
 double ExplorationService::GetExplorationValue(Tile* tile, int currentTick, int decayTicks) const {
     auto* data = this->Registry.TryGet(tile);
     if (!data)

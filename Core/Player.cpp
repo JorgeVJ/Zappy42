@@ -19,7 +19,7 @@ void Player::Move(int steps)
             Position.X -= steps;
             break;
         default:
-            // Si hay una orientación diagonal, no se mueve
+            // Si hay una orientacion diagonal, no se mueve
 			std::cout << "Warning: Player has diagonal orientation, Move() does not support it. No movement applied.\n";
             break;
     }

@@ -162,22 +162,22 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 			return 1;
 		}
 		
-		// Obtener la dirección DESDE donde viene el sonido/empujón
+		// Obtener la direccion DESDE donde viene el sonido/empujon
 		Direction soundFromDirection = BroadcastNumberToDirection(soundNumber, board.Me.Orientation);
 		
-		// Calcular hacia dónde nos empujan (dirección opuesta)
+		// Calcular hacia donde nos empujan (direccion opuesta)
 		Direction pushToDirection = GetOppositeDirection(soundFromDirection);
 		
-		// Caso especial: si es 0, el expulsor está en el mismo tile
+		// Caso especial: si es 0, el expulsor esta en el mismo tile
 		if (soundNumber == 0)
 		{
 			pushToDirection = board.Me.Orientation; // Nos empujan hacia donde estamos mirando
 			
 		}
-		// Guardar posición anterior
+		// Guardar posicion anterior
 		Point oldPos = board.Me.Position;
 		
-		// Mover al jugador en la dirección opuesta (puede ser diagonal)
+		// Mover al jugador en la direccion opuesta (puede ser diagonal)
 		board.Me.MoveInDirection(pushToDirection, 1);
 		
 		std::cout << "[Action] Expelled by another player!\n";

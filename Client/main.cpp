@@ -183,6 +183,9 @@ int main()
 	while (true)
 	{
 		board.Bids.clear();
+		// Limpiar resources requests muy antiguas (cada iteracion)
+		board.CleanupOldRequests(1000);
+
 		for (auto& agent : agents)
 			agent->GetBids(board);
 

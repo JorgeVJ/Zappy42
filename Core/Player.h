@@ -17,37 +17,37 @@ struct Player
     Player() = default;
 
     /// <summary>
-    /// Mueve al jugador en la dirección en la que está mirando
+    /// Mueve al jugador en la direccion en la que esta mirando
     /// </summary>
-    /// <param name="steps">Número de pasos (positivo avanza, negativo retrocede)</param>
+    /// <param name="steps">Numero de pasos (positivo avanza, negativo retrocede)</param>
     void Move(int steps = 1);
 
     /// <summary>
-    /// Mueve al jugador en una dirección específica (soporta diagonales)
+    /// Mueve al jugador en una direccion especifica (soporta diagonales)
     /// </summary>
-    /// <param name="dir">Dirección del movimiento</param>
-    /// <param name="steps">Número de pasos</param>
+    /// <param name="dir">Direccion del movimiento</param>
+    /// <param name="steps">Numero de pasos</param>
     void MoveInDirection(Direction dir, int steps = 1);
 
     /// <summary>
-    /// Gira al jugador en la dirección especificada
+    /// Gira al jugador en la direccion especificada
     /// </summary>
-    /// <param name="turnDir">Dirección del giro (Right o Left)</param>
+    /// <param name="turnDir">Direccion del giro (Right o Left)</param>
     void Turn(TurnDirection turnDir);
 
     /// <summary>
-    /// Obtiene la dirección opuesta a la orientación actual
+    /// Obtiene la direccion opuesta a la orientacion actual
     /// </summary>
     Direction GetOppositeDirection() const;
 
 private:
     /// <summary>
-    /// Convierte la orientación actual a un índice (0-3)
+    /// Convierte la orientacion actual a un indice (0-3)
     /// </summary>
     int GetDirectionIndex() const;
 
     /// <summary>
-    /// Convierte un índice (0-3) a una dirección cardinal
+    /// Convierte un indice (0-3) a una direccion cardinal
     /// </summary>
     Direction IndexToDirection(int index) const;
 };

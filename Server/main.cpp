@@ -268,7 +268,7 @@ int main()
         std::cerr << "select() error\n";
         break;
       }
-      // Nueva conexión
+      // Nueva conexion
       if (FD_ISSET(listenSocket.Get(), &readSet))
       {
         SOCKET s = accept(listenSocket.Get(), nullptr, nullptr);

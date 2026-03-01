@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iomanip>
 
-// Recetas de incantación: nivel -> (recursos necesarios, jugadores necesarios)
+// Recetas de incantacion: nivel -> (recursos necesarios, jugadores necesarios)
 std::map<int, IncantationRecipe> Inventory::IncantationRecipes = {
     //  Level                         Linemate  Derau  Sibur  Mend  Phiras  Thys   Players
     {   1,IncantationRecipe(Inventory({ 1,      0,      0,      0,      0,  0}),    1)},

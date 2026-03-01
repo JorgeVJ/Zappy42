@@ -5,7 +5,7 @@
 
 void AgentChaman::GetBids(Blackboard& bb)
 {
-	// Verificar si puede hacer incantación
+	// Verificar si puede hacer incantacion
 	if (bb.Me.Level < 8)
 	{
 		auto it = Inventory::IncantationRecipes.find(bb.Me.Level);
@@ -16,7 +16,7 @@ void AgentChaman::GetBids(Blackboard& bb)
 			// Verificar si tiene los recursos necesarios
 			if (bb.Me.inventory.Has(recipe.RequiredResources))
 			{
-				// TODO: Verificar también si hay suficientes jugadores en el tile
+				// TODO: Verificar tambien si hay suficientes jugadores en el tile
 				std::cout << "[Chaman] Can perform incantation to level " << (bb.Me.Level + 1) << "\n";
 				std::cout << "[Chaman] Required players: " << recipe.RequiredPlayers << "\n";
 				

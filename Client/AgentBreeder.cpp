@@ -10,7 +10,7 @@ void AgentBreeder::GetBids(Blackboard& bb)
 
 	double score = voirScore * (1 - bb.GetHungerNeed());
 
-	// Si ya tenemos el máximo de jugadores, no hacer nada
+	// Si ya tenemos el maximo de jugadores, no hacer nada
 	if (bb.TeamNbr >= 6)
 		return ;
 	
@@ -19,7 +19,7 @@ void AgentBreeder::GetBids(Blackboard& bb)
 	bb.Bids.push_back(Bid(connectNbr, 10.0));
 
 	// Fork si no hay suficientes slots disponibles
-	// Verificar si necesitamos más jugadores para incantación
+	// Verificar si necesitamos mas jugadores para incantacion
 	auto it = Inventory::IncantationRecipes.find(bb.Me.Level);
 	if (it != Inventory::IncantationRecipes.end())
 	{
@@ -32,13 +32,13 @@ void AgentBreeder::GetBids(Blackboard& bb)
 
 		if (totalAvailablePlayers < playersForIncantation)
 		{
-			// ALTA PRIORIDAD: No hay suficientes jugadores para incantación
+			// ALTA PRIORIDAD: No hay suficientes jugadores para incantacion
 			int missingPlayers = playersForIncantation - totalAvailablePlayers;
-			forkPriority = 80.0 + (missingPlayers * 20.0); // Más prioritario cuanto más falten
+			forkPriority = 80.0 + (missingPlayers * 20.0); // Mas prioritario cuanto mas falten
 		}
 		else if (totalAvailablePlayers < 6)
 		{
-			// PRIORIDAD MEDIA: Tenemos suficientes para incantación, pero podemos crecer
+			// PRIORIDAD MEDIA: Tenemos suficientes para incantacion, pero podemos crecer
 			forkPriority = 40.0;
 		}
 		else

@@ -19,7 +19,7 @@ std::string GetCommandKeyword(const std::string& command)
     keyword.erase(0, keyword.find_first_not_of(" \t\n\r"));
     keyword.erase(keyword.find_last_not_of(" \t\n\r") + 1);
 
-    // Convertir a minúsculas para comparación case-insensitive
+    // Convertir a minusculas para comparacion case-insensitive
     std::transform(keyword.begin(), keyword.end(), keyword.begin(),
         [](unsigned char c) { return std::tolower(c); });
 
@@ -92,7 +92,7 @@ std::string CommandTypeToString(CommandType type)
 
 int GetCommandDuration(CommandType type)
 {
-    // Duración en ticks según el subject de Zappy
+    // Duracion en ticks segun el subject de Zappy
     static const std::map<CommandType, int> durations = {
         {CommandType::Advance,      7},
         {CommandType::Right,        7},

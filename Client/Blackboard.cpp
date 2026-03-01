@@ -2,16 +2,47 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 Blackboard::Blackboard() : map(0, 0), CurrentTick(0)
 {
-    //Initialize food on inventary
+    //Initialize food on inventory
 	Me.inventory.Add(Resource::Food, 10);
 }
 
 void Blackboard::InitializeMap(int x, int y)
 {
     map = Map(x, y);
+}
+
+void Blackboard::RequestResource(Resource res, int priority)
+{
+    // Buscar si ya existe una solicitud para este recurso
+    for (auto& req : ResourceRequests) {
+        if (req.resource == res) {
+            // Actualizar prioridad y timestamp
+            req.priority = priority;
+            req.tickRequested = CurrentTick;
+            return;
+        }
+    }
+    
+    // Si no existe, crear nueva solicitud
+    ResourceRequests.push_back(ResourceRequest(res, priority, CurrentTick));
+}
+
+void Blackboard::CleanupOldRequests(int maxAge)
+{
+    ResourceRequests.erase(
+        std::remove_if(
+            ResourceRequests.begin(),
+            ResourceRequests.end(),
+            [this, maxAge](const ResourceRequest& req) {
+                return (CurrentTick - req.tickRequested) > maxAge;
+            }
+        ),
+        ResourceRequests.end()
+    );
 }
 
 int Blackboard::GetRemainingLifeTicks() const
@@ -41,7 +72,7 @@ double Blackboard::GetHungerNeed()
 	if (remainingTicks <= 0)
 		return 1.0; // MUERTE INMINENTE
 	else if (remainingTicks < 200)
-		return 0.95; // CRÍTICO (menos de 2 comandos de comida)
+		return 0.95; // CRiTICO (menos de 2 comandos de comida)
 	else if (remainingTicks < 400)
 		return 0.85; // URGENTE
 	else if (remainingTicks < 600)
