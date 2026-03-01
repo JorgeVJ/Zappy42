@@ -183,45 +183,45 @@ int main()
 	while (true)
 	{
 		board.Bids.clear();
-		//for (auto& agent : agents)
-		//	agent->GetBids(board);
+		for (auto& agent : agents)
+			agent->GetBids(board);
 
-		//Bid* bestBid = GetBestBid(board.Bids);
-		//if (!bestBid)
-		//	continue;
+		Bid* bestBid = GetBestBid(board.Bids);
+		if (!bestBid)
+			continue;
 
-		//std::string commandStr = CommandTypeToString(bestBid->Command.type);
-		//if (!bestBid->Command.commandParameter.empty())
-		//	commandStr += " " + bestBid->Command.commandParameter;
+		std::string commandStr = CommandTypeToString(bestBid->Command.type);
+		if (!bestBid->Command.commandParameter.empty())
+			commandStr += " " + bestBid->Command.commandParameter;
 
-		//board.commandHistory.AddCommand(bestBid->Command.type, board.CurrentTick, bestBid->Command.commandParameter);
-		//std::cout << "[Client] CMD => " << commandStr << "\n";
-		//if (!conn->SendLine(commandStr))
-		//	break;
+		board.commandHistory.AddCommand(bestBid->Command.type, board.CurrentTick, bestBid->Command.commandParameter);
+		std::cout << "[Client] CMD => " << commandStr << "\n";
+		if (!conn->SendLine(commandStr))
+			break;
 
 
 
 		////test
-		std::string testCommand;
-		std::string objectParam = "";
+		//std::string testCommand;
+		//std::string objectParam = "";
 
-		if (i == 0)
-		{
-			testCommand = "avance";
-			std::cout << "[Client] CMD => avance (iteration " << i << ")\n";
-		}
-		else
-		{
-			testCommand = "prend nourriture";
-			objectParam = "nourriture";
-			std::cout << "[Client] CMD => prend nourriture (iteration " << i << ")\n";
-		}
+		//if (i == 0)
+		//{
+		//	testCommand = "avance";
+		//	std::cout << "[Client] CMD => avance (iteration " << i << ")\n";
+		//}
+		//else
+		//{
+		//	testCommand = "prend nourriture";
+		//	objectParam = "nourriture";
+		//	std::cout << "[Client] CMD => prend nourriture (iteration " << i << ")\n";
+		//}
 	
-		board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
-		i++;
+		//board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
+		//i++;
 
-		if (!conn->SendLine(testCommand))
-			break;
+		//if (!conn->SendLine(testCommand))
+		//	break;
 
 			/////
 

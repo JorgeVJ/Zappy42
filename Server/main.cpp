@@ -18,7 +18,7 @@
 
 std::vector<Connection*> clients;
 
-
+//Debug only
 int LEVEL = 1;
 
 
@@ -115,7 +115,8 @@ void HandleCommand(const std::string& cmd, Connection* client)
     }
     else if (cmd == "expulse")
     {
-       std::ostringstream ss;
+        //Debug only
+        std::ostringstream ss;
         ss << "deplacement " << LEVEL;
         if (LEVEL > 8) {
             ss.str("");
@@ -127,6 +128,7 @@ void HandleCommand(const std::string& cmd, Connection* client)
     }
     else if (cmd == "connect_nbr")
     {
+        //Debug only
         client->SendLine("1");
     }
     else if (cmd == "msz")

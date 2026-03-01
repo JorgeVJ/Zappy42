@@ -36,7 +36,7 @@ void AgentHungry::GetBids(Blackboard& bb)
 		// MUERTE INMINENTE
 		priority = 250.0;
 		urgencyLevel = "DEATH";
-		std::cout << "[Hungry] ☠️ DEATH IMMINENT! Priority: " << priority << "\n";
+		std::cout << "[Hungry] DEATH IMMINENT! Priority: " << priority << "\n";
 	}
 	else if (remainingTicks < 200)
 	{

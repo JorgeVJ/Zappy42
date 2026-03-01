@@ -16,6 +16,7 @@ struct Player
     // Constructor por defecto
     Player() = default;
 
+    /// <summary>
     /// Mueve al jugador en la dirección en la que está mirando
     /// </summary>
     /// <param name="steps">Número de pasos (positivo avanza, negativo retrocede)</param>

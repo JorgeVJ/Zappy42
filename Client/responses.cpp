@@ -5,13 +5,17 @@
 #include "Direction.h"
 #include <iostream>
 #include <string>
+#include <sstream>
 
 int handleServerResponse(Blackboard& board, const std::string& response)
 {
 	// Obtener el ultimo comando enviado
 	const auto& pendingCommands = board.commandHistory.GetPendingCommands();
-	CommandEntry lastCommand = pendingCommands.front();
-
+	CommandEntry lastCommand;
+	if (pendingCommands.empty())
+		lastCommand = CommandEntry::Create(CommandType::Empty, board.CurrentTick);
+	else
+		lastCommand = pendingCommands.front();
 	// Tipo de respuesta
 	if (response == "ok")
 	{

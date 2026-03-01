@@ -145,13 +145,13 @@ void Blackboard::UpdateTick(int ticks)
 	}
 	
 	CurrentTick += ticks;
-	std::cout << "[Debbug] Tick updated to: " << CurrentTick << "\n";
+	std::cout << "[Debug] Tick updated to: " << CurrentTick << "\n";
 }
 
 void Blackboard::ResetTick()
 {
     CurrentTick = 0;
-    std::cout << "[Debbug] Tick reset to 0\n";
+    std::cout << "[Debug] Tick reset to 0\n";
 }
 
 bool Blackboard::HandleIncantationResponse(const std::string& response)
@@ -206,7 +206,7 @@ bool Blackboard::HandleIncantationResponse(const std::string& response)
         
         if (newLevel <= oldLevel)
         {
-            std::cout << "[Debbug] Something went wrong!\n";
+            std::cout << "[Debug] Something went wrong!\n";
             return false;
         }
         

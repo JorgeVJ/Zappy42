@@ -1,6 +1,7 @@
 #include "AgentExplorer.h"
 #include "Bid.h"
 #include "CommandEntry.h"
+#include <iostream>
 
 double GetVoirScore(Blackboard& bb) {
 	double voirWeigth = 42;
@@ -26,10 +27,14 @@ double GetVoirScore(Blackboard& bb) {
 
 void AgentExplorer::GetBids(Blackboard& bb)
 {
-	int score = 12;
-	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Left, bb.CurrentTick), score));
-	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Right, bb.CurrentTick), score));
-	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Advance, bb.CurrentTick), score));
-	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::See, bb.CurrentTick), GetVoirScore(bb)));
+	int score = 52;
+	//bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Left, bb.CurrentTick), score));
+	//bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Right, bb.CurrentTick), score));
+	//bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::Advance, bb.CurrentTick), score));
+
+	//Check voir score
+	bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::See, bb.CurrentTick), score));
+	//bb.Bids.push_back(Bid(CommandEntry::Create(CommandType::See, bb.CurrentTick), GetVoirScore(bb)));
+	std::cout << "[Explorer] Actual Voir Score " << GetVoirScore(bb) << "\n";
 }
 AgentExplorer::~AgentExplorer() {};

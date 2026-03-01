@@ -33,10 +33,11 @@ void AgentChaman::GetBids(Blackboard& bb)
 	}
 	
 	// Broadcast para coordinar
-	bb.Bids.push_back(Bid(
-		CommandEntry::Create(CommandType::Broadcast, "Marco", bb.CurrentTick),
-		50.0
-	));
+	// Change value or later behavior
+	//bb.Bids.push_back(Bid(
+	//	CommandEntry::Create(CommandType::Broadcast, "Marco", bb.CurrentTick),
+	//	20.0
+	//));
 }
 
 AgentChaman::~AgentChaman() {};
