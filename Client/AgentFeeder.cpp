@@ -1,4 +1,4 @@
-#include "AgentHungry.h"
+#include "AgentFeeder.h"
 #include "Bid.h"
 #include "CommandEntry.h"
 #include <iostream>
@@ -9,7 +9,7 @@ double CalculateHunger(Blackboard& bb)
 	return bias * bb.GetHungerNeed();
 }
 
-void AgentHungry::GetBids(Blackboard& bb)
+void AgentFeeder::GetBids(Blackboard& bb)
 {
 	Tile* playerTile = bb.GetPlayerTile();
 	if (!playerTile)
@@ -97,6 +97,6 @@ void AgentHungry::GetBids(Blackboard& bb)
 	));
 }
 
-AgentHungry::~AgentHungry()
+AgentFeeder::~AgentFeeder()
 {
 }

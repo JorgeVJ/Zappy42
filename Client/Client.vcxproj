@@ -137,7 +137,7 @@
     <ClCompile Include="AgentBreeder.cpp" />
     <ClCompile Include="AgentChaman.cpp" />
     <ClCompile Include="AgentExplorer.cpp" />
-    <ClCompile Include="AgentHungry.cpp" />
+    <ClCompile Include="AgentFeeder.cpp" />
     <ClCompile Include="AgentStoner.cpp" />
     <ClCompile Include="Bid.cpp" />
     <ClCompile Include="Blackboard.cpp" />
@@ -151,7 +151,7 @@
     <ClInclude Include="AgentBreeder.h" />
     <ClInclude Include="AgentChaman.h" />
     <ClInclude Include="AgentExplorer.h" />
-    <ClInclude Include="AgentHungry.h" />
+    <ClInclude Include="AgentFeeder.h" />
     <ClInclude Include="AgentStoner.h" />
     <ClInclude Include="Bid.h" />
     <ClInclude Include="Blackboard.h" />

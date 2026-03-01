@@ -10,7 +10,7 @@
 #include "Blackboard.h"
 #include "IAgent.h"
 #include "AgentExplorer.h"
-#include "AgentHungry.h"
+#include "AgentFeeder.h"
 #include "AgentChaman.h"
 #include "AgentBreeder.h"
 #include "AgentStoner.h"
@@ -46,7 +46,7 @@ Bid* GetBestBid(std::vector<Bid>& bids)
 void CreateAgents(std::vector<IAgent*>& agents)
 {
 	agents.push_back(new AgentExplorer());
-	agents.push_back(new AgentHungry());
+	agents.push_back(new AgentFeeder());
 	agents.push_back(new AgentChaman());
 	agents.push_back(new AgentBreeder());
 	agents.push_back(new AgentStoner());
