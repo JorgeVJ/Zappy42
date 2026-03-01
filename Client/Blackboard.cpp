@@ -5,6 +5,8 @@
 
 Blackboard::Blackboard() : map(0, 0), CurrentTick(0)
 {
+    //Initialize food on inventary
+	Me.inventory.Add(Resource::Food, 10);
 }
 
 void Blackboard::InitializeMap(int x, int y)
