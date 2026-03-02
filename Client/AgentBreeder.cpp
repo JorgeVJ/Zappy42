@@ -1,6 +1,7 @@
 #include "AgentBreeder.h"
 #include "Bid.h"
 #include <iostream>
+#include <iostream>
 
 void AgentBreeder::GetBids(Blackboard& bb)
 {

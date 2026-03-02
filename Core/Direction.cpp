@@ -65,13 +65,13 @@ Direction BroadcastNumberToDirection(int soundNumber, Direction playerOrientatio
             rotation = 0;
             break;
         case Direction::East:
-            rotation = 2; // 90° a la derecha = 2 posiciones
+            rotation = 2; // 90ï¿½ a la derecha = 2 posiciones
             break;
         case Direction::South:
-            rotation = 4; // 180° = 4 posiciones
+            rotation = 4; // 180ï¿½ = 4 posiciones
             break;
         case Direction::West:
-            rotation = 6; // 270° a la derecha = 6 posiciones
+            rotation = 6; // 270ï¿½ a la derecha = 6 posiciones
             break;
         default:
             std::cerr << "[Warning] Player has diagonal orientation, using closest cardinal\n";

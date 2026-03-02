@@ -31,6 +31,9 @@ struct ResourceRequest {
 class Blackboard
 {
 	public:
+		// Game constants
+		static constexpr int TICKS_PER_FOOD = 126;
+		
 		/// <summary>
 		/// Sum of all Command Ticks.
 		/// </summary>

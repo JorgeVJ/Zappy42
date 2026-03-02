@@ -47,9 +47,8 @@ void Blackboard::CleanupOldRequests(int maxAge)
 
 int Blackboard::GetRemainingLifeTicks() const
 {
-	const int TICKS_PER_FOOD = 126;
-	int food = Me.inventory.Get(Resource::Food);
-	return food * TICKS_PER_FOOD;
+	 int food = Me.inventory.Get(Resource::Food);
+    return food * TICKS_PER_FOOD;
 }
 
 double Blackboard::GetLifePercentage() const

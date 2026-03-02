@@ -138,7 +138,6 @@
     <ClCompile Include="AgentChaman.cpp" />
     <ClCompile Include="AgentExplorer.cpp" />
     <ClCompile Include="AgentFeeder.cpp" />
-    <ClCompile Include="AgentHungry.cpp" />
     <ClCompile Include="AgentStoner.cpp" />
     <ClCompile Include="Bid.cpp" />
     <ClCompile Include="Blackboard.cpp" />

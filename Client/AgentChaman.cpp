@@ -2,6 +2,8 @@
 #include "Bid.h"
 #include "CommandEntry.h"
 #include <iostream>
+#include "CommandEntry.h"
+#include <iostream>
 
 void AgentChaman::GetBids(Blackboard& bb)
 {

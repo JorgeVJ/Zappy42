@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iostream>
 #include "AgentStoner.h"
 #include "Bid.h"
 #include "CommandEntry.h"
