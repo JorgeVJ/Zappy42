@@ -104,6 +104,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>../Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +137,7 @@
     <ClCompile Include="AgentBreeder.cpp" />
     <ClCompile Include="AgentChaman.cpp" />
     <ClCompile Include="AgentExplorer.cpp" />
-    <ClCompile Include="AgentHungry.cpp" />
+    <ClCompile Include="AgentFeeder.cpp" />
     <ClCompile Include="AgentStoner.cpp" />
     <ClCompile Include="Bid.cpp" />
     <ClCompile Include="Blackboard.cpp" />
@@ -144,12 +145,13 @@
     <ClCompile Include="ExplorationService.cpp" />
     <ClCompile Include="InfluenceService.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="responses.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgentBreeder.h" />
     <ClInclude Include="AgentChaman.h" />
     <ClInclude Include="AgentExplorer.h" />
-    <ClInclude Include="AgentHungry.h" />
+    <ClInclude Include="AgentFeeder.h" />
     <ClInclude Include="AgentStoner.h" />
     <ClInclude Include="Bid.h" />
     <ClInclude Include="Blackboard.h" />
@@ -159,6 +161,7 @@
     <ClInclude Include="InfluenceService.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="MessageEntry.h" />
+    <ClInclude Include="responses.h" />
     <ClInclude Include="Result.h" />
   </ItemGroup>
   <ItemGroup>

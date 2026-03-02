@@ -1,7 +1,13 @@
-#include "Blackboard.h"
+﻿#include "Blackboard.h"
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <algorithm>
 
-Blackboard::Blackboard() : map(0, 0), Sock(nullptr)
+Blackboard::Blackboard() : map(0, 0), CurrentTick(0)
 {
+    //Initialize food on inventory
+	Me.inventory.Add(Resource::Food, 10);
 }
 
 void Blackboard::InitializeMap(int x, int y)
@@ -9,15 +15,43 @@ void Blackboard::InitializeMap(int x, int y)
     map = Map(x, y);
 }
 
-double Blackboard::GetHungerNeed() {
-	double value = 40.0 / this->Me.inventory.Get(Resource::Food);
+int Blackboard::GetRemainingLifeTicks() const
+{
+    int food = Me.inventory.Get(Resource::Food);
+    return food * TICKS_PER_FOOD;
+}
 
-	if (value < 0.0)
-		return 0.0;
-	else if (value > 1.0)
-		return 1.0;
+double Blackboard::GetLifePercentage() const
+{
+	const int MAX_REASONABLE_LIFE = 1260; // 10 unidades de comida
+	int remaining = GetRemainingLifeTicks();
+	double percentage = static_cast<double>(remaining) / MAX_REASONABLE_LIFE;
+	
+	// Clamped entre 0 y 1
+	if (percentage < 0.0) return 0.0;
+	if (percentage > 1.0) return 1.0;
+	return percentage;
+}
 
-	return value;
+double Blackboard::GetHungerNeed()
+{
+	int remainingTicks = GetRemainingLifeTicks();
+	
+	// Escala de urgencia basada en ticks restantes
+	if (remainingTicks <= 0)
+		return 1.0; // MUERTE INMINENTE
+	else if (remainingTicks < 200)
+		return 0.95; // CRÍTICO (menos de 2 comandos de comida)
+	else if (remainingTicks < 400)
+		return 0.85; // URGENTE
+	else if (remainingTicks < 600)
+		return 0.70; // ALTO
+	else if (remainingTicks < 800)
+		return 0.50; // MEDIO
+	else if (remainingTicks < 1000)
+		return 0.30; // BAJO
+	else
+		return 0.15; // MUY BAJO (bien de comida)
 }
 
 std::vector<std::string> ParseVoir(const std::string& str)
@@ -103,3 +137,94 @@ void Blackboard::HandleVoirResponse(const std::string& response)
         PropagateInfluences(tile);
     }
 }
+
+void Blackboard::UpdateTick(int ticks)
+{
+	if (ticks < 0)
+	{
+		std::cerr << "[Warning] Attempted to update tick with negative value: " << ticks << "\n";
+		return;
+	}
+	
+	CurrentTick += ticks;
+	std::cout << "[Debug] Tick updated to: " << CurrentTick << "\n";
+}
+
+void Blackboard::ResetTick()
+{
+    CurrentTick = 0;
+    std::cout << "[Debug] Tick reset to 0\n";
+}
+
+bool Blackboard::HandleIncantationResponse(const std::string& response)
+{
+    // Buscar el patron "niveau actuel : "
+    const std::string pattern = "niveau actuel : ";
+    size_t pos = response.find(pattern);
+    
+    if (pos == std::string::npos)
+    {
+        std::cerr << "[Error] Invalid incantation response format: '" << response << "'\n";
+        return false;
+    }
+    
+    // Extraer la parte despues del patron
+    std::string levelStr = response.substr(pos + pattern.length());
+    
+    // Limpiar espacios en blanco
+    levelStr.erase(0, levelStr.find_first_not_of(" \t\n\r"));
+    levelStr.erase(levelStr.find_last_not_of(" \t\n\r") + 1);
+    
+    if (levelStr.empty())
+    {
+        std::cerr << "[Error] No level value found in response: '" << response << "'\n";
+        return false;
+    }
+    
+    // Parsear el nivel
+    try
+    {
+        size_t parsePos = 0;
+        int newLevel = std::stoi(levelStr, &parsePos);
+        
+        // Verificar que se parseo toda la string
+        if (parsePos != levelStr.length())
+        {
+            std::cerr << "[Error] Invalid level format: '" << levelStr << "'\n";
+            return false;
+        }
+        
+        // Validar rango de nivel (1-8 segun Zappy)
+        if (newLevel < 1 || newLevel > 8)
+        {
+            std::cerr << "[Error] Level out of expected range (1-8): " << newLevel << "\n";
+            return false;
+        }
+        
+        int oldLevel = Me.Level;
+        Me.Level = newLevel;
+        
+        std::cout << "[Blackboard] Player level updated: " << oldLevel << " -> " << newLevel << "\n";
+        
+        if (newLevel <= oldLevel)
+        {
+            std::cout << "[Debug] Something went wrong!\n";
+            return false;
+        }
+        
+        return true;
+    }
+    catch (const std::invalid_argument& e)
+    {
+        std::cerr << "[Error] Cannot parse level from: '" << levelStr << "'\n";
+        return false;
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cerr << "[Error] Level value out of range: '" << levelStr << "'\n";
+        return false;
+    }
+    
+    return false;
+}
+

@@ -1,8 +1,8 @@
 #include "Bid.h"
 #include "CommandType.h"
+#include "CommandEntry.h"
 
 
-Bid::Bid(std::string command, double value) : Command(command), Value(value)
+Bid::Bid(CommandEntry command, double value) : Command(command), Value(value)
 {
-	Type = ParseCommandType(command);
 }
