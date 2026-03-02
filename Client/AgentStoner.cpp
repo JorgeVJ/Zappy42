@@ -1,63 +1,93 @@
+#include <iostream>
 #include "AgentStoner.h"
-#include <map>
-
-Inventory ComputeMaxNeeded()
-{
-    Inventory max;
-    const std::map<int, Inventory>& recipes = Inventory::IncantationRecipes;
-
-    for (std::pair<int, Inventory> pair : recipes)
-    {
-        for (size_t i = 0; i < Inventory::Size(); ++i)
-        {
-            Resource r = static_cast<Resource>(i);
-            int needed = pair.second.Get(r);
-            int currentMax = max.Get(r);
-
-            if (needed > currentMax)
-                max.Add(r, needed - currentMax);
-        }
-    }
-
-    return max;
-}
-
-double ResourceNeedScore(
-    Resource r,
-    Inventory& have,
-    Inventory& needNow,
-    Inventory& maxNeed
-)
-{
-    int current = have.Get(r);
-    int needed = needNow.Get(r);
-    int maxAllowed = maxNeed.Get(r);
-
-    // Ya no sirve recoger más
-    if (current >= maxAllowed)
-        return 0.0;
-
-    // Urgencia inmediata
-    if (current < needed)
-        return 2.0 + (needed - current);
-
-    // Stock útil para futuros niveles
-    return 0.5 * (maxAllowed - current) / maxAllowed;
-}
+#include "Bid.h"
+#include "CommandEntry.h"
+#include "Inventory.h"
 
 void AgentStoner::GetBids(Blackboard& bb)
 {
-    Inventory tileInv = bb.GetPlayerTile()->inventory;
-    Inventory max = ComputeMaxNeeded();
-    Inventory lvl = Inventory::IncantationRecipes[bb.Me.Level];
-    for (int i = 0; i < (int)Resource::Count; i++) {
-        Resource resource = (Resource)i;
-        int qtty = tileInv.Get(resource);
-        if (qtty > 0) {
-	        Bid bid("prend " + Inventory::ResourceToString(resource), ResourceNeedScore(resource, bb.Me.inventory, lvl, max));
-        	bb.Bids.push_back(bid);
-        }
-    }
+	Tile* playerTile = bb.GetPlayerTile();
+	if (!playerTile)
+		return;
+	
+	// Obtener la receta para el nivel actual
+	auto it = Inventory::IncantationRecipes.find(bb.Me.Level);
+	if (it == Inventory::IncantationRecipes.end())
+	{
+		std::cout << "[Stoner] No recipe found for level " << bb.Me.Level << "\n";
+		return;
+	}
+	
+	IncantationRecipe& recipe = it->second;
+	Inventory& required = recipe.RequiredResources;
+	
+	// Mapeo de recursos
+	struct ResourceInfo {
+		std::string name;
+		Resource enumVal;
+	};
+	
+	const ResourceInfo resources[] = {
+		{"linemate", Resource::Linemate},
+		{"deraumere", Resource::Deraumere},
+		{"sibur", Resource::Sibur},
+		{"mendiane", Resource::Mendiane},
+		{"phiras", Resource::Phiras},
+		{"thystame", Resource::Thystame}
+	};
+	
+	std::cout << "[Stoner] Analyzing resources for level " << bb.Me.Level << " incantation\n";
+
+	// FASE 1: RECOGER recursos prioritarios
+	for (const auto& res : resources)
+	{
+		int onTile = playerTile->inventory.Get(res.enumVal);
+		if (onTile <= 0)
+			continue; // No hay en el tile
+
+		int needed = required.Get(res.enumVal);
+		int current = bb.Me.inventory.Get(res.enumVal);
+		int missing = needed - current;
+		
+		double priority = 0.0;
+		
+		if (missing > 0)
+		{
+			// ALTA PRIORIDAD: Necesitamos este recurso para incantación
+			priority = 80.0 + (missing * 15.0); // Rango: 80-125 Más prioritario cuanto más falte
+			std::cout << "[Stoner] CRITICAL: Need " << missing << " more " << res.name 
+			          << " (have " << current << "/" << needed << "). Priority: " << priority << "\n";
+		}
+		else if (needed > 0 && current < needed + 2)
+		{
+			// PRIORIDAD MEDIA: Tenemos lo justo, pero podemos recoger más como backup
+			priority = 40.0;
+			std::cout << "[Stoner] BACKUP: Collecting extra " << res.name 
+			          << " (have " << current << ", need " << needed << "). Priority: " << priority << "\n";
+		}
+		else if (needed > 0)
+		{
+			// PRIORIDAD BAJA: Tenemos suficiente
+			priority = 15.0;
+			std::cout << "[Stoner] LOW: Have enough " << res.name 
+			          << " (" << current << "/" << needed << "). Priority: " << priority << "\n";
+		}
+		else
+		{
+			// PRIORIDAD MUY BAJA: No lo necesitamos para incantación, pero puede ser útil después
+			priority = 8.0;
+			std::cout << "[Stoner] FUTURE: " << res.name 
+			          << " not needed for current level. Priority: " << priority << "\n";
+		}
+		
+		// Ajustar prioridad según hambre
+		priority *= (1 - bb.GetHungerNeed());
+		
+		bb.Bids.push_back(Bid(
+			CommandEntry::Create(CommandType::Take, res.name, bb.CurrentTick),
+			priority
+		));
+	}
 }
 
 AgentStoner::~AgentStoner() {};

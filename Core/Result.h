@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <string_view>
 
 template<typename T>
 struct Result
@@ -13,8 +14,8 @@ struct Result
 		return Result<T>{ true, std::string(), v };
 	}
 
-	static Result<T> Fail(const std::string& msg)
+	static Result<T> Fail(std::string_view msg)
 	{
-		return Result<T>{ false, msg, T() };
+		return Result<T>{ false, std::string(msg), T() };
 	}
 };

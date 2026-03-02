@@ -157,9 +157,11 @@
     <ClInclude Include="validators.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommandEntry.cpp" />
     <ClCompile Include="CommandHistory.cpp" />
     <ClCompile Include="CommandType.cpp" />
     <ClCompile Include="Core.cpp" />
+    <ClCompile Include="Direction.cpp" />
     <ClCompile Include="GetOpt.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="Map.cpp" />
@@ -169,6 +171,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="Tile.cpp" />

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "validators.h"
+#include "Result.h"
 
 Result<int> Validators::Utils::parse_int(std::string_view s)  noexcept
 {

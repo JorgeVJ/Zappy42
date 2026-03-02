@@ -116,6 +116,13 @@
     <ClCompile Include="CommandType.cpp">
       <Filter>Archivos de origen\Commands</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Direction.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandEntry.cpp">
     <ClCompile Include="GetOpt.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>

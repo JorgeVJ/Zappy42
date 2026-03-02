@@ -19,11 +19,19 @@
 class Blackboard
 {
 	public:
+		// Game constants
+		static constexpr int TICKS_PER_FOOD = 126;
+		
 		/// <summary>
 		/// Sum of all Command Ticks.
 		/// </summary>
 		Map map;
 		int CurrentTick;
+		int ConnectNbr = 0;
+
+		// Number of players we are breeding
+		int TeamNbr = 0;
+
 		Player Me;
 
 		/// <summary>
@@ -43,14 +51,47 @@ class Blackboard
 		ExplorationService explorationService;
 
 		CommandHistory commandHistory;
-		Connection* Sock;
 
 		Blackboard(); // constructor por defecto
 
 		void InitializeMap(int x, int y);
+		
+		/// <summary>
+		/// Incrementa el CurrentTick por la cantidad especificada
+		/// </summary>
+		/// <param name="ticks">Cantidad de ticks a incrementar (debe ser positivo)</param>
+		void UpdateTick(int ticks);
+		
+		/// <summary>
+		/// Resetea el CurrentTick a 0
+		/// </summary>
+		void ResetTick();
+		
+		/// <summary>
+		/// Calcula los ticks de vida restantes basándose en la comida actual
+		/// </summary>
+		/// <returns>Ticks de vida restantes</returns>
+		int GetRemainingLifeTicks() const;
+		
+		/// <summary>
+		/// Calcula el porcentaje de vida restante (0.0 - 1.0)
+		/// </summary>
+		/// <returns>Porcentaje de vida (1.0 = lleno, 0.0 = muerte inminente)</returns>
+		double GetLifePercentage() const;
+		
+		/// <summary>
+		/// Calcula la urgencia de conseguir comida (0.0 - 1.0, más alto = más urgente)
+		/// </summary>
 		double GetHungerNeed();
 		std::vector<std::pair<int, int>> GetVoirOffsets(int level, Direction dir);
 		void PropagateInfluences(Tile* tile);
 		Tile* GetPlayerTile();
 		void HandleVoirResponse(const std::string& response);
+		
+		/// <summary>
+		/// Parsea la respuesta de incantación y actualiza el nivel del jugador
+		/// </summary>
+		/// <param name="response">Respuesta del servidor: "niveau actuel : K"</param>
+		/// <returns>true si se parseó correctamente, false si hubo error</returns>
+		bool HandleIncantationResponse(const std::string& response);
 };

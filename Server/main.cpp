@@ -10,6 +10,7 @@
 #include "events.h"
 #include "Connection.h" // Discern Windows && Linux includes.
 #include "main.h"
+#include <thread>
 
 #ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
@@ -17,33 +18,37 @@
 
 std::vector<Connection*> clients;
 
+//Debug only
+int LEVEL = 1;
+
+
 int HandlePlayerConnection(Game* game, Connection* client, const std::string& cmd)
 {
-    game->Players.push_back(client);
-    try {
-      client->player = new Player();
-    }
-    catch ( const  std::exception &e)  {
-      std::cerr << "Exception STL: " << e.what() << std::endl;
-      return (1);
-    }
-    catch ( ... ) {
-      std::cerr << "Exception No STL: " << std::endl;
-      return (1);
-    }
-    if (client->player == nullptr)
-      return (1);
-    client->player->TeamName = cmd;
+	game->Players.push_back(client);
+	try {
+	  client->player = new Player();
+	}
+	catch ( const  std::exception &e)  {
+	  std::cerr << "Exception STL: " << e.what() << std::endl;
+	  return (1);
+	}
+	catch ( ... ) {
+	  std::cerr << "Exception No STL: " << std::endl;
+	  return (1);
+	}
+	if (client->player == nullptr)
+	  return (1);
+	client->player->TeamName = cmd;
 
-    for (auto* monitor : game->Monitors) {
-        pnw(client, monitor);
-    }
+	for (auto* monitor : game->Monitors) {
+		pnw(client, monitor);
+	}
 
-    client->SendLine("1"); // TODO: Enviar valor correcto.
-    Map* map = game->WorldMap;
-    std::ostringstream ss;
-    ss << map->Width << " " << map->Height;
-    client->SendLine(ss.str());
+	client->SendLine("1"); // TODO: Enviar valor correcto.
+	Map* map = game->WorldMap;
+	std::ostringstream ss;
+	ss << map->Width << " " << map->Height;
+	client->SendLine(ss.str());
 	return (0);
 }
 
@@ -51,7 +56,8 @@ void HandleCommand(const std::string& cmd, Connection* client)
 {
     // Aqu� simulas el server Zappy.
     // Puedes conectarlo luego con tu Map/Tile reales.
-    if (cmd == "inventory")
+
+    if (cmd == "inventaire")
     {
         // Respuesta estilo Zappy
         client->SendLine("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");
@@ -79,6 +85,11 @@ void HandleCommand(const std::string& cmd, Connection* client)
         // prend nourriture / prend linemate ...
         client->SendLine("ok");
     }
+    else if (cmd.rfind("pose ", 0) == 0)
+    {
+        // pose nourriture / prend linemate ...
+        client->SendLine("ok");
+    }
     else if (cmd.rfind("broadcast ", 0) == 0)
     {
         client->SendLine("ok");
@@ -91,6 +102,34 @@ void HandleCommand(const std::string& cmd, Connection* client)
     {
         // En el server real, esto depende de condiciones del tile
         client->SendLine("elevation en cours");
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::ostringstream ss;
+        LEVEL++;
+        ss << "niveau actuel : " << LEVEL;
+        if (LEVEL > 8) {
+            ss.str("");
+            ss << "ko";
+        }
+        client->SendLine(ss.str());
+
+    }
+    else if (cmd == "expulse")
+    {
+        //Debug only
+        std::ostringstream ss;
+        ss << "deplacement " << LEVEL;
+        if (LEVEL > 8) {
+            ss.str("");
+            ss << "ko";
+        }
+        client->SendLine(ss.str());
+        LEVEL++;
+
+    }
+    else if (cmd == "connect_nbr")
+    {
+        //Debug only
+        client->SendLine("1");
     }
     else if (cmd == "msz")
     {
