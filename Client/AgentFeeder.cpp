@@ -5,6 +5,18 @@
 
 void AgentFeeder::GetBids(Blackboard& bb)
 {
+	// actualizar inventario de comida segun los ticks transcurridos (cada 126 ticks se consume 1 comida). Guardar tiempo de ultima actualizacion (ticks) para saber desde cuando no se ha actualizado.
+	bb.Me.UpdateFoodConsumption(bb.CurrentTick);
+	double hungerNeed = bb.GetHungerNeed();
+
+
+	//Necesito comida? Si no, no hago nada
+	//if (hungerNeed < 0.15) {
+	//	std::cout << "[Feeder] Hunger need is low (" << (bb.GetHungerNeed() * 100) << "%). No action needed.\n";
+	//	return;
+	//}
+
+
 	Tile* playerTile = bb.GetPlayerTile();
 	if (!playerTile)
 		return;
@@ -13,7 +25,6 @@ void AgentFeeder::GetBids(Blackboard& bb)
 	int foodOnTile = playerTile->inventory.Get(Resource::Food);
 	int currentFood = bb.Me.inventory.Get(Resource::Food);
 	int remainingTicks = bb.GetRemainingLifeTicks();
-	double hungerNeed = bb.GetHungerNeed();
 	
 	// SOLICITAR BuSQUEDA DE COMIDA segun urgencia
 	int searchPriority = 0;

@@ -53,7 +53,6 @@ int Blackboard::GetRemainingLifeTicks() const
 
 double Blackboard::GetLifePercentage() const
 {
-	const int MAX_REASONABLE_LIFE = 1260; // 10 unidades de comida
 	int remaining = GetRemainingLifeTicks();
 	double percentage = static_cast<double>(remaining) / MAX_REASONABLE_LIFE;
 	
@@ -68,9 +67,9 @@ double Blackboard::GetHungerNeed()
 	int remainingTicks = GetRemainingLifeTicks();
 	
 	// Escala de urgencia basada en ticks restantes
-	if (remainingTicks <= 0)
+	if (remainingTicks <= 100)
 		return 1.0; // MUERTE INMINENTE
-	else if (remainingTicks < 200)
+	else if (remainingTicks < 250)
 		return 0.95; // CRiTICO (menos de 2 comandos de comida)
 	else if (remainingTicks < 400)
 		return 0.85; // URGENTE

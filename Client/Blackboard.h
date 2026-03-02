@@ -33,6 +33,7 @@ class Blackboard
 	public:
 		// Game constants
 		static constexpr int TICKS_PER_FOOD = 126;
+		static constexpr int MAX_REASONABLE_LIFE = 1260; //  representa un valor de referencia "razonable" para operar, NO el máximo absoluto de vida. Usado en getLifePercentage() 
 		
 		/// <summary>
 		/// Sum of all Command Ticks.

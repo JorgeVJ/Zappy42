@@ -12,9 +12,19 @@ struct Player
     Direction Orientation = Direction::North;
     Inventory inventory;
     std::string TeamName = "";
+    
+    // Food consumption tracking
+    int LastFoodUpdateTick = 0;
 
     // Constructor por defecto
     Player() = default;
+
+    /// <summary>
+    /// Actualiza el inventario de comida consumiendo 1 unidad cada 126 ticks
+    /// </summary>
+    /// <param name="currentTick">Tick actual del juego</param>
+    /// <returns>Cantidad de comida consumida en esta actualizacion</returns>
+    int UpdateFoodConsumption(int currentTick);
 
     /// <summary>
     /// Mueve al jugador en la direccion en la que esta mirando

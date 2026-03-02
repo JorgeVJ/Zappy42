@@ -2,6 +2,42 @@
 #include "Player.h"
 #include <iostream>
 
+int Player::UpdateFoodConsumption(int currentTick)
+{
+    const int TICKS_PER_FOOD = 126;
+    
+    // Calcular ticks transcurridos desde la ultima actualizacion
+    int ticksElapsed = currentTick - LastFoodUpdateTick;
+    
+    if (ticksElapsed < TICKS_PER_FOOD)
+    {
+        // No ha pasado suficiente tiempo para consumir comida
+        return 0;
+    }
+    
+    // Calcular cuanta comida se debe consumir
+    int foodToConsume = ticksElapsed / TICKS_PER_FOOD;
+    
+    // Obtener comida actual
+    int currentFood = inventory.Get(Resource::Food);
+    
+    // Consumir comida (sin ir por debajo de 0)
+    int actualConsumed = (foodToConsume > currentFood) ? currentFood : foodToConsume;
+    
+    if (actualConsumed > 0)
+    {
+        inventory.Remove(Resource::Food, actualConsumed);
+        std::cout << "[Player] Consumed " << actualConsumed << " food. Remaining: " 
+                  << inventory.Get(Resource::Food) << "\n";
+    }
+    
+    // Actualizar el timestamp de ultima actualizacion
+    // Solo avanzar en multiplos de TICKS_PER_FOOD para mantener precision
+    LastFoodUpdateTick += (foodToConsume * TICKS_PER_FOOD);
+    
+    return actualConsumed;
+}
+
 void Player::Move(int steps)
 {
     switch (Orientation)
