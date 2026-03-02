@@ -51,6 +51,8 @@ int Blackboard::GetRemainingLifeTicks() const
     return food * TICKS_PER_FOOD;
 }
 
+
+// Use getLifePercentage or GetHungerneed
 double Blackboard::GetLifePercentage() const
 {
 	int remaining = GetRemainingLifeTicks();
