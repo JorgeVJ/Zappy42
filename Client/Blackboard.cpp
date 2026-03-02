@@ -2,10 +2,11 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 Blackboard::Blackboard() : map(0, 0), CurrentTick(0)
 {
-    //Initialize food on inventary
+    //Initialize food on inventory
 	Me.inventory.Add(Resource::Food, 10);
 }
 
@@ -16,9 +17,8 @@ void Blackboard::InitializeMap(int x, int y)
 
 int Blackboard::GetRemainingLifeTicks() const
 {
-	const int TICKS_PER_FOOD = 126;
-	int food = Me.inventory.Get(Resource::Food);
-	return food * TICKS_PER_FOOD;
+    int food = Me.inventory.Get(Resource::Food);
+    return food * TICKS_PER_FOOD;
 }
 
 double Blackboard::GetLifePercentage() const

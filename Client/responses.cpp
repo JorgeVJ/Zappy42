@@ -15,7 +15,7 @@ int handleServerResponse(Blackboard& board, const std::string& response)
 	if (pendingCommands.empty())
 		lastCommand = CommandEntry::Create(CommandType::Empty, board.CurrentTick);
 	else
-		lastCommand = pendingCommands.front();
+		lastCommand = pendingCommands.back();
 	// Tipo de respuesta
 	if (response == "ok")
 	{
