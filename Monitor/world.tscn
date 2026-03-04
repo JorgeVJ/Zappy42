@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://doi1r786k7p07"]
+[gd_scene load_steps=11 format=3 uid="uid://doi1r786k7p07"]
 
 [ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://connection.tscn" id="1_2s303"]
 [ext_resource type="Script" path="res://Camera3d.cs" id="2_e05vg"]
@@ -19,7 +19,13 @@ sky = SubResource("Sky_rd7ue")
 tonemap_mode = 2
 glow_enabled = true
 
+[sub_resource type="PlaneMesh" id="PlaneMesh_c17jl"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_furhu"]
+size = Vector3(2.09, 0.02, 2.175)
+
 [node name="World" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.977226, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
@@ -160,3 +166,12 @@ text = "X"
 transform = Transform3D(-0.0336959, 0.969257, -0.243731, 0, 0.243869, 0.969808, 0.999433, 0.0326786, -0.00821739, 0, 7.64971, 7.15597)
 fov = 75.9375
 script = ExtResource("2_e05vg")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(17.355, 0, 0, 0, 17.355, 0, 0, 0, 17.355, 0, -0.79, 0)
+mesh = SubResource("PlaneMesh_c17jl")
+
+[node name="Area3D" type="Area3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/Area3D"]
+shape = SubResource("BoxShape3D_furhu")

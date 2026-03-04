@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bfdagqpnb6n3x"
-path="res://.godot/imported/Creature.fbx-eb7ddb57f1c5cc26b81d3b75ab455680.scn"
+uid="uid://db6ey4jkpoben"
+path="res://.godot/imported/CreatureRest.fbx-7dab522d5ad11e21fb52a09b775b5787.scn"
 
 [deps]
 
-source_file="res://Creature.fbx"
-dest_files=["res://.godot/imported/Creature.fbx-eb7ddb57f1c5cc26b81d3b75ab455680.scn"]
+source_file="res://CreatureRest.fbx"
+dest_files=["res://.godot/imported/CreatureRest.fbx-7dab522d5ad11e21fb52a09b775b5787.scn"]
 
 [params]
 

@@ -24,6 +24,13 @@ public class MockServer
         // 3. Movimiento del jugador (ppo)
         "ppo #1 2 3 1",
         "ppo #1 2 4 1",
+        "ppo #1 2 3 1",
+        "ppo #1 2 2 1",
+        "ppo #1 2 1 1",
+        "ppo #1 2 2 1",
+        "ppo #1 2 3 1",
+        "ppo #1 2 4 1",
+        "ppo #1 2 5 1",
 
         // 4. Recoger recurso (Prendre) - pgt #n recurso (0: Nourriture)
         "pgt #1 0",
