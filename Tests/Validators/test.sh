@@ -33,7 +33,7 @@ run_test "Valid arguments" 0 \
          -p 8080 -x 20 -y 20 -c 4 -t 30 -n red -n blue
 
 run_test "Edge scenario TeamName \"\" arguments" 1 \
-    -p 8080 -x 20 -y 20 -c 4 -t 30 -n a
+    -p 8080 -x 20 -y 20 -c 4 -t 30 -n ""
 
 # ---------------------------
 # INVALID WIDTH
