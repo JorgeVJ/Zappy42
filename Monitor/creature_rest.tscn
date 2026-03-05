@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://bodv61v6ykvk8"]
 
 [ext_resource type="PackedScene" uid="uid://db6ey4jkpoben" path="res://CreatureRest.fbx" id="1_nhcpk"]
-[ext_resource type="Script" path="res://start_ik.gd" id="2_q8k7q"]
+[ext_resource type="Script" path="res://Quadruped/start_ik.gd" id="2_q8k7q"]
 
 [node name="CreatureRest" instance=ExtResource("1_nhcpk")]
 
