@@ -11,19 +11,14 @@ namespace ArgValidation {
 	// ========================================================================
 
 	Result<bool> PortValidator::Validate(const std::vector<std::string_view>& values,
-										Opt::Server::Args& outArgs,
-										std::vector<std::string_view>* errors)
+                                       Opt::Server::Args& outArgs,
+                                       std::vector<std::string_view>* errors)
 	{
 		auto port = Validators::port(values, errors);
-		if (port.Ok)
-		{
-			outArgs.port = port.Value;
-			return Result<bool>::Success(true);
-		}
-		else
-		{
+		if (!port.Ok)
 			return Result<bool>::Fail(port.Message);
-		}
+    outArgs.port = port.Value;
+    return Result<bool>::Success(true);
 	}
 
 	// ========================================================================
@@ -31,19 +26,14 @@ namespace ArgValidation {
 	// ========================================================================
 
 	Result<bool> WidthValidator::Validate(const std::vector<std::string_view>& values,
-										 Opt::Server::Args& outArgs,
-										 std::vector<std::string_view>* errors)
+                                        Opt::Server::Args& outArgs,
+                                        std::vector<std::string_view>* errors)
 	{
 		auto width = Validators::Server::valid_heigth_or_weight(values, errors);
-		if (width.Ok)
-		{
-			outArgs.width = static_cast<int>(width.Value);
-			return Result<bool>::Success(true);
-		}
-		else
-		{
+		if (!width.Ok)
 			return Result<bool>::Fail(width.Message);
-		}
+    outArgs.width = static_cast<int>(width.Value);
+    return Result<bool>::Success(true);
 	}
 
 	// ========================================================================
@@ -51,19 +41,14 @@ namespace ArgValidation {
 	// ========================================================================
 
 	Result<bool> HeightValidator::Validate(const std::vector<std::string_view>& values,
-										  Opt::Server::Args& outArgs,
-										  std::vector<std::string_view>* errors)
+                                         Opt::Server::Args& outArgs,
+                                         std::vector<std::string_view>* errors)
 	{
 		auto height = Validators::Server::valid_heigth_or_weight(values, errors);
-		if (height.Ok)
-		{
-			outArgs.height = static_cast<int>(height.Value);
-			return Result<bool>::Success(true);
-		}
-		else
-		{
-			return Result<bool>::Fail(height.Message);
-		}
+		if (!height.Ok)
+      return Result<bool>::Fail(height.Message);
+    outArgs.height = static_cast<int>(height.Value);
+    return Result<bool>::Success(true);
 	}
 
 	// ========================================================================
@@ -71,19 +56,16 @@ namespace ArgValidation {
 	// ========================================================================
 
 	Result<bool> TimeValidator::Validate(const std::vector<std::string_view>& values,
-										Opt::Server::Args& outArgs,
-										std::vector<std::string_view>* errors)
+                                       Opt::Server::Args& outArgs,
+                                       std::vector<std::string_view>* errors)
 	{
 		auto time = Validators::Server::time(values, errors);
-		if (time.Ok)
-		{
-			outArgs.time = static_cast<int>(time.Value);
-			return Result<bool>::Success(true);
-		}
-		else
-		{
-			return Result<bool>::Fail(time.Message);
-		}
+		if (!time.Ok)
+      return Result<bool>::Fail(time.Message);
+
+    outArgs.time = static_cast<int>(time.Value);
+    return Result<bool>::Success(true);
+
 	}
 
 	// ========================================================================
@@ -91,19 +73,15 @@ namespace ArgValidation {
 	// ========================================================================
 
 	Result<bool> ClientsValidator::Validate(const std::vector<std::string_view>& values,
-											Opt::Server::Args& outArgs,
-											std::vector<std::string_view>* errors)
+                                          Opt::Server::Args& outArgs,
+                                          std::vector<std::string_view>* errors)
 	{
 		auto clients = Validators::Server::clients(values, errors);
-		if (clients.Ok)
-		{
-			outArgs.clients = static_cast<int>(clients.Value);
-			return Result<bool>::Success(true);
-		}
-		else
-		{
-			return Result<bool>::Fail(clients.Message);
-		}
+		if (!clients.Ok)
+      return Result<bool>::Fail(clients.Message);
+    outArgs.clients = static_cast<int>(clients.Value);
+    return Result<bool>::Success(true);
+
 	}
 
 	// ========================================================================
@@ -115,20 +93,12 @@ namespace ArgValidation {
 										 std::vector<std::string_view>* errors)
 	{
 		// Note: We need to validate against client count, which should already be filled
-		std::vector<std::string_view> local_errors;
-		bool ok = Validators::Server::teams(values, static_cast<size_t>(outArgs.clients), &local_errors);
+    auto teams = Validators::Server::teams(values, static_cast<size_t>(outArgs.clients), errors);
+		if (!teams.Ok)
+      return (teams);
 
-		if (ok)
-		{
-			outArgs.teams = values;
-			return Result<bool>::Success(true);
-		}
-		else
-		{
-			if (errors)
-				*errors = local_errors;
-			return Result<bool>::Fail("Invalid teams");
-		}
+    outArgs.teams = values;
+    return Result<bool>::Success(true);
 	}
 
 	// ========================================================================

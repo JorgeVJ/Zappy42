@@ -13,8 +13,14 @@ namespace Validators {
 		static constexpr int Well_Known = 1023;
 		static constexpr int Max        = 65535;
 	};
+  struct TeamNameLen {
+    static constexpr size_t Min = 1; // 0; For allow empty string -> "".
+    static constexpr size_t Max = 32;
+  };
 	Result<int> port(const std::vector<std::string_view> &port, std::vector<std::string_view> *errors);
-
+  Result<bool> teamname(const std::string_view &teamname, 
+                        std::vector<std::string_view> *errors);
+		
 	namespace Utils {
 		Result<int> parse_int(std::string_view s) noexcept;
 		template<typename T>

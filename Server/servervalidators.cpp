@@ -73,13 +73,13 @@ namespace Validators {
 									   Clients::Min,
 									   Clients::Max_Initial)) {
 				vector_string_view_add(errors, Errors::Validation::Server::Clients);
-				return Result<size_t>::Fail(Errors::Validation::Server::Clients);
+				return (Result<size_t>::Fail(Errors::Validation::Server::Clients));
 			}
 
-			return Result<size_t>::Success(static_cast<size_t>(r.Value));
+			return (Result<size_t>::Success(static_cast<size_t>(r.Value)));
 		}
 
-		bool teams(const std::vector<std::string_view> &values,
+		Result<bool> teams(const std::vector<std::string_view> &values,
 				   size_t clientnbr,
 				   std::vector<std::string_view> *errors)
 		{
@@ -87,38 +87,36 @@ namespace Validators {
 			if (values.empty())
 			{
 				vector_string_view_add(errors, Errors::Validation::MissValue);
-				return false;
+        return (Result<bool>::Fail(Errors::Validation::MissValue));
 			}
-
 			// Check if team count is within valid bounds
 			if (!Utils::within_bounds(values.size(), Teams::Min, Teams::Max))
 			{
 				vector_string_view_add(errors, Errors::Validation::Server::InvalidTeamNbr);
-				return false;
+				return (Result<bool>::Fail(Errors::Validation::Server::InvalidTeamNbr));
 			}
-
-			// Validate each team name and check for duplicates
+			// validate each team name and check for duplicates
 			for (std::size_t i = 0; i < values.size(); ++i) {
 				// Check team name length
-				if (!Utils::within_bounds(values[i].size(),
-										  Teams::NameLenMin,
-										  Teams::NameLenMax))
-				{
-					vector_string_view_add(errors, Errors::Validation::Server::InvalidTeamLen);
-					return false;
-				}
+        Result<bool> teamname = Validators::teamname(values[i], errors);
+				if (!teamname.Ok)
+					return (teamname);
 
 				// Check for duplicate team names
 				for (std::size_t j = i + 1; j < values.size(); ++j) {
+          teamname = Validators::teamname(values[j], errors);
+          if (!teamname.Ok)
+            return (teamname);
 					if (values[i] == values[j]) {
 						vector_string_view_add(errors, Errors::Validation::Server::DuplicateTeamName);
-						return false;
+						return (Result<bool>::Fail(Errors::Validation::Server::DuplicateTeamName));
 					}
 				}
 			}
-
-			// Check that number of teams doesn't exceed client limit
-			return (values.size() <= clientnbr);
+			// check that number of teams doesn't exceed client limit
+      if (values.size() <= clientnbr)
+        return (Result<bool>::Success(true));
+			return (Result<bool>::Fail(Errors::Validation::Server::InvalidTeamNbr));
 		}
 	}
 }

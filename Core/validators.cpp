@@ -33,3 +33,16 @@ Result<int> Validators::port(const std::vector<std::string_view> &values, std::v
 	vector_string_view_add(errors, port.Message);
 	return (port);
 }
+
+Result<bool> Validators::teamname(const std::string_view &teamname, 
+                  std::vector<std::string_view> *errors)
+		{
+      if (!Utils::within_bounds(teamname.size(),
+                                TeamNameLen::Min, 
+                                TeamNameLen::Max))
+				{
+					vector_string_view_add(errors, Errors::Validation::InvalidTeamLen);
+					return (Result<bool>::Fail(Errors::Validation::InvalidTeamLen));
+				}
+      return (Result<bool>::Success(true));
+    }

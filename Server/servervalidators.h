@@ -72,7 +72,7 @@ namespace Validators {
 		/// <param name="clientnbr">Maximum number of clients to validate against</param>
 		/// <param name="errors">Optional error message collection</param>
 		/// <returns>True if all teams are valid, false otherwise</returns>
-		bool teams(const std::vector<std::string_view> &values, 
+		Result<bool> teams(const std::vector<std::string_view> &values, 
 				   size_t clientnbr,
 				   std::vector<std::string_view> *errors);
 	}

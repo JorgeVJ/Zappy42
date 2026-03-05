@@ -17,6 +17,7 @@ run_test() {
         PASS=$((PASS+1))
     else
         echo "[FAIL] $NAME (expected $EXPECT got $CODE)"
+        echo "[$@]"
         FAIL=$((FAIL+1))
     fi
 }
@@ -29,7 +30,10 @@ echo
 # ---------------------------
 
 run_test "Valid arguments" 0 \
-    -p 8080 -x 20 -y 20 -c 4 -t 30 -n red -n blue
+         -p 8080 -x 20 -y 20 -c 4 -t 30 -n red -n blue
+
+run_test "Edge scenario TeamName \"\" arguments" 1 \
+    -p 8080 -x 20 -y 20 -c 4 -t 30 -n a
 
 # ---------------------------
 # INVALID WIDTH
