@@ -48,6 +48,7 @@ SRC-CORE			:=  Connection \
 									validators \
 
 
+
 SRC-CLIENT := \
   $(addprefix Client/, main IAgent AgentBreeder AgentExplorer \
     AgentChaman AgentHungry AgentStoner ExplorationService \
@@ -55,7 +56,7 @@ SRC-CLIENT := \
   $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER-NO-MAIN := \
-	  $(addprefix Server/, Game events responses servervalidators ArgValidation ) \
+	  $(addprefix Server/, Game events responses servervalidators ArgValidation ServerSimple) \
 	  $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER := \
