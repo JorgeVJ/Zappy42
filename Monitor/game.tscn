@@ -1,54 +1,52 @@
-[gd_scene load_steps=11 format=3 uid="uid://doi1r786k7p07"]
+[gd_scene load_steps=10 format=3 uid="uid://bkawsmediwsui"]
 
-[ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://connection.tscn" id="1_2s303"]
-[ext_resource type="Script" path="res://Camera3d.cs" id="2_e05vg"]
-[ext_resource type="Script" path="res://PlayerManager.cs" id="3_rl32t"]
-[ext_resource type="Script" path="res://InventoryPanel.cs" id="4_7oswj"]
-[ext_resource type="Script" path="res://EggManager.cs" id="4_108rr"]
+[ext_resource type="Script" path="res://Camera3d.cs" id="1_lfkmk"]
+[ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://connection.tscn" id="2_hexf3"]
+[ext_resource type="Script" path="res://PlayerManager.cs" id="3_j1vdv"]
+[ext_resource type="Script" path="res://EggManager.cs" id="4_wn21u"]
+[ext_resource type="Script" path="res://InventoryPanel.cs" id="5_mwang"]
+[ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://terrain.tscn" id="6_bqi2m"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_cqqmf"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6sjpb"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 
 [sub_resource type="Sky" id="Sky_rd7ue"]
-sky_material = SubResource("ProceduralSkyMaterial_cqqmf")
+sky_material = SubResource("ProceduralSkyMaterial_6sjpb")
 
-[sub_resource type="Environment" id="Environment_oamjy"]
+[sub_resource type="Environment" id="Environment_k485n"]
 background_mode = 2
 sky = SubResource("Sky_rd7ue")
 tonemap_mode = 2
 glow_enabled = true
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_c17jl"]
+[node name="Game" type="Node3D"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_furhu"]
-size = Vector3(2.09, 0.02, 2.175)
-
-[node name="World" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.977226, 0)
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.09932, 0.647556, -0.755517, 0, 0.759271, 0.650774, 0.995056, 0.0646348, -0.0754108, -2.255, 4.415, 5.235)
+script = ExtResource("1_lfkmk")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+transform = Transform3D(-0.522498, 0.167072, -0.836111, 0, 0.980615, 0.195946, 0.85264, 0.102382, -0.51237, 0, 1.505, 0)
+light_color = Color(0.99478, 0.97828, 0.838042, 1)
+light_energy = 5.312
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_oamjy")
-
-[node name="Connection" parent="." node_paths=PackedStringArray("inventoryPanel") instance=ExtResource("1_2s303")]
+[node name="Connection" parent="." node_paths=PackedStringArray("inventoryPanel") instance=ExtResource("2_hexf3")]
 inventoryPanel = NodePath("InventoryPanel")
 
 [node name="PlayerManager" type="Node" parent="Connection"]
-script = ExtResource("3_rl32t")
+script = ExtResource("3_j1vdv")
 
 [node name="EggManager" type="Node" parent="Connection"]
-script = ExtResource("4_108rr")
+script = ExtResource("4_wn21u")
 
 [node name="InventoryPanel" type="Control" parent="Connection" node_paths=PackedStringArray("title", "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame", "titleDetail", "foodDetail", "linemateDetail", "deraumereDetail", "siburDetail", "mendianeDetail", "phirasDetail", "thystameDetail")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 147.0
 offset_bottom = 236.0
-script = ExtResource("4_7oswj")
+script = ExtResource("5_mwang")
 title = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Title")
 food = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Food")
 linemate = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Linemate")
@@ -162,16 +160,7 @@ text = "X"
 layout_mode = 2
 text = "X"
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.0336959, 0.969257, -0.243731, 0, 0.243869, 0.969808, 0.999433, 0.0326786, -0.00821739, 0, 7.64971, 7.15597)
-fov = 75.9375
-script = ExtResource("2_e05vg")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_k485n")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(17.355, 0, 0, 0, 17.355, 0, 0, 0, 17.355, 0, -0.79, 0)
-mesh = SubResource("PlaneMesh_c17jl")
-
-[node name="Area3D" type="Area3D" parent="MeshInstance3D"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/Area3D"]
-shape = SubResource("BoxShape3D_furhu")
+[node name="Terrain" parent="." instance=ExtResource("6_bqi2m")]
