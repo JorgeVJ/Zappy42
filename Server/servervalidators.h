@@ -75,5 +75,6 @@ namespace Validators {
 		Result<bool> teams(const std::vector<std::string_view> &values, 
 				   size_t clientnbr,
 				   std::vector<std::string_view> *errors);
-	}
+
+  }
 }

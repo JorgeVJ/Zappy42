@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 		std::cerr << "\nUsage: " << argv[0] 
 			      << " -p <port> -x <width> -y <height> "
 			      << "-t <time> -c <clients> -n <team1> [<team2> ...]" << std::endl;
-		return 1;
+		return (1);
 	}
 
 	// ========================================================================
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 		std::cerr << "Arity Validation Error:" << std::endl;
 		for (const auto& e : errors)
 			std::cerr << "  " << e << std::endl;
-		return 1;
+		return (1);
 	}
 
 	// ========================================================================
@@ -63,16 +63,14 @@ int main(int argc, char** argv)
 
 	Opt::Server::Args args{};
 	errors.clear();
-
 	auto validationResult = ArgValidation::ValidateServerArgs(opts, args, &errors);
-	
 	if (!validationResult.Ok)
 	{
 		std::cerr << "Argument Validation Error:" << std::endl;
 		for (const auto& e : errors)
 			std::cerr << "  " << e << std::endl;
 		std::cerr << "  " << validationResult.Message << std::endl;
-		return 1;
+		return (1);
 	}
 
 	// ========================================================================
@@ -84,12 +82,12 @@ int main(int argc, char** argv)
 	if (!server.Initialize())
 	{
 		std::cerr << "Failed to initialize server" << std::endl;
-		return 1;
+		return (1);
 	}
 
 	int exitCode = server.Run();
 
 	std::cout << "\nServer shutdown complete." << std::endl;
 
-	return exitCode;
+	return (exitCode);
 }

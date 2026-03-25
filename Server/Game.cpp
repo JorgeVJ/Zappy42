@@ -5,16 +5,20 @@
 
 Game* Game::instance = nullptr;
 
-Game* Game::GetInstance()
+Game* Game::SetInstance(int x, int y)
 {
     if (instance == nullptr)
-        instance = new Game();
-    return instance;
+      instance = new Game(x, y);
+    return (instance);
+}
+Game* Game::GetInstance()
+{
+    return (instance);
 }
 
-Game::Game()
+Game::Game(int x, int y)
 {
-    this->WorldMap = new Map(8, 8);
+    this->WorldMap = new Map(x, y);
 
     std::random_device rd;
     std::mt19937 gen(rd());

@@ -40,8 +40,8 @@ bool Server::Initialize()
 #endif
 
 	if (!InitializeNetwork()) {
-		std::cerr << "Failed to initialize network" << std::endl;
-		return false;
+		std::cerr << "Failed to initialize network" << std::endl;	
+	return false;
 	}
 
 	if (!InitializeGame()) {
@@ -86,14 +86,13 @@ int Server::Run()
 			std::cerr << "select() error" << std::endl;
 			break;
 		}
-
 		// Handle new connections
 		if (FD_ISSET(m_listenSocket.Get(), &readSet)) {
-			AcceptNewClient();
+			AcceptNewClient(); //
 		}
-
-		// Process client input
-		ProcessClientInput();
+    else { // Handle old connection.
+				ProcessClientInput();
+    }
 	}
 
 #ifdef _WIN32
@@ -152,7 +151,7 @@ bool Server::InitializeNetwork()
 bool Server::InitializeGame()
 {
 	try {
-		m_game = Game::GetInstance();
+		m_game = Game::SetInstance(m_args.width, m_args.height);
 		if (!m_game) return false;
 		
 		// TODO: Configure game with args
@@ -183,24 +182,56 @@ bool Server::AcceptNewClient()
 {
 	SOCKET s = accept(m_listenSocket.Get(), nullptr, nullptr);
 	if (s == INVALID_SOCKET) {
-		return false;
+		return (false);
 	}
 
 	try {
 		Connection* client = new Connection(s);
-		if (!client) return false;
+		if (!client) return (false);
 
 		if (!client->SendLine("BIENVENUE")) {
 			delete client;
-			return false;
+			return (false);
 		}
+    std::string cmd;
+    if (!client->RecvLine(cmd))
+      {
+      	delete client;
+        return (false);
+      }
+    // Todo Get a better way to detect type of connection.
+    if (cmd == "GRAPHIC") {
+      // Register as monitor
+      if (client->player) {
+        delete client->player;
+        client->player = nullptr;
+      }
+      m_game->Monitors.push_back(client);
+      auto it = std::find(m_game->Players.begin(), m_game->Players.end(), client);
+      if (it != m_game->Players.end()) {
+        m_game->Players.erase(it);
+      }
+    }
 
+    else {
+      // Assume team name - try to register as player
+      Game* game = Game::GetInstance();
+      auto itp = std::find(game->Players.begin(), game->Players.end(), client);
+      auto itm = std::find(game->Monitors.begin(), game->Monitors.end(), client);
+
+      if (itp == game->Players.end() && itm == game->Monitors.end()) {
+        HandlePlayerConnection(client, cmd);
+      }
+      else {
+        client->SendLine("ko");
+      }
+    }
 		m_clients.push_back(client);
 		std::cout << "Client connected [" << m_clients.size() << "]" << std::endl;
-		return true;
+		return (true);
 	}
 	catch (...) {
-		return false;
+		return (false);
 	}
 }
 
@@ -300,31 +331,6 @@ void Server::HandleCommand(const std::string& cmd, Connection* client)
 	else if (cmd == "tna") {
 		// TODO: Send all team names
 		client->SendLine("tna");
-	}
-	else if (cmd == "GRAPHIC") {
-		// Register as monitor
-		if (client->player) {
-			delete client->player;
-			client->player = nullptr;
-		}
-		m_game->Monitors.push_back(client);
-		auto it = std::find(m_game->Players.begin(), m_game->Players.end(), client);
-		if (it != m_game->Players.end()) {
-			m_game->Players.erase(it);
-		}
-	}
-	else {
-		// Assume team name - try to register as player
-		Game* game = Game::GetInstance();
-		auto itp = std::find(game->Players.begin(), game->Players.end(), client);
-		auto itm = std::find(game->Monitors.begin(), game->Monitors.end(), client);
-
-		if (itp == game->Players.end() && itm == game->Monitors.end()) {
-			HandlePlayerConnection(client, cmd);
-		}
-		else {
-			client->SendLine("ko");
-		}
 	}
 }
 

@@ -14,8 +14,8 @@ struct Player
     std::string TeamName = "";//std::string_view  should use the argv.
 
     Player() = default;
-
-    Player(int id, const std::string& teamName, Point position = {0, 0}, Direction orientation = Direction::North)
+  //should change sdt::string -> std::string_view
+  Player(int id, const std::string& teamName, Point position = {0, 0}, Direction orientation = Direction::North)
         : ID(id),  Position(position), Orientation(orientation), TeamName(teamName)
     {
     }

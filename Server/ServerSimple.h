@@ -7,6 +7,7 @@
 #include "Connection.h"
 #include "Game.h"
 #include "serveroptions.h"
+#include "TeamManager.h"
 
 #ifdef _WIN32
 #include <winsock2.h>

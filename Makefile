@@ -56,7 +56,7 @@ SRC-CLIENT := \
   $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER-NO-MAIN := \
-	  $(addprefix Server/, Game events responses servervalidators ArgValidation ServerSimple) \
+	  $(addprefix Server/, Game events responses servervalidators ArgValidation ServerSimple TeamManager) \
 	  $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER := \
