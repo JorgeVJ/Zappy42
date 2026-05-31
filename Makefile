@@ -35,6 +35,7 @@ TEST_VALIDATORS_SERVER   := $(TEST_VALIDATORS_DIR)server
 
 
 SRC-CORE			:=  Connection \
+									ZappySocket \
 									Tile \
 									CommandHistory \
 									Core \

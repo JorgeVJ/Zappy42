@@ -18,6 +18,7 @@
 #include "Point.h"
 #include "Player.h"
 #include "Direction.h"
+#include "ZappySocket.h"
 
 class Connection
 {
@@ -26,6 +27,7 @@ class Connection
 
 	Connection();
 	explicit Connection(SOCKET s);
+	Connection(ZappySocket &s);
 
 	~Connection();
 	Connection(const Connection&) = delete;
@@ -42,5 +44,5 @@ class Connection
 	bool RecvLine(std::string& outLine);
 
   private:
-    SOCKET sock;
+    ZappySocket sock;
 };
