@@ -12,7 +12,7 @@
 # define SOCKET_ERROR -1
 # define SOCKET int
 #else
-#error "Unexpected OS"
+# error "Unexpected OS"
 #endif
 #include <string>
 #include "Point.h"

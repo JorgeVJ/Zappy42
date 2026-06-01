@@ -36,7 +36,7 @@ ZappySocket& ZappySocket::operator=(SOCKET other) noexcept
 	  return (*this);
 }
 
-ZappySocket& ZappySocket::operator=(ZappySocket&& other) noexcept
+ZappySocket& ZappySocket::operator=(ZappySocket& other) noexcept
 {
     if (this != &other)
     {
@@ -50,4 +50,9 @@ ZappySocket& ZappySocket::operator=(ZappySocket&& other) noexcept
         other.sock = INVALID_SOCKET;
     }
     return *this;
+}
+
+SOCKET ZappySocket::Get() const noexcept
+{
+	return (sock);
 }

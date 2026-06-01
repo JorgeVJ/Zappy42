@@ -2,6 +2,7 @@
 #include "ServerSimple.h"
 #include "responses.h"
 #include "events.h"
+#include "SocketManager.h"
 #include <algorithm>
 #include <sstream>
 
@@ -40,8 +41,8 @@ bool Server::Initialize()
 #endif
 
 	if (!InitializeNetwork()) {
-		std::cerr << "Failed to initialize network" << std::endl;	
-	return false;
+		std::cerr << "Failed to initialize network" << std::endl;
+		return false;
 	}
 
 	if (!InitializeGame()) {
@@ -153,10 +154,10 @@ bool Server::InitializeGame()
 	try {
 		m_game = Game::SetInstance(m_args.width, m_args.height);
 		if (!m_game) return false;
-		
+
 		// TODO: Configure game with args
 		// m_game->Configure(m_args.width, m_args.height, m_args.time);
-		
+
 		return true;
 	}
 	catch (const std::exception& e) {
@@ -239,7 +240,7 @@ void Server::ProcessClientInput()
 {
 	for (size_t i = 0; i < m_clients.size();) {
 		Connection* client = m_clients[i];
-		
+
 		std::string msg;
 		if (!client->RecvLine(msg)) {
 			std::cout << "Client disconnected" << std::endl;
@@ -371,6 +372,7 @@ void Server::PrintConfiguration() const
 		<< "  ZAPPY SERVER" << std::endl
 		<< "========================================" << std::endl
 		<< "  Port:      " << m_args.port << std::endl
+        << "  AdminPort:      " << SocketManager::GetAdminPortNumber(m_args.port) << std::endl
 		<< "  Map:       " << m_args.width << "x" << m_args.height << std::endl
 		<< "  Time:      " << m_args.time << std::endl
 		<< "  MaxClients: " << m_args.clients << std::endl

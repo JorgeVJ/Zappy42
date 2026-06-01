@@ -18,13 +18,13 @@
 
 /// <summary>
 /// Zappy game server - Simple, clean implementation
-/// 
+///
 /// Features:
 /// - Encapsulates game server logic
 /// - Manages client connections
 /// - Handles game commands
 /// - Result<T> based validation
-/// 
+///
 /// Future: SSL can be added separately without changing this core logic
 /// </summary>
 class Server {
@@ -114,5 +114,5 @@ private:
 
 	// Constants
 	static constexpr int SELECT_TIMEOUT_SEC = 1;
-	static constexpr int SOCKET_BACKLOG = SOMAXCONN;
+	//static constexpr int SOCKET_BACKLOG = SOMAXCONN;
 };

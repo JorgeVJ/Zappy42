@@ -11,8 +11,11 @@
 # define INVALID_SOCKET -1
 # define SOCKET_ERROR -1
 # define SOCKET int
+# ifdef __gnu_linux__
+#  define SOCKET_BACKLOG SOMAXCONN
+# endif
 #else
-#error "Unexpected OS"
+# error "Unexpected OS"
 #endif
 
 class ZappySocket
@@ -21,12 +24,13 @@ class ZappySocket
 	ZappySocket();
 	ZappySocket(SOCKET s);
 	ZappySocket(const ZappySocket&);
-	~ZappySocket();
+	virtual ~ZappySocket();
 	bool isValid() const noexcept;
+	virtual SOCKET Get() const noexcept;
 	ZappySocket(ZappySocket& other) noexcept;
 
 	ZappySocket& operator=(const ZappySocket&) = default;
-	ZappySocket& operator=(ZappySocket&& other) noexcept;
+	ZappySocket& operator=(ZappySocket& other) noexcept;
 	ZappySocket& operator=(SOCKET other) noexcept;
 	SOCKET sock;
 };
