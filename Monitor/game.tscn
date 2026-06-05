@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://bkawsmediwsui"]
 
-[ext_resource type="Script" path="res://Camera3d.cs" id="1_lfkmk"]
+[ext_resource type="Script" path="res://Camera.cs" id="1_ga5x6"]
 [ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://connection.tscn" id="2_hexf3"]
 [ext_resource type="Script" path="res://PlayerManager.cs" id="3_j1vdv"]
 [ext_resource type="Script" path="res://EggManager.cs" id="4_wn21u"]
@@ -22,9 +22,9 @@ glow_enabled = true
 
 [node name="Game" type="Node3D"]
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera" type="Camera3D" parent="."]
 transform = Transform3D(-0.09932, 0.647556, -0.755517, 0, 0.759271, 0.650774, 0.995056, 0.0646348, -0.0754108, -2.255, 4.415, 5.235)
-script = ExtResource("1_lfkmk")
+script = ExtResource("1_ga5x6")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.522498, 0.167072, -0.836111, 0, 0.980615, 0.195946, 0.85264, 0.102382, -0.51237, 0, 1.505, 0)

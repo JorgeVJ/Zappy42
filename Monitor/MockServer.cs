@@ -11,7 +11,7 @@ public class MockServer
     private readonly List<string> _messages = new List<string>
     {
         // 1. Inicialización del mapa (10x10) y equipos
-        "msz 6 6",
+        "msz 25 25",
         "tna TEAM_A",
         "tna TEAM_B",
 

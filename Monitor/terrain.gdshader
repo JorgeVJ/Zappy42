@@ -1,7 +1,7 @@
 shader_type spatial;
 
-uniform float tile_size = 1.0;
-uniform float line_width = 0.05;
+uniform float tile_size = 10.0;
+uniform float line_width = 0.1;
 
 uniform vec4 line_color : source_color = vec4(0.0,0.0,0.0,1.0);
 uniform vec4 ground_color : source_color = vec4(0.4,0.8,0.4,1.0);

@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://bwekvtswoae35"]
+[gd_scene load_steps=2 format=3 uid="uid://bwekvtswoae35"]
 
 [ext_resource type="PackedScene" uid="uid://dawf81y4iwwq0" path="res://Creature.gltf" id="1_jgd8i"]
-[ext_resource type="Script" path="res://Quadruped/QuadrupedController.cs" id="5_gysry"]
 
 [node name="Creature" instance=ExtResource("1_jgd8i")]
 
@@ -28,5 +27,6 @@ bones/13/rotation = Quaternion(0.0172352, -0.00286188, -0.00441502, 0.999838)
 bones/15/rotation = Quaternion(-5.89802e-10, 0.00145809, 4.04614e-07, 0.999999)
 bones/16/rotation = Quaternion(-5.89802e-10, 0.00145809, 4.04614e-07, 0.999999)
 
-[node name="QuadrupedController" type="Node3D" parent="." index="1"]
-script = ExtResource("5_gysry")
+[node name="QuadrupedController" type="Node3D" parent="Armature/Skeleton3D" index="1"]
+transform = Transform3D(1, -7.27596e-12, 3.87741e-26, 7.27596e-12, 1, 3.72529e-09, -2.71051e-20, -3.72529e-09, 1, 0, 0, 0)
+visible = false

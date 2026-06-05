@@ -1,42 +1,48 @@
-using Godot;
+﻿using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public partial class Inventory : Node
+namespace zappy
 {
-	private Dictionary<Resource.ResourceType, int> data = new();
+    public class Inventory
+    {
+        private Dictionary<Resource.ResourceType, int> data = new();
 
-	public event Action Changed;
+        public event Action Changed;
 
-	public override void _Ready()
-	{
-		foreach (Resource.ResourceType t in Enum.GetValues(typeof(Resource.ResourceType)))
-			data[t] = 0;
-	}
+        public Inventory()
+        {
+            foreach (Resource.ResourceType t in Enum.GetValues(typeof(Resource.ResourceType)))
+                data[t] = 0;
+        }
 
-	public void Set(Resource.ResourceType type, int amount)
-	{
-		data[type] = amount;
-		Changed?.Invoke();
-	}
+        public void Set(Resource.ResourceType type, int amount)
+        {
+            data[type] = amount;
+            Changed?.Invoke();
+        }
 
-	public void Add(Resource.ResourceType type, int amount)
-	{
-		data[type] += amount;
-		Changed?.Invoke();
-	}
+        public void Add(Resource.ResourceType type, int amount)
+        {
+            data[type] += amount;
+            Changed?.Invoke();
+        }
 
-	public bool Remove(Resource.ResourceType type, int amount)
-	{
-		if (data[type] < amount)
-			return false;
+        public bool Remove(Resource.ResourceType type, int amount)
+        {
+            if (data[type] < amount)
+                return false;
 
-		data[type] -= amount;
-		Changed?.Invoke();
-		return true;
-	}
+            data[type] -= amount;
+            Changed?.Invoke();
+            return true;
+        }
 
-	public int Get(Resource.ResourceType type) => data[type];
+        public int Get(Resource.ResourceType type) => data[type];
 
-	public IReadOnlyDictionary<Resource.ResourceType, int> All => data;
+        public IReadOnlyDictionary<Resource.ResourceType, int> All => data;
+    }
 }

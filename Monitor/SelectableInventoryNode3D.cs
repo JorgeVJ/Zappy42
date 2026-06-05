@@ -6,28 +6,12 @@ public partial class SelectableInventoryNode3D : Node3D, ISelectable, IInventory
     protected MeshInstance3D mesh;
 
     private Inventory inventory;
-    public Inventory Inventory => inventory ??= GetNode<Inventory>("Inventory");
-
-    [Signal]
-    public delegate void OnClickedEventHandler(Node3D sender);
+    public Inventory Inventory => inventory ??= new Inventory();
 
     public override void _Ready()
     {
         mesh = GetNodeOrNull<MeshInstance3D>("Mesh");
-        inventory = GetNodeOrNull<Inventory>("Inventory");
-    }
-
-    private void _on_area_3d_input_event(
-        Node camera,
-        InputEvent @event,
-        Vector3 position,
-        Vector3 normal,
-        int shapeIdx)
-    {
-        if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
-        {
-            EmitSignal(nameof(OnClicked), this);
-        }
+        inventory = new Inventory();
     }
 
     public virtual void Highlight()

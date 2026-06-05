@@ -13,28 +13,26 @@ public partial class Connection : Node
 
 	private PlayerManager playerManager;
 	private EggManager eggManager;
-
-	private Node tileCollection;
-	private Tile[,] tiles;
-
-	private int mapW = 5;
-	private int mapH = 5;
+	private Terrain terrainManager;
 
 	private List<string> teams = new List<string>();
 
 	[Export]
 	private InventoryPanel inventoryPanel;
 
-	private Node3D selectedNode;
+	private ISelectable selection;
 
 	private MockServer _mockServer;
 
+	private Camera camera;
+
 	public override void _Ready()
 	{
-		tileCollection = GetNode("Tiles");
 		playerManager = GetNode<PlayerManager>("PlayerManager");
-		playerManager.PlayerCreated += (player) => player.OnClicked += (Node3D sender) => PlayerClicked((Player)sender);
-		eggManager = GetNode<EggManager>("EggManager");
+        terrainManager = GetParent().GetNode<Terrain>("Terrain");
+		camera = GetParent().GetNode<Camera>("Camera");
+		camera.OnLeftClick += HandleLeftClick;
+        eggManager = GetNode<EggManager>("EggManager");
 		try
 		{
 			_mockServer = new MockServer();
@@ -52,39 +50,57 @@ public partial class Connection : Node
 		}
 	}
 
-	private void CreateMap()
-	{
-		tiles = new Tile[mapW, mapH];
+    private void HandleLeftClick(GodotObject collider, Vector3 position)
+    {
+        GD.Print($"Entra en HandleLeftClick: {position}");
 
-		for (int x = 0; x < mapW; x++)
+        Node node = collider as Node;
+
+        while (node != null)
+        {
+            if (node is Player player)
+            {
+                GD.Print("Colisiona con Player");
+                PlayerClicked(player);
+                return;
+            }
+
+            if (node is Resource resource)
+            {
+                GD.Print("Colisiona con Recurso");
+                return;
+            }
+
+            node = node.GetParent();
+        }
+
+        // Si no es entidad → terreno
+        GD.Print("Colisiona con Terreno");
+
+        Tile tile = terrainManager.GetTileFromPosition(position);
+
+        if (tile != null)
+            ShowInventory(tile);
+    }
+
+    private void ShowInventory(object owner)
+	{
+		selection?.UnHightlight();
+
+		if (owner is ISelectable selectable)
 		{
-			for (int y = 0; y < mapH; y++)
-			{
-				Tile tile = Tile.Create(new Vector3(x * 2, 0, y * 2));
-				tile.OnClicked += (Node3D sender) => TileClicked((Tile)sender);
-				tileCollection.AddChild(tile);
-
-				tiles[x, y] = tile;
-			}
+			selection = selectable;
+            selectable.Highlight();
 		}
-	}
-
-	private void ShowInventory(Node3D owner)
-	{
-		((ISelectable)selectedNode)?.UnHightlight();
-		selectedNode = owner;
-
-		((ISelectable)owner)?.Highlight();
+		else
+		{
+			selection = null;
+		}
 
 		if (owner is IInventory inventoryOwner)
 		{
 			inventoryPanel.ShowForTile(inventoryOwner);
 		}
-	}
-
-	private void TileClicked(Tile tile)
-	{
-		ShowInventory(tile);
 	}
 
 	private void PlayerClicked(Player player)
@@ -319,7 +335,7 @@ public partial class Connection : Node
 		// +1 al inventario local (si lo estás usando)
 		player.Inventory.Add(type, 1);
 		var tilePos = player.TilePos;
-		tiles[tilePos.X, tilePos.Y].Inventory.Remove(type, 1);
+		terrainManager[tilePos.X, tilePos.Y]?.Inventory.Remove(type, 1);
 		GD.Print($"[pgt] Player #{id} tomo {type}");
 	}
 
@@ -358,15 +374,15 @@ public partial class Connection : Node
 		// Highlight del tile donde está el jugador
 		Vector2I tilePos = player.TilePos;
 
-		if (tilePos.X < 0 || tilePos.X >= mapW || tilePos.Y < 0 || tilePos.Y >= mapH)
-		{
-			return;
-		}
+		//if (tilePos.X < 0 || tilePos.X >= mapW || tilePos.Y < 0 || tilePos.Y >= mapH)
+		//{
+		//	return;
+		//}
 
-		var tile = tiles[tilePos.X, tilePos.Y];
+		var tile = terrainManager[tilePos.X, tilePos.Y];
 
 		// Color "pre-huevo" (verde amarillento)
-		tile.Highlight();
+		//tile.Highlight();
 
 		// Opcional: feedback visual en el jugador
 		// player.Flash(new Color(1f, 1f, 0.4f));
@@ -390,19 +406,19 @@ public partial class Connection : Node
 
 		GD.Print($"[pie] Incantacion en tile ({x},{y}) {(result == 1 ? "EXITOSA" : "FALLIDA")}");
 
-		if (x < 0 || x >= mapW || y < 0 || y >= mapH)
-		{
-			return;
-		}
+		//if (x < 0 || x >= mapW || y < 0 || y >= mapH)
+		//{
+		//	return;
+		//}
 
-		var tile = tiles[x, y];
+		var tile = terrainManager[x, y];
 
 		// elegir color según resultado
 		Color color = result == 1 ? new Color(0f, 1f, 0f, 0.5f) : new Color(1f, 0f, 0f, 0.5f);
-		tile.Highlight();
+		//tile.Highlight();
 
 		// opcional: eliminar highlight después de 1 segundo
-		_ = FadeOutTile(tile, 1.0f);
+		//_ = FadeOutTile(tile, 1.0f);
 	}
 
 	private void pic(string[] parts)
@@ -421,13 +437,13 @@ public partial class Connection : Node
 
 		GD.Print($"[pic] Incantacion en tile ({x},{y}) nivel {level} con jugadores: {string.Join(",", playerIds)}");
 
-		if (x < 0 || x >= mapW || y < 0 || y >= mapH)
-		{
-			return;
-		}
+		//if (x < 0 || x >= mapW || y < 0 || y >= mapH)
+		//{
+		//	return;
+		//}
 
 		// GrayBox: resaltar tile
-		tiles[x, y].Highlight(); // naranja semi-transparente
+		//tiles[x, y].Highlight(); // naranja semi-transparente
 	}
 
 	private async void ShowPlayerMessage(Player player, string msg)
@@ -592,16 +608,17 @@ public partial class Connection : Node
 		// Recursos son lo que viene a partir del índice 3
 		for (int i = 3; i < parts.Length; i++)
 		{
-			tiles[x, y].Inventory.Set((Resource.ResourceType)(i - 3), int.Parse(parts[i]));
+			terrainManager[x, y].Inventory.Set((Resource.ResourceType)(i - 3), int.Parse(parts[i]));
 		}
 	}
 
 	private void msz(string[] parts)
 	{
-		mapW = int.Parse(parts[1]);
-		mapH = int.Parse(parts[2]);
+		var mapW = int.Parse(parts[1]);
+		var mapH = int.Parse(parts[2]);
 		GD.Print($"Mapa de tamaño: {mapW} x {mapH}");
-		CreateMap();
-		SendMessage("mct");
+		//CreateMap();
+		terrainManager.InitializeMap(mapW, mapH);
+        SendMessage("mct");
 	}
 }
