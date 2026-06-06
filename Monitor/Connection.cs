@@ -23,74 +23,88 @@ public partial class Connection : Node
 	private ISelectable selection;
 
 	private MockServer _mockServer;
+	private MessageLogPanel _logPanel;
 
 	private Camera camera;
+
+	// Pon a true para usar el servidor simulado sin intentar conexión real
+	[Export] public bool UseMockServer = true;
 
 	public override void _Ready()
 	{
 		playerManager = GetNode<PlayerManager>("PlayerManager");
-        terrainManager = GetParent().GetNode<Terrain>("Terrain");
+		terrainManager = GetParent().GetNode<Terrain>("Terrain");
 		camera = GetParent().GetNode<Camera>("Camera");
 		camera.OnLeftClick += HandleLeftClick;
-        eggManager = GetNode<EggManager>("EggManager");
-		try
+		eggManager = GetNode<EggManager>("EggManager");
+
+		_logPanel = new MessageLogPanel();
+		AddChild(_logPanel);
+
+		if (UseMockServer)
 		{
 			_mockServer = new MockServer();
+			GD.Print("[Connection] Modo mock activo — sin conexión TCP.");
+			return;
+		}
+
+		try
+		{
 			_client = new TcpClient();
 			_client.Connect("127.0.0.1", 12345);
 			_stream = _client.GetStream();
 
-			GD.Print("Conectado al servidor Zappy!");
+			GD.Print("[Connection] Conectado al servidor Zappy!");
 
 			SendMessage("GRAPHIC");
 		}
 		catch (Exception ex)
 		{
-			GD.PrintErr("Error al conectar: " + ex.Message);
+			GD.PrintErr("[Connection] Error al conectar: " + ex.Message);
 		}
 	}
 
-    private void HandleLeftClick(GodotObject collider, Vector3 position)
-    {
-        GD.Print($"Entra en HandleLeftClick: {position}");
+	private void HandleLeftClick(GodotObject collider, Vector3 position)
+	{
+		GD.Print($"Entra en HandleLeftClick: {position}");
 
-        Node node = collider as Node;
+		Node node = collider as Node;
 
-        while (node != null)
-        {
-            if (node is Player player)
-            {
-                GD.Print("Colisiona con Player");
-                PlayerClicked(player);
-                return;
-            }
+		while (node != null)
+		{
+			if (node is Player player)
+			{
+				GD.Print("Colisiona con Player");
+				PlayerClicked(player);
+				return;
+			}
 
-            if (node is Resource resource)
-            {
-                GD.Print("Colisiona con Recurso");
-                return;
-            }
+			if (node is Resource resource)
+			{
+				GD.Print("Colisiona con Recurso");
+				return;
+			}
 
-            node = node.GetParent();
-        }
+			node = node.GetParent();
+		}
 
-        // Si no es entidad → terreno
-        GD.Print("Colisiona con Terreno");
+		// Si no es entidad → terreno
+		GD.Print("Colisiona con Terreno");
 
-        Tile tile = terrainManager.GetTileFromPosition(position);
+		Tile tile = terrainManager.GetTileFromPosition(position);
 
-        if (tile != null)
-            ShowInventory(tile);
-    }
+		if (tile != null)
+			ShowInventory(tile);
+	}
 
-    private void ShowInventory(object owner)
+	private void ShowInventory(object owner)
 	{
 		selection?.UnHightlight();
 
 		if (owner is ISelectable selectable)
 		{
 			selection = selectable;
-            selectable.Highlight();
+			selectable.Highlight();
 		}
 		else
 		{
@@ -165,6 +179,12 @@ public partial class Connection : Node
 		}
 	}
 
+	public override void _UnhandledInput(InputEvent e)
+	{
+		if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.F2)
+			_logPanel.Visible = !_logPanel.Visible;
+	}
+
 	private void HandleServerMessage(string line)
 	{
 		var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -172,6 +192,8 @@ public partial class Connection : Node
 		{
 			return;
 		}
+
+		_logPanel.Log(parts[0], line);
 
 		switch (parts[0])
 		{
@@ -619,6 +641,6 @@ public partial class Connection : Node
 		GD.Print($"Mapa de tamaño: {mapW} x {mapH}");
 		//CreateMap();
 		terrainManager.InitializeMap(mapW, mapH);
-        SendMessage("mct");
+		SendMessage("mct");
 	}
 }

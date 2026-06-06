@@ -18,7 +18,7 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Visualización en tiempo real del mundo | ✅ | Terreno 3D con grid shader |
 | Click en casilla → info específica | ✅ | Raycast + InventoryPanel |
 | Visualización mínima 2D | ✅ (3D bonus) | 3D con shader de grid |
-| Visualización de broadcasts | ⚠️ Parcial | `pbc` manejado, sin UI visible dedicada |
+| Visualización de broadcasts | ⚠️ Parcial | `pbc` manejado, visible en MessageLogPanel |
 | Seguimiento de progreso por equipo | ⚠️ Parcial | Nivel de jugador visible, no panel de equipos |
 | Quién ganó (`seg`) | ⚠️ Sin UI | Evento parseado, sin pantalla de fin de juego |
 | Protocolo gráfico completo | ✅ | Todos los mensajes del servidor manejados |
@@ -37,6 +37,7 @@ Monitor/
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
 ├── InventoryPanel.cs       # UI: panel de inventario seleccionado
+├── MessageLogPanel.cs      # UI: panel scrolleable de log de mensajes del servidor
 ├── MockServer.cs           # Servidor simulado para tests sin red
 ├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
 ├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
@@ -72,7 +73,8 @@ game.tscn
     ├── Connection (connection.tscn) [Connection.cs]
     │   ├── PlayerManager            [PlayerManager.cs]
     │   ├── EggManager               [EggManager.cs]
-    │   └── InventoryPanel           [InventoryPanel.cs] (UI Control)
+    │   ├── InventoryPanel           [InventoryPanel.cs] (UI Control)
+    │   └── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
     └── Terrain (terrain.tscn)       [Terrain.cs]
         └── MeshInstance3D           (terrain.gdshader)
 
@@ -157,6 +159,24 @@ Modelo de datos puro. Almacena cantidades para los 7 tipos de recurso del juego 
 
 ---
 
+### `MessageLogPanel.cs`
+Panel `Control` creado programáticamente en `Connection._Ready()`. Se ancla a la esquina inferior izquierda (400×300 px). Muestra todos los mensajes entrantes con color coding por tipo:
+
+| Color | Tipos |
+|-------|-------|
+| Cyan | `pnw` (spawn) |
+| Rojo | `pdi` (muerte) |
+| Verde | `plv` (nivel) |
+| Amarillo | `pbc` (broadcast) |
+| Naranja | `pic` / `pie` (incantación) |
+| Lila | `enw` / `eht` / `ebo` / `edi` (huevos) |
+| Gris | `bct` / `pgt` / `pdr` / `pfk` / `pin` (recursos) |
+| Azul | `msz` / `tna` / `sgt` / `seg` (sistema) |
+
+Toggle con **F2**. Botón "Limpiar" para vaciar el log. Límite de 80 entradas (se limpia al superarlo).
+
+---
+
 ### `MockServer.cs`
 Simula mensajes del protocolo Zappy con un timer de 1 segundo por mensaje. Permite desarrollo y testing sin servidor real.
 
@@ -195,7 +215,7 @@ Connection.HandleLeftClick()
 ## Áreas de Mejora / Pendientes
 
 - **Sin UI de equipos:** No existe panel que muestre progreso por equipo ni quién está ganando.
-- **Broadcasts sin visualización:** `pbc` se parsea pero no hay indicador visual/sonoro de dirección.
+- **Broadcasts sin dirección:** `pbc` se muestra en `MessageLogPanel` pero sin indicador visual de dirección en la escena 3D.
 - **Fin de partida (`seg`):** Evento recibido pero sin pantalla de resultado.
 - **Incantaciones (`pic`/`pie`):** Sin efecto visual en los jugadores participantes.
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
