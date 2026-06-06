@@ -24,6 +24,7 @@ public partial class Connection : Node
 
 	private MockServer _mockServer;
 	private MessageLogPanel _logPanel;
+	private TeamProgressPanel _teamPanel;
 
 	private Camera camera;
 
@@ -40,6 +41,14 @@ public partial class Connection : Node
 
 		_logPanel = new MessageLogPanel();
 		AddChild(_logPanel);
+
+		_teamPanel = new TeamProgressPanel();
+		AddChild(_teamPanel);
+		_teamPanel.PlayerSelected += id =>
+		{
+			if (playerManager.TryGet(id, out var p))
+				ShowInventory(p);
+		};
 
 		if (UseMockServer)
 		{
@@ -189,8 +198,13 @@ public partial class Connection : Node
 
 	public override void _UnhandledInput(InputEvent e)
 	{
-		if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.F2)
-			_logPanel.Visible = !_logPanel.Visible;
+		if (e is InputEventKey key && key.Pressed && !key.Echo)
+		{
+			if (key.Keycode == Key.F2)
+				_logPanel.Toggle();
+			else if (key.Keycode == Key.F3)
+				_teamPanel.Toggle();
+		}
 	}
 
 	private void HandleServerMessage(string line)
@@ -258,7 +272,7 @@ public partial class Connection : Node
 	{
 		string winner = parts[1];
 		GD.Print($"[seg] ¡Juego terminado! Equipo ganador: {winner}");
-		// opcional: pausar la escena
+		_teamPanel?.ShowWinner(winner);
 		GetTree().Paused = true;
 	}
 
@@ -347,6 +361,7 @@ public partial class Connection : Node
 		}
 
 		playerManager.Remove(id);
+		_teamPanel?.RemovePlayer(id);
 
 		GD.Print($"[pdi] Player #{id} murio (eliminado).");
 	}
@@ -369,6 +384,7 @@ public partial class Connection : Node
 		player.Inventory.Add(type, 1);
 		var tilePos = player.TilePos;
 		terrainManager[tilePos.X, tilePos.Y]?.Inventory.Remove(type, 1);
+		_teamPanel?.SetLastAction(id, $"+ {type}");
 		GD.Print($"[pgt] Player #{id} tomo {type}");
 	}
 
@@ -388,6 +404,7 @@ public partial class Connection : Node
 
 		player.Inventory.Remove(type, 1);
 
+		_teamPanel?.SetLastAction(id, $"- {type}");
 		GD.Print($"[pdr] Player #{id} dejo {type}");
 	}
 
@@ -403,6 +420,7 @@ public partial class Connection : Node
 		}
 
 		GD.Print($"[pfk] Player #{playerId} esta poniendo un huevo");
+		_teamPanel?.SetLastAction(playerId, "🥚 pone huevo");
 
 		// Highlight del tile donde está el jugador
 		Vector2I tilePos = player.TilePos;
@@ -469,6 +487,8 @@ public partial class Connection : Node
 		}
 
 		GD.Print($"[pic] Incantacion en tile ({x},{y}) nivel {level} con jugadores: {string.Join(",", playerIds)}");
+		foreach (int pid in playerIds)
+			_teamPanel?.SetLastAction(pid, $"✨ incant. Nv.{level}");
 
 		//if (x < 0 || x >= mapW || y < 0 || y >= mapH)
 		//{
@@ -506,9 +526,7 @@ public partial class Connection : Node
 		string message = string.Join(" ", parts, 2, parts.Length - 2);
 
 		GD.Print($"[pbc] Player #{id} dice: {message}");
-
-		// ⭐ Opción visual rápida:
-		// podrías añadir un Label3D encima del jugador para mostrar temporalmente
+		_teamPanel?.SetLastAction(id, $"📢 {message}");
 		ShowPlayerMessage(player, message);
 	}
 
@@ -524,6 +542,7 @@ public partial class Connection : Node
 		}
 
 		GD.Print($"[pex] Player #{id} expulso a otros jugadores.");
+		_teamPanel?.SetLastAction(id, "💨 expulsó");
 	}
 
 	private void pin(string[] parts)
@@ -569,6 +588,7 @@ public partial class Connection : Node
 		}
 
 		player.SetLevel(level);
+		_teamPanel?.SetLevel(id, level);
 
 		GD.Print($"[plv] Player #{id} -> level {level}");
 	}
@@ -589,6 +609,7 @@ public partial class Connection : Node
 
 		player.SetTilePos(x, y);
 		player.SetOrientation(o);
+		_teamPanel?.SetLastAction(id, $"→ ({x},{y})");
 
 		// GD.Print($"[ppo] Player #{id} -> ({x},{y}) o={o}");
 	}
@@ -607,6 +628,7 @@ public partial class Connection : Node
 			teams.Add(teamName);
 		}
 
+		_teamPanel?.RegisterTeam(teamName);
 		GD.Print($"[tna] Equipo registrado: {teamName}");
 	}
 
@@ -633,6 +655,7 @@ public partial class Connection : Node
 		player.SetOrientation(o);
 		player.SetLevel(level);
 
+		_teamPanel?.AddPlayer(id, team, level);
 		GD.Print($"[pnw] Player #{id} team={team} pos=({x},{y}) o={o} lvl={level}");
 	}
 

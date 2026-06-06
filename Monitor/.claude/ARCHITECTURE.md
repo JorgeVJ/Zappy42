@@ -19,8 +19,8 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Click en casilla → info específica | ✅ | Raycast + InventoryPanel |
 | Visualización mínima 2D | ✅ (3D bonus) | 3D con shader de grid |
 | Visualización de broadcasts | ⚠️ Parcial | `pbc` manejado, visible en MessageLogPanel |
-| Seguimiento de progreso por equipo | ⚠️ Parcial | Nivel de jugador visible, no panel de equipos |
-| Quién ganó (`seg`) | ⚠️ Sin UI | Evento parseado, sin pantalla de fin de juego |
+| Seguimiento de progreso por equipo | ✅ | TeamProgressPanel: jugadores, niveles y equipo líder |
+| Quién ganó (`seg`) | ✅ | Overlay pantalla completa con nombre del ganador |
 | Protocolo gráfico completo | ✅ | Todos los mensajes del servidor manejados |
 
 ---
@@ -41,8 +41,10 @@ Monitor/
 ├── IInventory.cs           # Interfaz: objeto con inventario
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
+├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ y botón de restauración
 ├── InventoryPanel.cs       # UI: panel de inventario seleccionado
-├── MessageLogPanel.cs      # UI: panel scrolleable de log de mensajes del servidor
+├── MessageLogPanel.cs      # UI: log de mensajes (hereda CollapsiblePanel)
+├── TeamProgressPanel.cs    # UI: progreso por equipo (hereda CollapsiblePanel)
 ├── MockServer.cs           # Servidor simulado para tests sin red
 ├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
 ├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
@@ -81,7 +83,8 @@ game.tscn
     │   ├── PlayerManager            [PlayerManager.cs]
     │   ├── EggManager               [EggManager.cs]
     │   ├── InventoryPanel           [InventoryPanel.cs] (UI Control)
-    │   └── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
+    │   ├── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
+    │   └── TeamProgressPanel        [TeamProgressPanel.cs] (UI Control, creado en código)
     └── Terrain (terrain.tscn)       [Terrain.cs]
         └── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
 
@@ -218,7 +221,6 @@ Connection.HandleLeftClick()
 
 ## Áreas de Mejora / Pendientes
 
-- **Sin UI de equipos:** No existe panel que muestre progreso por equipo ni quién está ganando.
 - **Broadcasts sin dirección:** `pbc` se muestra en `MessageLogPanel` pero sin indicador visual de dirección en la escena 3D.
 - **Fin de partida (`seg`):** Evento recibido pero sin pantalla de resultado.
 - **Incantaciones (`pic`/`pie`):** Sin efecto visual en los jugadores participantes.
