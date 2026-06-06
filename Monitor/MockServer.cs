@@ -16,6 +16,7 @@ public class MockServer
         "tna TEAM_B",
 
         // Recursos iniciales en algunas casillas
+        "bct 1 1 1 2 3 4 5 6 7",
         "bct 2 4 1 0 0 0 0 0 0",
         "bct 5 5 0 3 1 0 0 0 0",
         "bct 10 10 2 1 0 1 0 0 0",

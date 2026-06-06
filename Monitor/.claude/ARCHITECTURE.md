@@ -29,6 +29,11 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 
 ```
 Monitor/
+├── .claude/
+│   ├── CLAUDE.md           # Instrucciones para Claude Code (este archivo vive aquí)
+│   ├── ARCHITECTURE.md     # Este archivo
+│   └── commands/
+│       └── terrain.md      # Skill: contexto completo del sistema de terreno
 ├── Camera.cs               # Cámara libre WASD + raycast
 ├── Connection.cs           # Hub de red TCP + dispatcher de protocolo
 ├── Egg.cs / EggManager.cs  # Entidad huevo + gestión
@@ -42,22 +47,24 @@ Monitor/
 ├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
 ├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
 ├── PlayerManager.cs        # Gestión centralizada de jugadores
-├── Resource.cs             # Entidad recurso en el mundo (esferas coloreadas)
+├── Resource.cs             # Entidad recurso: carga GLB de res://models/ o esfera coloreada
 ├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
-├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión)
+├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
 ├── Tile.cs                 # Datos de una casilla (coord + inventario)
+├── models/                 # Assets 3D generados con Meshy AI (.glb)
+│   └── linemate.glb
 ├── Quadruped/
-│   ├── QuadrupedController.cs  # Sistema IK para patas de cuadrúpedo
-│   ├── Leg.cs                  # Una pata: raycast + animación de paso
-│   └── LegDefinition.cs        # Config estática de una pata (huesos, offset)
-├── game.tscn               # Escena principal
-├── player.tscn             # Prefab jugador
-├── terrain.tscn            # Prefab terreno
-├── connection.tscn         # Prefab nodo de red
-├── creature.tscn           # Prefab criatura animada (Creature.gltf + IK)
-├── egg.tscn                # Prefab huevo
-├── resource.tscn           # Prefab recurso
-└── terrain.gdshader        # Shader de líneas de grid sobre terreno
+│   ├── QuadrupedController.cs
+│   ├── Leg.cs
+│   └── LegDefinition.cs
+├── game.tscn
+├── player.tscn
+├── terrain.tscn
+├── connection.tscn
+├── creature.tscn
+├── egg.tscn
+├── resource.tscn
+└── terrain.gdshader
 ```
 
 ---
@@ -76,7 +83,7 @@ game.tscn
     │   ├── InventoryPanel           [InventoryPanel.cs] (UI Control)
     │   └── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
     └── Terrain (terrain.tscn)       [Terrain.cs]
-        └── MeshInstance3D           (terrain.gdshader)
+        └── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
 
 player.tscn
 └── Node3D "Player"  [Player.cs]
@@ -124,28 +131,38 @@ El corazón del monitor. Abre un socket TCP a `127.0.0.1:12345`, envía `GRAPHIC
 | `seg TEAM` | — | Fin de partida |
 | `smg MSG` | — | Mensaje del servidor |
 
+**Posicionamiento de entidades:** todas usan `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f` para centrarlas en su tile.
+
 **Selección y UI:** `HandleLeftClick()` hace raycast desde la cámara. Si impacta un `Player` o `Tile`, llama a `ShowInventory()` que actualiza el `InventoryPanel`.
 
 ---
 
 ### `Terrain.cs` — Mundo Procedural
-Genera el terreno al recibir `msz`. Usa `FastNoiseLite` (Perlin) para el heightmap. Crea un `ArrayMesh` con vértices, índices y normales, y le aplica colisión trimesh. El shader `terrain.gdshader` dibuja líneas de grid usando `fract()` sobre coordenadas de mundo para visualizar los límites de casillas.
-
-Parámetros clave: `TileSize = 3.0f`, `HeightScale = 3.0f`, `NoiseScale = 0.08f`.
+Ver skill `/terrain` para contexto completo. Resumen:
+- `TILE_SIZE = 10.0f` (const pública) — controla escala de todo el mundo
+- Genera `ArrayMesh` con heightmap Perlin en `InitializeMap()`
+- Sincroniza `tile_size` del shader al generar el mesh
+- Instancia nodos `Resource` en tiles al recibir `bct` vía `Inventory.Changed`
+- `GetTileFromPosition()` divide por `TILE_SIZE` antes de hacer `FloorToInt`
 
 ---
 
 ### `Player.cs` — Entidad Jugador
-Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene una criatura animada (`creature.tscn`) y un dron companion (`Drone.fbx`). 
+Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene una criatura animada (`creature.tscn`) y un dron companion (`Drone.fbx`).
 
-- **Movimiento:** `SetTilePos()` lanza un `Tween` de 2 segundos + animación "Walk2", al completar reproduce "Idle".
+- **Movimiento:** `SetTilePos()` lanza un `Tween` de 2 segundos + animación "Walk2", al completar reproduce "Idle". Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
 - **Orientación:** `SetOrientation()` mapea 1=N, 2=E, 3=S, 4=W a rotación Y.
 - **Equipamiento:** `_Ready()` adjunta armadura a 4 huesos de brazo vía `EquipmentManager`.
 
 ---
 
+### `Resource.cs` — Entidad Recurso
+Carga automáticamente `res://models/{tipo}.glb` si existe (Meshy AI); si no, usa `SphereMesh` coloreada. Los modelos GLB se escalan a `0.15f`. Añadir un nuevo tipo = generar el GLB con `meshy generate` y colocarlo en `res://models/`.
+
+---
+
 ### `QuadrupedController.cs` + `Leg.cs` — Sistema IK
-Implementa animación procedural de patas con `SkeletonIK3D`. Cada pata tiene un `RayCast3D` para detectar el suelo y un `Marker3D` como target IK. Cuando una pata supera `StepDistance`, se lanza una animación de arco (`Leg.Step()`) interpolando posición en dos fases (subida y bajada). Las patas se gestionan en cola (`StepOrder`) para alternar pasos naturalmente.
+Implementa animación procedural de patas con `SkeletonIK3D`. Cada pata tiene un `RayCast3D` para detectar el suelo y un `Marker3D` como target IK. Cuando una pata supera `StepDistance`, se lanza una animación de arco (`Leg.Step()`) interpolando posición en dos fases (subida y bajada).
 
 ---
 
@@ -155,30 +172,17 @@ Base para `Player` y casillas seleccionables. Implementa `ISelectable` (highligh
 ---
 
 ### `Inventory.cs`
-Modelo de datos puro. Almacena cantidades para los 7 tipos de recurso del juego (`Nourriture`, `Linemate`, `Deraumere`, `Sibur`, `Mendiane`, `Phiras`, `Thystame`). Dispara evento `Changed` en cada modificación.
+Modelo de datos puro. Almacena cantidades para los 7 tipos de recurso (`Nourriture`, `Linemate`, `Deraumere`, `Sibur`, `Mendiane`, `Phiras`, `Thystame`). Dispara evento `Changed` en cada modificación.
 
 ---
 
 ### `MessageLogPanel.cs`
-Panel `Control` creado programáticamente en `Connection._Ready()`. Se ancla a la esquina inferior izquierda (400×300 px). Muestra todos los mensajes entrantes con color coding por tipo:
-
-| Color | Tipos |
-|-------|-------|
-| Cyan | `pnw` (spawn) |
-| Rojo | `pdi` (muerte) |
-| Verde | `plv` (nivel) |
-| Amarillo | `pbc` (broadcast) |
-| Naranja | `pic` / `pie` (incantación) |
-| Lila | `enw` / `eht` / `ebo` / `edi` (huevos) |
-| Gris | `bct` / `pgt` / `pdr` / `pfk` / `pin` (recursos) |
-| Azul | `msz` / `tna` / `sgt` / `seg` (sistema) |
-
-Toggle con **F2**. Botón "Limpiar" para vaciar el log. Límite de 80 entradas (se limpia al superarlo).
+Panel `Control` creado programáticamente en `Connection._Ready()`. Se ancla a la esquina inferior izquierda (400×300 px). Toggle con **F2**.
 
 ---
 
 ### `MockServer.cs`
-Simula mensajes del protocolo Zappy con un timer de 1 segundo por mensaje. Permite desarrollo y testing sin servidor real.
+Simula mensajes del protocolo Zappy con un timer de 1 segundo por mensaje. Permite desarrollo y testing sin servidor real. El tamaño del mapa lo controla el mensaje `msz`.
 
 ---
 
@@ -195,8 +199,8 @@ HandleServerMessage()  ← parsea comando y argumentos
     │
     ├─► PlayerManager.GetOrCreate() → Player.Init() / SetTilePos() / SetLevel()
     ├─► EggManager.CreateEgg() / Remove()
-    ├─► Terrain.InitializeMap() → genera mesh
-    ├─► Tile.Inventory.Set() → actualiza recursos de casilla
+    ├─► Terrain.InitializeMap() → genera mesh + shader sync
+    ├─► Tile.Inventory.Set() → Changed → Terrain.UpdateTileResources()
     └─► InventoryPanel.ShowForTile() ← desde HandleLeftClick()
 
 Camera._UnhandledInput()
@@ -221,3 +225,4 @@ Connection.HandleLeftClick()
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
 - **Conexión hardcodeada:** IP/puerto fijos en `Connection._Ready()` (`127.0.0.1:12345`).
 - **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs`.
+- **Altura de jugadores:** Y fija en `0.3f`; no sigue la altura real del terreno.

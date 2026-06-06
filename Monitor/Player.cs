@@ -43,8 +43,11 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         TilePos = new Vector2I(x, y);
         GD.Print($"SetTilePos: player {Id} new tile ({x},{y})");
 
-        // Compute world target position from tile coords
-        Vector3 target = new Vector3(x, 0.3f, y);
+        // Compute world target position from tile coords (center of tile)
+        Vector3 target = new Vector3(
+            x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f,
+            0.3f,
+            y * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f);
 
         // Try to cancel any previous tween
         try

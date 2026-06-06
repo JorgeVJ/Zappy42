@@ -3,18 +3,44 @@ using System.Collections.Generic;
 
 public partial class Terrain : Node3D
 {
-	[Export] public int Width = 10;
-	[Export] public int Height = 10;
-	
+	[Export] public int Width = 5;
+	[Export] public int Height = 5;
+
 	[Export] public float HeightScale = 3f;
 	[Export] public float NoiseScale = 0.08f;
-    [Export] public float TileSize = 3.0f;
+	private float _lineWidth = 0.01f;
+	[Export] public float LineWidth
+	{
+		get => _lineWidth;
+		set
+		{
+			_lineWidth = value;
+			if (terrainMesh?.GetActiveMaterial(0) is ShaderMaterial mat)
+				mat.SetShaderParameter("line_width", _lineWidth);
+		}
+	}
+
+	public const float TILE_SIZE = 10.0f;
 
     private float[,] heightMap;
 
 	private Tile[,] tiles;
 
 	private MeshInstance3D terrainMesh;
+
+	private static readonly PackedScene resourceScene = ResourceLoader.Load<PackedScene>("res://resource.tscn");
+	private readonly Dictionary<(int, int), List<Resource>> tileResources = new();
+
+	// Offsets within a tile for placing up to 7 resource nodes (one per type)
+	private static readonly Vector2[] ResourceOffsets = {
+		new( 0,      0),
+		new(-0.6f,   0),
+		new( 0.6f,   0),
+		new( 0,     -0.6f),
+		new( 0,      0.6f),
+		new(-0.6f,  -0.6f),
+		new( 0.6f,   0.6f),
+	};
 
 	public override void _Ready()
 	{
@@ -40,7 +66,36 @@ public partial class Terrain : Node3D
 			for (int y = 0; y < Height; y++)
 			{
 				tiles[x, y] = new Tile(x, y);
+				tileResources[(x, y)] = new List<Resource>();
+				int cx = x, cy = y;
+				tiles[x, y].Inventory.Changed += () => UpdateTileResources(cx, cy);
 			}
+		}
+	}
+
+	private void UpdateTileResources(int x, int y)
+	{
+		foreach (var r in tileResources[(x, y)])
+			r.QueueFree();
+		tileResources[(x, y)].Clear();
+
+		// The tile center falls on Triangle 2 (v1, v3, v2) with barycentric weights 0.5/0/0.5
+		// → correct surface height = (h[x+1,y] + h[x,y+1]) / 2
+		float h = (heightMap[x + 1, y] + heightMap[x, y + 1]) / 2f;
+		Vector3 center = new Vector3(x * TILE_SIZE + TILE_SIZE / 2f, h, y * TILE_SIZE + TILE_SIZE / 2f);
+
+		int slot = 0;
+		foreach (var kvp in tiles[x, y].Inventory.All)
+		{
+			if (kvp.Value <= 0) continue;
+
+			var offset = ResourceOffsets[slot % ResourceOffsets.Length];
+			var resource = resourceScene.Instantiate<Resource>();
+			resource.Position = center + new Vector3(offset.X, 0.05f, offset.Y);
+			AddChild(resource);
+			resource.SetResourceType(kvp.Key);
+			tileResources[(x, y)].Add(resource);
+			slot++;
 		}
 	}
 
@@ -72,10 +127,10 @@ public partial class Terrain : Node3D
 		{
 			for (int y = 0; y < Height; y++)
 			{
-				Vector3 v0 = new Vector3(x * TileSize, heightMap[x, y], y * TileSize);
-				Vector3 v1 = new Vector3((x + 1) * TileSize, heightMap[x + 1, y], y * TileSize);
-				Vector3 v2 = new Vector3(x * TileSize, heightMap[x, y + 1], (y + 1) * TileSize);
-				Vector3 v3 = new Vector3((x + 1) * TileSize, heightMap[x + 1, y + 1], (y + 1) * TileSize);
+				Vector3 v0 = new Vector3(x * TILE_SIZE, heightMap[x, y], y * TILE_SIZE);
+				Vector3 v1 = new Vector3((x + 1) * TILE_SIZE, heightMap[x + 1, y], y * TILE_SIZE);
+				Vector3 v2 = new Vector3(x * TILE_SIZE, heightMap[x, y + 1], (y + 1) * TILE_SIZE);
+				Vector3 v3 = new Vector3((x + 1) * TILE_SIZE, heightMap[x + 1, y + 1], (y + 1) * TILE_SIZE);
 
 				int baseIndex = vertices.Count;
 
@@ -110,17 +165,45 @@ public partial class Terrain : Node3D
 		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
 
 		terrainMesh.Mesh = mesh;
-        // Create colision
+
+		// Sync shader parameters from C# exports (overrides any value stored in .tscn)
+		if (terrainMesh.GetActiveMaterial(0) is ShaderMaterial mat)
+		{
+			mat.SetShaderParameter("tile_size", TILE_SIZE);
+			mat.SetShaderParameter("line_width", LineWidth);
+			mat.SetShaderParameter("has_selection", false);
+			mat.SetShaderParameter("selected_tile", new Vector2(-1, -1));
+		}
+
+        // Create collision
         var shape = mesh.CreateTrimeshShape();
 
         var collisionShape = GetNode<CollisionShape3D>("StaticBody3D/CollisionShape3D");
         collisionShape.Shape = shape;
     }
 
+	public void SelectTile(int x, int y)
+	{
+		if (terrainMesh?.GetActiveMaterial(0) is ShaderMaterial mat)
+		{
+			mat.SetShaderParameter("has_selection", true);
+			mat.SetShaderParameter("selected_tile", new Vector2(x, y));
+		}
+	}
+
+	public void DeselectTile()
+	{
+		if (terrainMesh?.GetActiveMaterial(0) is ShaderMaterial mat)
+		{
+			mat.SetShaderParameter("has_selection", false);
+			mat.SetShaderParameter("selected_tile", new Vector2(-1, -1));
+		}
+	}
+
 	public Tile GetTileFromPosition(Vector3 pos)
 	{
-		int x = Mathf.FloorToInt(pos.X);
-		int y = Mathf.FloorToInt(pos.Z);
+		int x = Mathf.FloorToInt(pos.X / TILE_SIZE);
+		int y = Mathf.FloorToInt(pos.Z / TILE_SIZE);
 		return GetTile(x, y);
 	}
 

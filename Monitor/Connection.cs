@@ -75,6 +75,7 @@ public partial class Connection : Node
 			if (node is Player player)
 			{
 				GD.Print("Colisiona con Player");
+				terrainManager.DeselectTile();
 				PlayerClicked(player);
 				return;
 			}
@@ -94,7 +95,14 @@ public partial class Connection : Node
 		Tile tile = terrainManager.GetTileFromPosition(position);
 
 		if (tile != null)
+		{
+			terrainManager.SelectTile(tile.Coord.X, tile.Coord.Y);
 			ShowInventory(tile);
+		}
+		else
+		{
+			terrainManager.DeselectTile();
+		}
 	}
 
 	private void ShowInventory(object owner)
@@ -317,7 +325,10 @@ public partial class Connection : Node
 		int x = int.Parse(parts[3]);
 		int y = int.Parse(parts[4]);
 
-		Vector3 worldPos = new Vector3(x * 2, 0.3f, y * 2);
+		Vector3 worldPos = new Vector3(
+			x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f,
+			0.3f,
+			y * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f);
 
 		var egg = eggManager.CreateEgg(eggId, worldPos);
 
@@ -609,8 +620,11 @@ public partial class Connection : Node
 		int level = int.Parse(parts[5]);
 		string team = parts[6];
 
-		// convertir coords tile -> mundo
-		Vector3 worldPos = new Vector3(x * 2, 0.3f, y * 2);
+		// convertir coords tile -> mundo (centro del tile)
+		Vector3 worldPos = new Vector3(
+			x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f,
+			0.3f,
+			y * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f);
 
 		var player = playerManager.GetOrCreate(id, worldPos, team);
 
