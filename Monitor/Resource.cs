@@ -56,18 +56,25 @@ public partial class Resource : Node3D
 			customModel = null;
 		}
 
-		var mat = new StandardMaterial3D();
-		mat.AlbedoColor = type switch
+		var color = type switch
 		{
-			ResourceType.Nourriture => new Color(0.2f, 1.0f, 0.2f),
-			ResourceType.Linemate   => new Color(0.8f, 0.8f, 0.8f),
-			ResourceType.Deraumere  => new Color(0.2f, 0.6f, 1.0f),
-			ResourceType.Sibur      => new Color(1.0f, 0.6f, 0.2f),
-			ResourceType.Mendiane   => new Color(1.0f, 0.2f, 1.0f),
-			ResourceType.Phiras     => new Color(1.0f, 1.0f, 0.2f),
-			ResourceType.Thystame   => new Color(1.0f, 0.2f, 0.2f),
+			ResourceType.Nourriture => new Color(0.2f, 1.0f, 0.2f, 0.65f),
+			ResourceType.Linemate   => new Color(0.8f, 0.8f, 0.8f, 0.65f),
+			ResourceType.Deraumere  => new Color(0.2f, 0.6f, 1.0f, 0.65f),
+			ResourceType.Sibur      => new Color(1.0f, 0.6f, 0.2f, 0.65f),
+			ResourceType.Mendiane   => new Color(1.0f, 0.2f, 1.0f, 0.65f),
+			ResourceType.Phiras     => new Color(1.0f, 1.0f, 0.2f, 0.65f),
+			ResourceType.Thystame   => new Color(1.0f, 0.2f, 0.2f, 0.65f),
 			_ => Colors.White
 		};
+
+		var mat = new StandardMaterial3D();
+		mat.AlbedoColor  = color;
+		mat.Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass;
+		mat.Roughness    = 0.05f;
+		mat.Metallic     = 0.0f;
+		mat.RimEnabled   = true;
+		mat.Rim          = 0.6f;
 		mesh.SetSurfaceOverrideMaterial(0, mat);
 	}
 }
