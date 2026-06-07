@@ -76,6 +76,12 @@ public partial class Camera : Camera3D
 		}
 	}
 
+	public void SyncEulerAngles()
+	{
+		_pitch = Rotation.X;
+		_yaw   = Rotation.Y;
+	}
+
 	private void HandleClick()
 	{
 		var mousePos = GetViewport().GetMousePosition();

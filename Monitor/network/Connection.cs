@@ -38,6 +38,8 @@ public partial class Connection : Node
 		terrainManager = GetParent().GetNode<Terrain>("Terrain");
 		camera = GetParent().GetNode<Camera>("Camera");
 		camera.OnLeftClick += HandleLeftClick;
+		var followBehavior = new CameraFollowBehavior();
+		camera.AddChild(followBehavior);
 		eggManager = GetNode<EggManager>("EggManager");
 
 		_logPanel = new MessageLogPanel();
@@ -48,7 +50,10 @@ public partial class Connection : Node
 		_teamPanel.PlayerSelected += id =>
 		{
 			if (playerManager.TryGet(id, out var p))
+			{
 				ShowInventory(p);
+				followBehavior.StartFollowing(p);
+			}
 		};
 
 		_speedPanel = GetNode<SpeedControlPanel>("SpeedControlPanel");
