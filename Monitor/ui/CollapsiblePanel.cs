@@ -31,6 +31,10 @@ public partial class CollapsiblePanel : Control
         AddChild(panel);
         _panelRoot = panel;
 
+        // Equivale a añadir ResizeBehavior como hijo en el editor de escenas —
+        // misma jerarquía en runtime, sin necesidad de fichero .tscn.
+        panel.AddChild(new ResizeBehavior());
+
         var margin = new MarginContainer();
         margin.AddThemeConstantOverride("margin_left",   8);
         margin.AddThemeConstantOverride("margin_right",  8);
