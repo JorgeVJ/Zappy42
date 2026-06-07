@@ -1,22 +1,23 @@
-[gd_scene load_steps=5 format=3 uid="uid://cku1rgyxqsgql"]
+[gd_scene format=3 uid="uid://cku1rgyxqsgql"]
 
-[ext_resource type="Script" path="res://entities/player/Player.cs" id="1_60xi1"]
-[ext_resource type="PackedScene" uid="uid://cqke4uovcir2d" path="res://entities/player/models/Shaman.glb" id="3_kjbrg"]
+[ext_resource type="Script" uid="uid://vtb1d8oimgnm" path="res://entities/player/Player.cs" id="1_60xi1"]
+[ext_resource type="PackedScene" uid="uid://dwnam38n4d51" path="res://entities/player/models/Shaman.glb" id="3_kjbrg"]
 [ext_resource type="PackedScene" uid="uid://covc6olm5c4wa" path="res://entities/player/models/Drone.fbx" id="4_2xptc"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nfceb"]
 
-[node name="Player" type="Node3D"]
+[node name="Player" type="Node3D" unique_id=439265388]
 transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
 script = ExtResource("1_60xi1")
+metadata/__editor_changed = true
 
-[node name="Drone" parent="." instance=ExtResource("4_2xptc")]
+[node name="Drone" parent="." unique_id=1169828733 instance=ExtResource("4_2xptc")]
 transform = Transform3D(-5, 0, 4.37114e-07, 0, 5, 0, -4.37114e-07, 0, -5, -3, 5.19975, 0)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1551144091]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=521705790]
 transform = Transform3D(2.685, 0, 0, 0, 2.685, 0, 0, 0, 2.685, 0, 1.01913, 0)
 shape = SubResource("BoxShape3D_nfceb")
 
-[node name="Model" parent="." instance=ExtResource("3_kjbrg")]
+[node name="Model" parent="." unique_id=454791581 instance=ExtResource("3_kjbrg")]
