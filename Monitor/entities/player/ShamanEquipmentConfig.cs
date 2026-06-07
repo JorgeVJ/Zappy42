@@ -10,7 +10,7 @@ using System.Collections.Generic;
 ///
 /// Shaman bone hierarchy (relevant slots):
 ///   neck          → necklace / pendant
-///   headfront     → mask / face piece
+///   Headfront     → mask / face piece
 ///   Head          → horns / hat
 ///   RightHand     → staff / weapon
 ///   LeftShoulder / RightShoulder → shoulder pieces
@@ -18,7 +18,7 @@ using System.Collections.Generic;
 /// </summary>
 public static class ShamanEquipmentConfig
 {
-    private const string Eq = "res://entities/player/models/equipment/";
+    private const string Eq = "res://entities/player/models/equipments/";
 
     /// <summary>
     /// Returns the list of equipment slots for the given level.
@@ -54,22 +54,22 @@ public static class ShamanEquipmentConfig
     private static readonly List<EquipmentSlot> Level3 = new()
     {
         new("neck",      Eq + "collar_bone.glb"),
-        new("headfront", Eq + "skull_mask.glb"),
+        new("Head", Eq + "skull_mask.glb"),
     };
 
     // Level 4 — bone necklace + skull mask + basic staff
     private static readonly List<EquipmentSlot> Level4 = new()
     {
         new("neck",      Eq + "collar_bone.glb"),
-        new("headfront", Eq + "skull_mask.glb"),
-        new("RightHand", Eq + "staff_basic.glb"),
+        new("Head", Eq + "skull_mask.glb", new Offsets(new Godot.Vector3(0, 28f, 16f), new Godot.Vector3(-15F, 0.7f, -0.4f), new Godot.Vector3(16, 16, 16))),
+        new("RightHand", Eq + "staff_basic.glb", new Offsets(new Godot.Vector3(-10.455f, 15.318f, -2.096f), new Godot.Vector3(-41.7f, 104.2f, -104.6f), new Godot.Vector3(50, 80, 50))),
     };
 
     // Level 5 — gem necklace (replaces bone) + skull mask + basic staff
     private static readonly List<EquipmentSlot> Level5 = new()
     {
         new("neck",      Eq + "collar_gem.glb"),
-        new("headfront", Eq + "skull_mask.glb"),
+        new("Head", Eq + "skull_mask.glb"),
         new("RightHand", Eq + "staff_basic.glb"),
     };
 
@@ -77,7 +77,7 @@ public static class ShamanEquipmentConfig
     private static readonly List<EquipmentSlot> Level6 = new()
     {
         new("neck",          Eq + "collar_gem.glb"),
-        new("headfront",     Eq + "skull_mask.glb"),
+        new("Head",     Eq + "skull_mask.glb"),
         new("RightHand",     Eq + "staff_orb.glb"),
         new("LeftShoulder",  Eq + "shoulder_bone.glb"),
         new("RightShoulder", Eq + "shoulder_bone.glb"),
@@ -87,7 +87,7 @@ public static class ShamanEquipmentConfig
     private static readonly List<EquipmentSlot> Level7 = new()
     {
         new("neck",          Eq + "collar_gem.glb"),
-        new("headfront",     Eq + "skull_mask.glb"),
+        new("Head",     Eq + "skull_mask.glb"),
         new("RightHand",     Eq + "staff_orb.glb"),
         new("LeftShoulder",  Eq + "shoulder_bone.glb"),
         new("RightShoulder", Eq + "shoulder_bone.glb"),

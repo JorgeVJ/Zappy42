@@ -12,6 +12,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     private AnimationPlayer droneAnim;
 
     private EquipmentManager equipmentManager;
+    private Node3D modelNode;
 
     public int Id { get; private set; }
     public string TeamName { get; private set; } = "";
@@ -118,14 +119,14 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
         equipmentManager = new EquipmentManager();
 
-        var modelNode = GetNodeOrNull<Node3D>("Model");
+        modelNode = GetNodeOrNull<Node3D>("Model");
         if (modelNode != null)
         {
             GD.Print("_Ready: searching for AnimationPlayer in Model node...");
             modelAnim = FindAnimationPlayer(modelNode);
             GD.Print(modelAnim != null ? "_Ready: AnimationPlayer found." : "_Ready: no AnimationPlayer found in Model node.");
 
-            equipmentManager.ApplyLoadout(this, ShamanEquipmentConfig.GetLoadout(Level));
+            equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
         }
         else
         {
@@ -192,7 +193,8 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     {
         Level = level;
         GD.Print($"SetLevel: player {Id} level set to {Level}");
-        equipmentManager.ApplyLoadout(this, ShamanEquipmentConfig.GetLoadout(Level));
+        if (modelNode != null)
+            equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
     }
 
     public void SetOrientation(int o)
