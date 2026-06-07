@@ -27,6 +27,7 @@ public partial class Terrain : Node3D
 	private Tile[,] tiles;
 
 	private MeshInstance3D terrainMesh;
+	private GrassSystem _grassSystem;
 
 	private static readonly PackedScene resourceScene = ResourceLoader.Load<PackedScene>("res://entities/resources/resource.tscn");
 	private readonly Dictionary<(int, int), List<Resource>> tileResources = new();
@@ -45,6 +46,7 @@ public partial class Terrain : Node3D
 	public override void _Ready()
 	{
 		terrainMesh = GetNode<MeshInstance3D>("MeshInstance3D");
+		_grassSystem = GetNodeOrNull<GrassSystem>("GrassSystem");
 	}
 
 	public void InitializeMap(int width, int height)
@@ -180,6 +182,8 @@ public partial class Terrain : Node3D
 
         var collisionShape = GetNode<CollisionShape3D>("StaticBody3D/CollisionShape3D");
         collisionShape.Shape = shape;
+
+		_grassSystem?.Generate(heightMap, Width, Height);
     }
 
 	public void SelectTile(int x, int y)
@@ -217,5 +221,13 @@ public partial class Terrain : Node3D
 	public Tile this[int x, int y]
 	{
 		get => GetTile(x, y);
+	}
+
+	public float GetTileHeight(int tileX, int tileY)
+	{
+		if (heightMap == null) return 0f;
+		tileX = Mathf.Clamp(tileX, 0, Width - 1);
+		tileY = Mathf.Clamp(tileY, 0, Height - 1);
+		return (heightMap[tileX + 1, tileY] + heightMap[tileX, tileY + 1]) / 2f;
 	}
 }

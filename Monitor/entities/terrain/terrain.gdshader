@@ -5,12 +5,30 @@ uniform float line_width = 0.01;
 
 uniform vec4 line_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform vec4 ground_color : source_color = vec4(0.4, 0.8, 0.4, 1.0);
+uniform vec4 ground_color_b : source_color = vec4(0.28, 0.62, 0.22, 1.0);
+uniform float color_variation = 0.42;
+uniform float noise_scale = 0.25;
 uniform vec4 highlight_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float pulse_speed = 3.0;
 uniform bool has_selection = false;
 uniform vec2 selected_tile = vec2(-1.0, -1.0);
 
 varying vec3 world_pos;
+
+float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float value_noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(
+        mix(hash(i),                  hash(i + vec2(1.0, 0.0)), u.x),
+        mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
+        u.y
+    );
+}
 
 void vertex()
 {
@@ -33,8 +51,10 @@ void fragment()
     // Pulse: oscillates between 0.0 and 0.6 using TIME
     float pulse = in_selected ? (0.3 + 0.3 * sin(TIME * pulse_speed)) : 0.0;
 
-    // Compose: ground → grid lines → highlight pulse
-    vec3 base = mix(ground_color.rgb, line_color.rgb, line);
+    // Compose: ground (with position-based variation) → grid lines → highlight pulse
+    float n = value_noise(world_pos.xz * noise_scale) * color_variation;
+    vec3 varied_ground = mix(ground_color.rgb, ground_color_b.rgb, n);
+    vec3 base = mix(varied_ground, line_color.rgb, line);
     ALBEDO = mix(base, highlight_color.rgb, pulse);
 }
 

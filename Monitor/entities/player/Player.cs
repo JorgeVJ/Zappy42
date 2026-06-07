@@ -13,6 +13,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
     private EquipmentManager equipmentManager;
     private Node3D modelNode;
+    private Terrain _terrain;
 
     public int Id { get; private set; }
     public string TeamName { get; private set; } = "";
@@ -42,10 +43,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         TilePos = new Vector2I(x, y);
         GD.Print($"SetTilePos: player {Id} new tile ({x},{y})");
 
-        Vector3 target = new Vector3(
-            x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f,
-            0.3f,
-            y * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f);
+        Vector3 target = TerrainSnap.TileCenter(_terrain, x, y, 0f);
 
         try
         {
@@ -132,6 +130,11 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         }
 
         return null;
+    }
+
+    public void SetTerrain(Terrain terrain)
+    {
+        _terrain = terrain;
     }
 
     public void Init(int id, string teamName)

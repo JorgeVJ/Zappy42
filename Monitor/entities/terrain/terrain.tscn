@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://d21qejsj8oxem"]
+[gd_scene load_steps=6 format=3 uid="uid://d21qejsj8oxem"]
 
 [ext_resource type="Script" path="res://entities/terrain/Terrain.cs" id="1_1ewcx"]
+[ext_resource type="Script" path="res://entities/terrain/GrassSystem.cs" id="2_grass"]
 [ext_resource type="Shader" path="res://entities/terrain/terrain.gdshader" id="3_lh2em"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_pb4ps"]
@@ -9,6 +10,9 @@ shader = ExtResource("3_lh2em")
 shader_parameter/tile_size = 10.0
 shader_parameter/line_color = Color(0, 0, 0, 1)
 shader_parameter/ground_color = Color(0.4, 0.8, 0.4, 1)
+shader_parameter/ground_color_b = Color(0.28, 0.62, 0.22, 1)
+shader_parameter/color_variation = 0.15
+shader_parameter/noise_scale = 0.25
 shader_parameter/highlight_color = Color(1, 1, 1, 1)
 shader_parameter/pulse_speed = 3.0
 shader_parameter/has_selection = false
@@ -21,6 +25,9 @@ script = ExtResource("1_1ewcx")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 material_override = SubResource("ShaderMaterial_pb4ps")
+
+[node name="GrassSystem" type="Node3D" parent="."]
+script = ExtResource("2_grass")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 

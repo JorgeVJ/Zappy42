@@ -357,10 +357,7 @@ public partial class Connection : Node
 		int x = int.Parse(parts[3]);
 		int y = int.Parse(parts[4]);
 
-		Vector3 worldPos = new Vector3(
-			x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f,
-			0.3f,
-			y * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f);
+		Vector3 worldPos = TerrainSnap.TileCenter(terrainManager, x, y, 0.15f);
 
 		var egg = eggManager.CreateEgg(eggId, worldPos);
 
@@ -661,15 +658,13 @@ public partial class Connection : Node
 		string team = parts[6];
 
 		// convertir coords tile -> mundo (centro del tile)
-		Vector3 worldPos = new Vector3(
-			x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f,
-			0.3f,
-			y * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f);
+		Vector3 worldPos = TerrainSnap.TileCenter(terrainManager, x, y, 0f);
 
 		var player = playerManager.GetOrCreate(id, worldPos, team);
 
 		// si ya existía, lo actualizamos también
 		player.Position = worldPos;
+		player.SetTerrain(terrainManager);
 		player.SetOrientation(o);
 		player.SetLevel(level);
 
