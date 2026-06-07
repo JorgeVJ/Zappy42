@@ -25,6 +25,7 @@ public partial class Connection : Node
 	private MockServer _mockServer;
 	private MessageLogPanel _logPanel;
 	private TeamProgressPanel _teamPanel;
+	private SpeedControlPanel _speedPanel;
 
 	private Camera camera;
 
@@ -49,6 +50,9 @@ public partial class Connection : Node
 			if (playerManager.TryGet(id, out var p))
 				ShowInventory(p);
 		};
+
+		_speedPanel = GetNode<SpeedControlPanel>("SpeedControlPanel");
+		_speedPanel.SpeedChanged += OnSpeedChanged;
 
 		if (UseMockServer)
 		{
@@ -276,10 +280,19 @@ public partial class Connection : Node
 		GetTree().Paused = true;
 	}
 
+	private void OnSpeedChanged(int t)
+	{
+		if (_mockServer != null)
+			_mockServer.SetSpeed(t);
+		else
+			SendMessage($"sst {t}");
+	}
+
 	private void sgt(string[] parts)
 	{
 		int tick = int.Parse(parts[1]);
 		GD.Print($"[sgt] Tiempo actual del servidor: {tick}");
+		_speedPanel?.SetDisplayValue(tick);
 	}
 
 	private void edi(string[] parts)

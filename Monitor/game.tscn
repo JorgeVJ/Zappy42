@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://bkawsmediwsui"]
+[gd_scene load_steps=11 format=3 uid="uid://bkawsmediwsui"]
 
 [ext_resource type="Script" path="res://Camera.cs" id="1_ga5x6"]
 [ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://connection.tscn" id="2_hexf3"]
 [ext_resource type="Script" path="res://PlayerManager.cs" id="3_j1vdv"]
 [ext_resource type="Script" path="res://EggManager.cs" id="4_wn21u"]
 [ext_resource type="Script" path="res://InventoryPanel.cs" id="5_mwang"]
+[ext_resource type="PackedScene" path="res://SpeedControlPanel.tscn" id="6_13bbc"]
 [ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://terrain.tscn" id="6_bqi2m"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6sjpb"]
@@ -159,6 +160,8 @@ text = "X"
 [node name="Thystame" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2"]
 layout_mode = 2
 text = "X"
+
+[node name="SpeedControlPanel" parent="Connection" instance=ExtResource("6_13bbc")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_k485n")

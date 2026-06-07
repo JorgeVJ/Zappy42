@@ -148,6 +148,11 @@ public class MockServer
         "pdi #2",
     };
 
+    public void SetSpeed(int t)
+    {
+        _delay = 1f / Mathf.Max(1, t);
+    }
+
     public string GetNextCommand(double delta)
     {
         _timer += (float)delta;
