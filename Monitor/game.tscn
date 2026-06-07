@@ -1,12 +1,12 @@
 [gd_scene load_steps=11 format=3 uid="uid://bkawsmediwsui"]
 
-[ext_resource type="Script" path="res://Camera.cs" id="1_ga5x6"]
-[ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://connection.tscn" id="2_hexf3"]
-[ext_resource type="Script" path="res://PlayerManager.cs" id="3_j1vdv"]
-[ext_resource type="Script" path="res://EggManager.cs" id="4_wn21u"]
-[ext_resource type="Script" path="res://InventoryPanel.cs" id="5_mwang"]
-[ext_resource type="PackedScene" path="res://SpeedControlPanel.tscn" id="6_13bbc"]
-[ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://terrain.tscn" id="6_bqi2m"]
+[ext_resource type="Script" path="res://entities/camera/Camera.cs" id="1_ga5x6"]
+[ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://network/connection.tscn" id="2_hexf3"]
+[ext_resource type="Script" path="res://managers/PlayerManager.cs" id="3_j1vdv"]
+[ext_resource type="Script" path="res://managers/EggManager.cs" id="4_wn21u"]
+[ext_resource type="Script" path="res://ui/InventoryPanel.cs" id="5_mwang"]
+[ext_resource type="PackedScene" uid="uid://c8qjyl3lsv5k1" path="res://ui/SpeedControlPanel.tscn" id="6_13bbc"]
+[ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://entities/terrain/terrain.tscn" id="6_bqi2m"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6sjpb"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
