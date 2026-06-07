@@ -24,6 +24,15 @@ public class MockServer
         "bct 6 7 0 2 0 0 0 0 0",
         "bct 12 14 3 1 1 0 0 0 0",
 
+        // ── DEBUG: Un jugador por cada nivel (1-7) en las primeras 7 celdas ──
+        "pnw #11 0 0 1 1 TEAM_A",
+        "pnw #12 1 0 1 2 TEAM_A",
+        "pnw #13 2 0 1 3 TEAM_A",
+        "pnw #14 3 0 1 4 TEAM_A",
+        "pnw #15 4 0 1 5 TEAM_A",
+        "pnw #16 5 0 1 6 TEAM_A",
+        "pnw #17 6 0 1 7 TEAM_A",
+
         // ── 2. Spawn de 4 jugadores (2 por equipo) ────────────────────────
         "pnw #1 2 2 1 1 TEAM_A",
         "pnw #2 20 20 3 1 TEAM_B",

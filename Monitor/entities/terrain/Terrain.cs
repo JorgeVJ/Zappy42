@@ -20,7 +20,7 @@ public partial class Terrain : Node3D
 		}
 	}
 
-	public const float TILE_SIZE = 10.0f;
+	public const float TILE_SIZE = 2.0f;
 
     private float[,] heightMap;
 
