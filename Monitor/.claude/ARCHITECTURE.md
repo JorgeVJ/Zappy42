@@ -40,6 +40,7 @@ Monitor/
 ├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout()
 ├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?) — portable entre proyectos
 ├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman
+├── ShamanAnimationController.cs # Controlador de animaciones del Shaman: PlayWalk/Idle/Run/Spell/etc., loop automático
 ├── IInventory.cs           # Interfaz: objeto con inventario
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
@@ -154,9 +155,16 @@ Ver skill `/terrain` para contexto completo. Resumen:
 ### `Player.cs` — Entidad Jugador
 Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene el modelo bípedo (`Shaman.glb`, nodo `"Model"`) y un dron companion (`Drone.fbx`).
 
-- **Movimiento:** `SetTilePos()` lanza un `Tween` de 2 segundos + animación `"walking_2_inplace"`, al completar reproduce `"Idle_9"`. Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
+- **Movimiento:** `SetTilePos()` lanza un `Tween` de 2 segundos + `_shamanAnim.PlayWalk()`, al completar llama a `_shamanAnim.PlayIdle()`. Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
 - **Orientación:** `SetOrientation()` mapea 1=N, 2=E, 3=S, 4=W a rotación Y.
 - **Equipamiento:** `_Ready()` y `SetLevel()` llaman a `equipmentManager.ApplyLoadout()` con el loadout de `ShamanEquipmentConfig.GetLoadout(level)`.
+- **Animaciones:** delegadas a `ShamanAnimationController` (ver abajo).
+
+### `ShamanAnimationController.cs` — Controlador de Animaciones
+Encapsula toda la lógica de animación del Shaman siguiendo el mismo patrón que `EquipmentManager`. `Player.cs` solo llama a `PlayWalk()`, `PlayIdle()`, etc., sin conocer strings internos ni el `AnimationPlayer`.
+
+- Clase interna privada `Clip` centraliza los nombres de animación del GLB: `idle`, `walking`, `running`, `spell_cast`, `collect_object`, `pick_up_pocket`.
+- `EnableLoopOnAll()` en el constructor activa `LoopModeEnum.Linear` en todas las clips al inicializar.
 
 ### `EquipmentManager.cs` + `EquipmentSlot.cs` — Sistema de Equipamiento
 Patrón portable entre proyectos. `EquipmentManager` y `EquipmentSlot` son genéricos (sin datos de proyecto). `ShamanEquipmentConfig` es el único archivo específico: mapea nivel → lista de `EquipmentSlot(boneName, glbPath)`.

@@ -8,7 +8,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
     private Tween moveTween;
 
-    private AnimationPlayer modelAnim;
+    private ShamanAnimationController _shamanAnim;
     private AnimationPlayer droneAnim;
 
     private EquipmentManager equipmentManager;
@@ -33,54 +33,31 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
     public void SetTilePos(int x, int y)
     {
-        // If position did not change, skip movement
         if (TilePos.X == x && TilePos.Y == y)
         {
             GD.Print($"SetTilePos: player {Id} already at tile ({x},{y}), no move required");
             return;
         }
 
-        // Update logical tile coordinates
         TilePos = new Vector2I(x, y);
         GD.Print($"SetTilePos: player {Id} new tile ({x},{y})");
 
-        // Compute world target position from tile coords (center of tile)
         Vector3 target = new Vector3(
             x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f,
             0.3f,
             y * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f);
 
-        // Try to cancel any previous tween
         try
         {
             moveTween?.Kill();
-            GD.Print($"SetTilePos: previous tween killed for player {Id} (if any)");
         }
         catch (Exception ex)
         {
             GD.PrintErr($"SetTilePos: error killing previous tween for player {Id}: {ex.Message}");
         }
 
-        // Start walk animation if available
-        if (modelAnim != null)
-        {
-            string animName = "walking_2_inplace";
-            if (modelAnim.HasAnimation(animName))
-            {
-                modelAnim.Play(animName);
-                GD.Print($"SetTilePos: playing animation '{animName}' for player {Id}");
-            }
-            else
-            {
-                GD.Print($"SetTilePos: animation '{animName}' not found for player {Id}");
-            }
-        }
-        else
-        {
-            GD.Print($"SetTilePos: no AnimationPlayer found for player {Id}");
-        }
+        _shamanAnim?.PlayWalk();
 
-        // Create a new tween to animate position
         moveTween = CreateTween();
         float duration = 2.0f;
         GD.Print($"SetTilePos: starting tween for player {Id} to {target} duration {duration}s");
@@ -91,28 +68,11 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     private void OnMoveCompleted()
     {
         GD.Print($"OnMoveCompleted: movement finished for player {Id}");
-
-        if (modelAnim == null)
-        {
-            GD.Print($"OnMoveCompleted: no AnimationPlayer to update for player {Id}");
-            return;
-        }
-
-        if (modelAnim.HasAnimation("Idle_9"))
-        {
-            modelAnim.Play("Idle_9");
-            GD.Print($"OnMoveCompleted: playing 'Idle_9' for player {Id}");
-        }
-        else
-        {
-            modelAnim.Stop();
-            GD.Print($"OnMoveCompleted: stopped animation for player {Id} (no 'Idle_9')");
-        }
+        _shamanAnim?.PlayIdle();
     }
 
     public override void _Ready()
     {
-        // Inicializaciones comunes (mesh, Inventory) en la clase base
         base._Ready();
 
         GD.Print($"_Ready: player node ready, Id placeholder = {Id}");
@@ -122,9 +82,9 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         modelNode = GetNodeOrNull<Node3D>("Model");
         if (modelNode != null)
         {
-            GD.Print("_Ready: searching for AnimationPlayer in Model node...");
-            modelAnim = FindAnimationPlayer(modelNode);
-            GD.Print(modelAnim != null ? "_Ready: AnimationPlayer found." : "_Ready: no AnimationPlayer found in Model node.");
+            var ap = FindAnimationPlayer(modelNode);
+            if (ap != null)
+                _shamanAnim = new ShamanAnimationController(ap);
 
             equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
         }
@@ -136,12 +96,9 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         var droneNode = GetNodeOrNull<Node3D>("Drone");
         if (droneNode != null)
         {
-            GD.Print("_Ready: searching for AnimationPlayer in Drone node...");
             droneAnim = FindAnimationPlayer(droneNode);
             if (droneAnim != null)
             {
-                GD.Print("_Ready: Drone AnimationPlayer found.");
-
                 const string droneIdle = "ArmatureDrone|Dron_Idle_Bake2";
                 var anim = droneAnim.GetAnimation(droneIdle);
                 if (anim != null)
@@ -154,10 +111,6 @@ public partial class Player : SelectableInventoryNode3D, IInventory
                 {
                     GD.Print($"_Ready: Drone animation '{droneIdle}' not found.");
                 }
-            }
-            else
-            {
-                GD.Print("_Ready: no AnimationPlayer found in Drone node.");
             }
         }
         else
@@ -215,7 +168,6 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         GD.Print($"SetOrientation: player {Id} orientation set to {o} (yaw {yaw})");
     }
 
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
     }
