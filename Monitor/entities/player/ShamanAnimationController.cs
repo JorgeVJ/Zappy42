@@ -18,6 +18,7 @@ public sealed class ShamanAnimationController
     {
         _anim = anim;
         EnableLoopOnAll();
+        PlayIdle();
     }
 
     public void PlayIdle()    => TryPlay(Clip.Idle);
