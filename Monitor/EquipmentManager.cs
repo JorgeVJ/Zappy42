@@ -198,4 +198,15 @@ public class EquipmentManager
         attachments.Clear();
         GD.Print("EquipmentManager: cleared all attachments");
     }
+
+    /// <summary>
+    /// Clears all current attachments and applies a new set of equipment slots.
+    /// Call this whenever the character's level (or equipment state) changes.
+    /// </summary>
+    public void ApplyLoadout(Node owner, IReadOnlyList<EquipmentSlot> slots)
+    {
+        ClearAll();
+        foreach (var slot in slots)
+            AttachToBone(owner, slot.BoneName, slot.ScenePath, slot.Offsets);
+    }
 }

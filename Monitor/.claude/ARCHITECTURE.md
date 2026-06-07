@@ -37,7 +37,9 @@ Monitor/
 ├── Camera.cs               # Cámara libre WASD + raycast
 ├── Connection.cs           # Hub de red TCP + dispatcher de protocolo
 ├── Egg.cs / EggManager.cs  # Entidad huevo + gestión
-├── EquipmentManager.cs     # Armadura en huesos de esqueleto (BoneAttachment3D)
+├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout()
+├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?) — portable entre proyectos
+├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman
 ├── IInventory.cs           # Interfaz: objeto con inventario
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
@@ -53,17 +55,22 @@ Monitor/
 ├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
 ├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
 ├── Tile.cs                 # Datos de una casilla (coord + inventario)
-├── models/                 # Assets 3D generados con Meshy AI (.glb)
-│   └── linemate.glb
-├── Quadruped/
-│   ├── QuadrupedController.cs
-│   ├── Leg.cs
-│   └── LegDefinition.cs
+├── models/
+│   ├── Shaman/
+│   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
+│   ├── equipment/           # Accesorios por nivel (generados con Meshy AI)
+│   │   ├── collar_bone.glb  # Lvl 2
+│   │   ├── skull_mask.glb   # Lvl 3
+│   │   ├── staff_basic.glb  # Lvl 4
+│   │   ├── collar_gem.glb   # Lvl 5
+│   │   ├── staff_orb.glb    # Lvl 6
+│   │   ├── shoulder_bone.glb # Lvl 6
+│   │   └── horns.glb        # Lvl 7
+│   └── meshy_models/        # Recursos del mundo (linemate, deraumere, etc.)
 ├── game.tscn
 ├── player.tscn
 ├── terrain.tscn
 ├── connection.tscn
-├── creature.tscn
 ├── egg.tscn
 ├── resource.tscn
 └── terrain.gdshader
@@ -90,15 +97,9 @@ game.tscn
 
 player.tscn
 └── Node3D "Player"  [Player.cs]
-    ├── Node3D "Creature" (creature.tscn)
-    ├── MeshInstance3D "Mesh"  (cápsula, oculta, para highlight)
+    ├── Node3D "Model" (Shaman.glb) — esqueleto bípedo + AnimationPlayer
     ├── Node3D "Drone"  (Drone.fbx)
     └── StaticBody3D + CollisionShape3D
-
-creature.tscn
-└── Creature (Creature.gltf)
-    └── Armature → Skeleton3D
-        └── QuadrupedController  [QuadrupedController.cs]
 ```
 
 ---
@@ -151,11 +152,20 @@ Ver skill `/terrain` para contexto completo. Resumen:
 ---
 
 ### `Player.cs` — Entidad Jugador
-Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene una criatura animada (`creature.tscn`) y un dron companion (`Drone.fbx`).
+Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene el modelo bípedo (`Shaman.glb`, nodo `"Model"`) y un dron companion (`Drone.fbx`).
 
-- **Movimiento:** `SetTilePos()` lanza un `Tween` de 2 segundos + animación "Walk2", al completar reproduce "Idle". Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
+- **Movimiento:** `SetTilePos()` lanza un `Tween` de 2 segundos + animación `"walking_2_inplace"`, al completar reproduce `"Idle_9"`. Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
 - **Orientación:** `SetOrientation()` mapea 1=N, 2=E, 3=S, 4=W a rotación Y.
-- **Equipamiento:** `_Ready()` adjunta armadura a 4 huesos de brazo vía `EquipmentManager`.
+- **Equipamiento:** `_Ready()` y `SetLevel()` llaman a `equipmentManager.ApplyLoadout()` con el loadout de `ShamanEquipmentConfig.GetLoadout(level)`.
+
+### `EquipmentManager.cs` + `EquipmentSlot.cs` — Sistema de Equipamiento
+Patrón portable entre proyectos. `EquipmentManager` y `EquipmentSlot` son genéricos (sin datos de proyecto). `ShamanEquipmentConfig` es el único archivo específico: mapea nivel → lista de `EquipmentSlot(boneName, glbPath)`.
+
+- `ApplyLoadout(owner, slots)` → limpia adjuntos actuales y adjunta los nuevos a los huesos del `Skeleton3D`.
+- Para reusar en otro proyecto: copiar `EquipmentManager.cs`, `EquipmentSlot.cs`, `Offsets.cs` y crear un nuevo `XxxEquipmentConfig.cs`.
+
+**Huesos del Shaman disponibles para equipamiento:**
+`neck`, `headfront`, `Head`, `RightHand`, `LeftShoulder`, `RightShoulder`, `LeftForeArm`, `RightForeArm`
 
 ---
 
@@ -163,9 +173,6 @@ Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que c
 Carga automáticamente `res://models/{tipo}.glb` si existe (Meshy AI); si no, usa `SphereMesh` coloreada. Los modelos GLB se escalan a `0.15f`. Añadir un nuevo tipo = generar el GLB con `meshy generate` y colocarlo en `res://models/`.
 
 ---
-
-### `QuadrupedController.cs` + `Leg.cs` — Sistema IK
-Implementa animación procedural de patas con `SkeletonIK3D`. Cada pata tiene un `RayCast3D` para detectar el suelo y un `Marker3D` como target IK. Cuando una pata supera `StepDistance`, se lanza una animación de arco (`Leg.Step()`) interpolando posición en dos fases (subida y bajada).
 
 ---
 

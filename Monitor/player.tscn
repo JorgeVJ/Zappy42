@@ -1,10 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://cku1rgyxqsgql"]
+[gd_scene load_steps=5 format=3 uid="uid://cku1rgyxqsgql"]
 
 [ext_resource type="Script" path="res://Player.cs" id="1_60xi1"]
-[ext_resource type="PackedScene" uid="uid://bwekvtswoae35" path="res://creature.tscn" id="2_yfwu6"]
+[ext_resource type="PackedScene" uid="uid://cqke4uovcir2d" path="res://models/Shaman/Shaman.glb" id="3_kjbrg"]
 [ext_resource type="PackedScene" uid="uid://covc6olm5c4wa" path="res://Drone.fbx" id="4_2xptc"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_rb4cl"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nfceb"]
 
@@ -12,19 +10,13 @@
 transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
 script = ExtResource("1_60xi1")
 
-[node name="Creature" parent="." instance=ExtResource("2_yfwu6")]
-transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 2.53335, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1, 0)
-visible = false
-mesh = SubResource("CapsuleMesh_rb4cl")
-
 [node name="Drone" parent="." instance=ExtResource("4_2xptc")]
 transform = Transform3D(-5, 0, 4.37114e-07, 0, 5, 0, -4.37114e-07, 0, -5, -3, 5.19975, 0)
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(2.685, 0, 0, 0, 2.685, 0, 0, 0, 2.685, 0, 3.00983, 0)
+transform = Transform3D(2.685, 0, 0, 0, 2.685, 0, 0, 0, 2.685, 0, 1.01913, 0)
 shape = SubResource("BoxShape3D_nfceb")
+
+[node name="Model" parent="." instance=ExtResource("3_kjbrg")]

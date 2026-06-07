@@ -8,7 +8,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
     private Tween moveTween;
 
-    private AnimationPlayer creatureAnim;
+    private AnimationPlayer modelAnim;
     private AnimationPlayer droneAnim;
 
     private EquipmentManager equipmentManager;
@@ -60,18 +60,18 @@ public partial class Player : SelectableInventoryNode3D, IInventory
             GD.PrintErr($"SetTilePos: error killing previous tween for player {Id}: {ex.Message}");
         }
 
-        // Start creature animation if available
-        if (creatureAnim != null)
+        // Start walk animation if available
+        if (modelAnim != null)
         {
-            string animName = "Armature|Walk2";
-            if (creatureAnim.HasAnimation(animName))
+            string animName = "walking_2_inplace";
+            if (modelAnim.HasAnimation(animName))
             {
-                creatureAnim.Play(animName);
-                GD.Print($"SetTilePos: playing animation {animName} for player {Id}");
+                modelAnim.Play(animName);
+                GD.Print($"SetTilePos: playing animation '{animName}' for player {Id}");
             }
             else
             {
-                GD.Print($"SetTilePos: animation {animName} not found for player {Id}");
+                GD.Print($"SetTilePos: animation '{animName}' not found for player {Id}");
             }
         }
         else
@@ -91,22 +91,21 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     {
         GD.Print($"OnMoveCompleted: movement finished for player {Id}");
 
-        if (creatureAnim == null)
+        if (modelAnim == null)
         {
             GD.Print($"OnMoveCompleted: no AnimationPlayer to update for player {Id}");
             return;
         }
 
-        // Prefer to switch to "Idle" if it exists, otherwise stop the animation
-        if (creatureAnim.HasAnimation("Idle"))
+        if (modelAnim.HasAnimation("Idle_9"))
         {
-            creatureAnim.Play("Idle");
-            GD.Print($"OnMoveCompleted: playing 'Idle' for player {Id}");
+            modelAnim.Play("Idle_9");
+            GD.Print($"OnMoveCompleted: playing 'Idle_9' for player {Id}");
         }
         else
         {
-            creatureAnim.Stop();
-            GD.Print($"OnMoveCompleted: stopped animation for player {Id} (no 'Idle')");
+            modelAnim.Stop();
+            GD.Print($"OnMoveCompleted: stopped animation for player {Id} (no 'Idle_9')");
         }
     }
 
@@ -118,40 +117,29 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         GD.Print($"_Ready: player node ready, Id placeholder = {Id}");
 
         equipmentManager = new EquipmentManager();
-        equipmentManager.RegisterScene("armor", "res://ArmorLvl1.fbx");
 
-        var creatureNode = GetNodeOrNull<Node3D>("Creature");
-        if (creatureNode != null)
+        var modelNode = GetNodeOrNull<Node3D>("Model");
+        if (modelNode != null)
         {
-            GD.Print("Searching for AnimationPlayer in Creature node...");
-            creatureAnim = FindAnimationPlayer(creatureNode);
-            if (creatureAnim != null)
-            {
-                GD.Print("AnimationPlayer found!");
-            }
-            else
-            {
-                GD.Print("No AnimationPlayer found in Creature node.");
-            }
+            GD.Print("_Ready: searching for AnimationPlayer in Model node...");
+            modelAnim = FindAnimationPlayer(modelNode);
+            GD.Print(modelAnim != null ? "_Ready: AnimationPlayer found." : "_Ready: no AnimationPlayer found in Model node.");
 
-            equipmentManager.AttachToBone(this, "BackArm2.R", "armor");
-            equipmentManager.AttachToBone(this, "BackArm2.L", "armor", Offsets.Rotation(0, -90, 0));
-            equipmentManager.AttachToBone(this, "FrontArm2.R", "armor");
-            equipmentManager.AttachToBone(this, "FrontArm2.L", "armor", Offsets.Rotation(0, -90, 0));
+            equipmentManager.ApplyLoadout(this, ShamanEquipmentConfig.GetLoadout(Level));
         }
         else
         {
-            GD.Print("No Creature node found as child of Player.");
+            GD.Print("_Ready: no 'Model' node found as child of Player.");
         }
 
         var droneNode = GetNodeOrNull<Node3D>("Drone");
         if (droneNode != null)
         {
-            GD.Print("Searching for AnimationPlayer in Drone node...");
+            GD.Print("_Ready: searching for AnimationPlayer in Drone node...");
             droneAnim = FindAnimationPlayer(droneNode);
             if (droneAnim != null)
             {
-                GD.Print("Drone AnimationPlayer found!");
+                GD.Print("_Ready: Drone AnimationPlayer found.");
 
                 const string droneIdle = "ArmatureDrone|Dron_Idle_Bake2";
                 var anim = droneAnim.GetAnimation(droneIdle);
@@ -159,38 +147,34 @@ public partial class Player : SelectableInventoryNode3D, IInventory
                 {
                     anim.LoopMode = Animation.LoopModeEnum.Linear;
                     droneAnim.Play(droneIdle);
-                    GD.Print($"Drone: playing '{droneIdle}' in loop.");
+                    GD.Print($"_Ready: Drone playing '{droneIdle}' in loop.");
                 }
                 else
                 {
-                    GD.Print($"Drone: animation '{droneIdle}' not found in Drone AnimationPlayer.");
+                    GD.Print($"_Ready: Drone animation '{droneIdle}' not found.");
                 }
             }
             else
             {
-                GD.Print("No AnimationPlayer found in Drone node.");
+                GD.Print("_Ready: no AnimationPlayer found in Drone node.");
             }
         }
         else
         {
-            GD.Print("No Drone node found as child of Player.");
+            GD.Print("_Ready: no 'Drone' node found as child of Player.");
         }
     }
 
     private AnimationPlayer FindAnimationPlayer(Node node)
     {
         if (node is AnimationPlayer ap)
-        {
             return ap;
-        }
 
         foreach (Node child in node.GetChildren())
         {
             var found = FindAnimationPlayer(child);
             if (found != null)
-            {
                 return found;
-            }
         }
 
         return null;
@@ -208,13 +192,14 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     {
         Level = level;
         GD.Print($"SetLevel: player {Id} level set to {Level}");
+        equipmentManager.ApplyLoadout(this, ShamanEquipmentConfig.GetLoadout(Level));
     }
 
     public void SetOrientation(int o)
     {
         Orientation = o;
 
-        // Zappy: 1=N, 2=E, 3=S, 4=W (normal)
+        // Zappy: 1=N, 2=E, 3=S, 4=W
         float yaw = o switch
         {
             1 => 0f,
