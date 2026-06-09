@@ -11,6 +11,10 @@ public partial class Connection : Node
 	private NetworkStream _stream;
 	private byte[] _buffer = new byte[4096];
 
+	// Destino de conexión real; sobrescrito por los flags -h/-p (ver ParseConnectionArgs).
+	private string _host = "127.0.0.1";
+	private int _port = 12345;
+
 	private PlayerManager playerManager;
 	private EggManager eggManager;
 	private Terrain terrainManager;
@@ -59,6 +63,8 @@ public partial class Connection : Node
 		_speedPanel = GetNode<SpeedControlPanel>("SpeedControlPanel");
 		_speedPanel.SpeedChanged += OnSpeedChanged;
 
+		ParseConnectionArgs();
+
 		if (UseMockServer)
 		{
 			_mockServer = new MockServer();
@@ -69,17 +75,62 @@ public partial class Connection : Node
 		try
 		{
 			_client = new TcpClient();
-			_client.Connect("127.0.0.1", 12345);
+			_client.Connect(_host, _port);
 			_stream = _client.GetStream();
 
-			GD.Print("[Connection] Conectado al servidor Zappy!");
-
-			SendMessage("GRAPHIC");
+			GD.Print($"[Connection] Conectado a {_host}:{_port}. Esperando WELCOME...");
+			// El GRAPHIC se envía al recibir WELCOME (handshake Zappy), no al conectar.
 		}
 		catch (Exception ex)
 		{
-			GD.PrintErr("[Connection] Error al conectar: " + ex.Message);
+			GD.PrintErr($"[Connection] Error al conectar a {_host}:{_port}: {ex.Message}");
+			GD.PrintErr("[Connection] Uso: zappy_gui -p <puerto> -h <host> [--mock]");
 		}
+	}
+
+	// Lee los flags de línea de comandos (-p puerto, -h host, --mock) para soportar
+	// el arranque exigido por el subject: zappy_gui -p <port> -h <host>.
+	// Si se pasan -p/-h válidos se fuerza la conexión real; --mock siempre gana.
+	private void ParseConnectionArgs()
+	{
+		var args = new List<string>();
+		args.AddRange(OS.GetCmdlineUserArgs());
+		args.AddRange(OS.GetCmdlineArgs());
+
+		bool hasConnArgs = false;
+		bool forceMock = false;
+
+		for (int i = 0; i < args.Count; i++)
+		{
+			switch (args[i])
+			{
+				case "-p" when i + 1 < args.Count:
+					if (int.TryParse(args[i + 1], out int p))
+					{
+						_port = p;
+						hasConnArgs = true;
+					}
+					else
+					{
+						GD.PrintErr($"[Connection] Puerto inválido: '{args[i + 1]}'");
+					}
+					break;
+				case "-h" when i + 1 < args.Count:
+					_host = args[i + 1];
+					hasConnArgs = true;
+					break;
+				case "--mock":
+					forceMock = true;
+					break;
+			}
+		}
+
+		if (forceMock)
+			UseMockServer = true;
+		else if (hasConnArgs)
+			UseMockServer = false;
+
+		GD.Print($"[Connection] Args de conexión: host={_host}, port={_port}, mock={UseMockServer}");
 	}
 
 	private void HandleLeftClick(GodotObject collider, Vector3 position)
@@ -228,6 +279,7 @@ public partial class Connection : Node
 
 		switch (parts[0])
 		{
+			case "WELCOME": SendMessage("GRAPHIC"); break; // handshake: el servidor saluda; respondemos GRAPHIC
 			case "msz": msz(parts); break; // msz X Y\n msz\n Map size
 			case "bct": bct(parts); break; // bct X Y q q q q q q q\n bct X Y\n Contents of a map tile
 			case "tna": tna(parts); break; // tna N\n(× nbr teams) tna\n Team names

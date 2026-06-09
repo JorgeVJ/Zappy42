@@ -108,11 +108,12 @@ player.tscn
 ## Clases Principales
 
 ### `Connection.cs` — Hub Central
-El corazón del monitor. Abre un socket TCP a `127.0.0.1:12345`, envía `GRAPHIC\n` + `mct\n` al conectar, y en cada frame parsea mensajes del servidor en `HandleServerMessage()`, delegando a handlers específicos.
+El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p`/`-h`, fallback `--mock`; ver `ParseConnectionArgs()`), abre un socket TCP y completa el handshake Zappy: espera `WELCOME` y entonces responde `GRAPHIC`. En cada frame parsea mensajes del servidor en `HandleServerMessage()`, delegando a handlers específicos.
 
 **Mensajes soportados:**
 | Mensaje | Handler | Efecto |
 |---------|---------|--------|
+| `WELCOME` | → `SendMessage("GRAPHIC")` | Handshake: respuesta al saludo del servidor |
 | `msz W H` | → `Terrain.InitializeMap()` | Crea el mundo |
 | `bct X Y q0..q6` | → `Tile.Inventory` | Actualiza recursos de casilla |
 | `tna NAME` | → `teams` list | Registra nombre de equipo |
@@ -239,6 +240,5 @@ Connection.HandleLeftClick()
 - **Fin de partida (`seg`):** Evento recibido pero sin pantalla de resultado.
 - **Incantaciones (`pic`/`pie`):** Sin efecto visual en los jugadores participantes.
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
-- **Conexión hardcodeada:** IP/puerto fijos en `Connection._Ready()` (`127.0.0.1:12345`).
 - **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs`.
 - **Altura de jugadores:** Y fija en `0.3f`; no sigue la altura real del terreno.
