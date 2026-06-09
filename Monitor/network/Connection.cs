@@ -543,6 +543,19 @@ public partial class Connection : Node
 		GD.Print($"[pbc] Player #{id} dice: {message}");
 		_teamPanel?.SetLastAction(id, $"📢 {message}");
 		ShowPlayerMessage(player, message);
+		ShowSoundWave(player);
+	}
+
+	// Expanding ground ring centered on the emitter's tile, visualizing the
+	// broadcast as sound propagating outward. Complements the floating text.
+	private void ShowSoundWave(Player player)
+	{
+		if (terrainManager == null)
+			return;
+
+		Vector3 center = TerrainSnap.TileCenter(terrainManager, player.TilePos.X, player.TilePos.Y, 0.15f);
+		var wave = SoundWave.Create(center);
+		terrainManager.AddChild(wave);
 	}
 
 	private void pex(string[] parts)

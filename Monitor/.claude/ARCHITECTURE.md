@@ -18,7 +18,7 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Visualización en tiempo real del mundo | ✅ | Terreno 3D con grid shader |
 | Click en casilla → info específica | ✅ | Raycast + InventoryPanel |
 | Visualización mínima 2D | ✅ (3D bonus) | 3D con shader de grid |
-| Visualización de broadcasts | ⚠️ Parcial | `pbc` manejado, visible en MessageLogPanel |
+| Visualización de broadcasts | ✅ | `pbc`: texto flotante (`Label3D`) + onda expansiva 3D (`SoundWave`) sobre el emisor, además de MessageLogPanel |
 | Seguimiento de progreso por equipo | ✅ | TeamProgressPanel: jugadores, niveles y equipo líder |
 | Quién ganó (`seg`) | ✅ | Overlay pantalla completa con nombre del ganador |
 | Protocolo gráfico completo | ✅ | Todos los mensajes del servidor manejados |
@@ -236,7 +236,6 @@ Connection.HandleLeftClick()
 
 ## Áreas de Mejora / Pendientes
 
-- **Broadcasts sin dirección:** `pbc` se muestra en `MessageLogPanel` pero sin indicador visual de dirección en la escena 3D.
 - **Fin de partida (`seg`):** Evento recibido pero sin pantalla de resultado.
 - **Incantaciones (`pic`/`pie`):** Sin efecto visual en los jugadores participantes.
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
