@@ -48,6 +48,22 @@ bool Server::Initialize()
 	return true;
 }
 
+int Server::Run()
+{
+	m_isRunning = true;
+
+	while (m_isRunning) {
+		const std::vector<std::unique_ptr<SocketEvent>> events =
+			m_socketManager.Poll();
+
+		for (const std::unique_ptr<SocketEvent>& event : events)
+			HandleSocketEvent(event);
+	}
+
+	return (m_isRunning ? 1 : 0);
+}
+
+
 
 void Server::Shutdown()
 {
@@ -94,6 +110,60 @@ void Server::InitializeMonitor()
 // ============================================================================
 // COMMAND HANDLERS
 // ============================================================================
+//May would in case more events use a map.
+void Server::HandleSocketEvent(const std::unique_ptr<SocketEvent>& event)
+{
+	switch (event->type) {
+		case SocketEventType::NewPlayerConnection:
+			HandleNewPlayerConnection(event->socket);
+			break;
+		case SocketEventType::NewAdminConnection:
+			HandleNewAdminConnection(event->socket);
+			break;
+		case SocketEventType::ClientData:
+			HandleClientData(event->socket);
+			break;
+		case SocketEventType::ClientDisconnected:
+			HandleClientDisconnection(event->socket);
+			break;
+		default:
+			break;
+	}
+}
+
+void Server::HandleNewPlayerConnection(ZappySocket *client)
+{
+	std::cout << "New player connection" << std::endl;
+
+	//Here Goes Player Manager
+	(void)client;
+}
+
+void Server::HandleNewAdminConnection(ZappySocket *client)
+{
+	std::cout << "New admin connection" << std::endl;
+
+	// Here Goes Admin
+	(void)client;
+}
+
+void Server::Send(ClientSocket& client, std::string &str)
+{
+	(void)client;
+	(void)str;
+	//	m_socketManager.Send(client.socket, str);
+}
+
+void Server::HandleClientDisconnection(ZappySocket *client)
+{
+	(void)client;
+	std::cout << "Client disconnected" << std::endl;
+}
+
+void Server::HandleClientData(ZappySocket *client)
+{
+	(void)client;
+};
 
 void Server::HandleCommand(const std::string& cmd, Connection* client)
 {
@@ -152,30 +222,6 @@ void Server::HandleCommand(const std::string& cmd, Connection* client)
 	else if (cmd == "tna") {
 		// TODO: Send all team names
 		client->SendLine("tna");
-	}
-}
-
-int Server::HandlePlayerConnection(Connection* client, const std::string& teamName)
-{
-	try {
-		client->player = new Player();
-		if (!client->player) return 1;
-
-		client->player->TeamName = teamName;
-		m_game->Players.push_back(client);
-
-		// Notify monitors
-		for (auto* monitor : m_game->Monitors)
-			pnw(client, monitor);
-		client->SendLine("1");
-		Map* map = m_game->WorldMap;
-		std::ostringstream ss;
-		ss << map->Width << " " << map->Height;
-		client->SendLine(ss.str());
-		return 0;
-	}
-	catch (...) {
-		return 1;
 	}
 }
 

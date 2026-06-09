@@ -79,6 +79,13 @@ private:
 
 	void PrintConfiguration() const;
 
+	void HandleSocketEvent(const std::unique_ptr<SocketEvent>& event);
+	void Send(ClientSocket& client, std::string &str);
+	void HandleNewAdminConnection(ZappySocket* client);
+	void HandleNewPlayerConnection(ZappySocket* client);
+	void HandleClientData(ZappySocket* client);
+	void HandleClientDisconnection(ZappySocket* client);
+
 	// ========================================================================
 	// MEMBERS
 	// ========================================================================
