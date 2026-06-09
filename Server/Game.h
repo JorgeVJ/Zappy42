@@ -4,19 +4,24 @@
 #include "Map.h"
 #include "EggData.h"
 #include "TileDataRegistry.h"
+#include "TeamManager.h"
 
 class Game
 {
-	public:
-		Map* WorldMap;
-		TileDataRegistry<EggData> EggRegistry;
-		std::vector<Connection*> Monitors;
-		std::vector<Connection*> Players;
+  public:
+    Map* WorldMap;
+    TileDataRegistry<EggData> EggRegistry;
 
-		static Game* GetInstance();
+    TeamManager              teamsManager;
+    std::vector<Connection*> Monitors;
+    std::vector<Connection*> Players;
+    // Should create a connection Manager for history 10 last commands
+    //TileManager that got TileDataRegistry of <Player*> and <EggData>
+    static Game* SetInstance(int x, int y);
+    static Game* GetInstance();
 
 	private:
-		Game();
+    Game(int x, int y);
 
 		static Game* instance;
 };
