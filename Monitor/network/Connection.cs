@@ -323,10 +323,14 @@ public partial class Connection : Node
 
 	private void smg(string[] parts)
 	{
-		string winner = parts[1];
-		GD.Print($"[seg] ¡Juego terminado! Equipo ganador: {winner}");
-		// opcional: pausar la escena
-		GetTree().Paused = true;
+		// smg M — mensaje de texto informativo del servidor (puede contener espacios).
+		// NO implica fin de partida ni debe pausar la escena (antes era copia de seg).
+		if (parts.Length < 2)
+			return;
+
+		string message = string.Join(" ", parts, 1, parts.Length - 1);
+		GD.Print($"[smg] {message}");
+		// El mensaje ya queda visible en MessageLogPanel vía HandleServerMessage.
 	}
 
 	private void seg(string[] parts)

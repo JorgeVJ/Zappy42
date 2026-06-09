@@ -135,7 +135,7 @@ El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p
 | `edi #E` | → `EggManager.Remove()` | Huevo muere |
 | `sgt T` | — | Tiempo del servidor |
 | `seg TEAM` | — | Fin de partida |
-| `smg MSG` | — | Mensaje del servidor |
+| `smg MSG` | → `MessageLogPanel` | Mensaje informativo del servidor (no pausa la escena) |
 
 **Posicionamiento de entidades:** todas usan `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f` para centrarlas en su tile.
 
