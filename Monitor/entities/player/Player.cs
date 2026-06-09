@@ -69,6 +69,18 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         _shamanAnim?.PlayIdle();
     }
 
+    // Animación de incantación (hechizo). Delegan en el controlador del Shaman,
+    // igual que SetTilePos usa PlayWalk/PlayIdle.
+    public void PlaySpell()
+    {
+        _shamanAnim?.PlaySpell();
+    }
+
+    public void StopSpell()
+    {
+        _shamanAnim?.PlayIdle();
+    }
+
     public override void _Ready()
     {
         base._Ready();

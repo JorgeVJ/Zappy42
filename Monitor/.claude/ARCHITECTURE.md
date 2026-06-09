@@ -123,8 +123,8 @@ El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p
 | `pin #N X Y q0..q6` | → `Player.Inventory` | Actualiza inventario |
 | `pex #N` | — | Jugador expulsado |
 | `pbc #N MSG` | — | Broadcast de jugador |
-| `pic X Y L #N...` | — | Inicio de incantación |
-| `pie X Y R` | — | Fin de incantación |
+| `pic X Y L #N...` | → `Player.PlaySpell()` + `Terrain.SelectTile()` | Inicio de incantación: hechizo + resaltado de tile |
+| `pie X Y R` | → `Player.StopSpell()` + `SoundWave` | Fin de incantación: pulso verde/rojo según resultado |
 | `pfk #N` | — | Jugador pone huevo |
 | `pdr #N ITEM` | — | Jugador suelta recurso |
 | `pgt #N ITEM` | — | Jugador recoge recurso |
@@ -238,7 +238,6 @@ Connection.HandleLeftClick()
 ## Áreas de Mejora / Pendientes
 
 - **Fin de partida (`seg`):** Evento recibido pero sin pantalla de resultado.
-- **Incantaciones (`pic`/`pie`):** Sin efecto visual en los jugadores participantes.
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
 - **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs`.
 - **Altura de jugadores:** Y fija en `0.3f`; no sigue la altura real del terreno.

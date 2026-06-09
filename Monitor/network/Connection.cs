@@ -21,6 +21,9 @@ public partial class Connection : Node
 
 	private List<string> teams = new List<string>();
 
+	// Jugadores incantando por tile (pic), para terminar su animación al recibir pie.
+	private readonly Dictionary<(int, int), List<int>> _incantations = new();
+
 	[Export]
 	private InventoryPanel inventoryPanel;
 
@@ -522,30 +525,39 @@ public partial class Connection : Node
 	private void pie(string[] parts)
 	{
 		// pie X Y R
+		if (parts.Length < 4)
+			return;
+
 		int x = int.Parse(parts[1]);
 		int y = int.Parse(parts[2]);
 		int result = int.Parse(parts[3]);
+		bool success = result == 1;
 
-		GD.Print($"[pie] Incantacion en tile ({x},{y}) {(result == 1 ? "EXITOSA" : "FALLIDA")}");
+		GD.Print($"[pie] Incantacion en tile ({x},{y}) {(success ? "EXITOSA" : "FALLIDA")}");
 
-		//if (x < 0 || x >= mapW || y < 0 || y >= mapH)
-		//{
-		//	return;
-		//}
+		// Terminar la animación de hechizo de los jugadores que estaban incantando aquí.
+		if (_incantations.TryGetValue((x, y), out var playerIds))
+		{
+			foreach (int pid in playerIds)
+			{
+				if (playerManager.TryGet(pid, out var player))
+					player.StopSpell();
+			}
+			_incantations.Remove((x, y));
+		}
 
-		var tile = terrainManager[x, y];
-
-		// elegir color según resultado
-		Color color = result == 1 ? new Color(0f, 1f, 0f, 0.5f) : new Color(1f, 0f, 0f, 0.5f);
-		//tile.Highlight();
-
-		// opcional: eliminar highlight después de 1 segundo
-		//_ = FadeOutTile(tile, 1.0f);
+		// Quitar el resaltado del tile y mostrar un pulso de color según el resultado
+		// (verde = éxito, rojo = fallo) reutilizando el efecto SoundWave.
+		terrainManager?.DeselectTile();
+		ShowIncantationResult(x, y, success);
 	}
 
 	private void pic(string[] parts)
 	{
 		// pic X Y L #n #n ...
+		if (parts.Length < 4)
+			return;
+
 		int x = int.Parse(parts[1]);
 		int y = int.Parse(parts[2]);
 		int level = int.Parse(parts[3]);
@@ -558,16 +570,31 @@ public partial class Connection : Node
 		}
 
 		GD.Print($"[pic] Incantacion en tile ({x},{y}) nivel {level} con jugadores: {string.Join(",", playerIds)}");
+
+		_incantations[(x, y)] = playerIds;
+
 		foreach (int pid in playerIds)
+		{
 			_teamPanel?.SetLastAction(pid, $"✨ incant. Nv.{level}");
+			if (playerManager.TryGet(pid, out var player))
+				player.PlaySpell();
+		}
 
-		//if (x < 0 || x >= mapW || y < 0 || y >= mapH)
-		//{
-		//	return;
-		//}
+		// Resaltar el tile de la incantación (reutiliza el shader de selección del terreno).
+		if (terrainManager != null && terrainManager[x, y] != null)
+			terrainManager.SelectTile(x, y);
+	}
 
-		// GrayBox: resaltar tile
-		//tiles[x, y].Highlight(); // naranja semi-transparente
+	// Pulso de color sobre el tile al terminar una incantación (verde éxito / rojo fallo).
+	private void ShowIncantationResult(int x, int y, bool success)
+	{
+		if (terrainManager == null || terrainManager[x, y] == null)
+			return;
+
+		Color color = success ? new Color(0.3f, 1f, 0.4f, 0.85f) : new Color(1f, 0.3f, 0.3f, 0.85f);
+		Vector3 center = TerrainSnap.TileCenter(terrainManager, x, y, 0.15f);
+		var wave = SoundWave.Create(center, color);
+		terrainManager.AddChild(wave);
 	}
 
 	private async void ShowPlayerMessage(Player player, string msg)
