@@ -18,7 +18,7 @@ public partial class CollapsiblePanel : Control
     /// <param name="title">Texto del título y del botón minimizado.</param>
     /// <param name="panelRect">Posición y tamaño del panel expandido.</param>
     /// <param name="minimizedBtnPos">Posición del botón cuando el panel está colapsado.</param>
-    protected void Setup(string title, Rect2 panelRect, Vector2 minimizedBtnPos)
+    protected void Setup(string title, Rect2 panelRect, Control.LayoutPreset minimizedAnchor)
     {
         // Este nodo llena toda la pantalla pero es transparente al ratón
         SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -69,10 +69,10 @@ public partial class CollapsiblePanel : Control
         // ── Botón minimizado ──────────────────────────────────────────────
         _minimizedBtn          = new Button();
         _minimizedBtn.Text     = title;
-        _minimizedBtn.Position = minimizedBtnPos;
         _minimizedBtn.Pressed += Expand;
         _minimizedBtn.Hide();
         AddChild(_minimizedBtn);
+        _minimizedBtn.SetAnchorsAndOffsetsPreset(minimizedAnchor, Control.LayoutPresetMode.Minsize, 10);
     }
 
     /// <summary>Alterna entre expandido y colapsado.</summary>
