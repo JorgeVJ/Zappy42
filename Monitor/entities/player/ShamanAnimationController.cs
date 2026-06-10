@@ -28,6 +28,14 @@ public sealed class ShamanAnimationController
     public void PlayCollect() => TryPlay(Clip.CollectObj);
     public void PlayPickUp()  => TryPlay(Clip.PickUpPocket);
 
+    // Escala la velocidad de reproducción de TODAS las animaciones (acelera/ralentiza
+    // en función del time unit del servidor).
+    public void SetSpeedScale(float scale)
+    {
+        if (_anim != null)
+            _anim.SpeedScale = Mathf.Max(0.01f, scale);
+    }
+
     private void TryPlay(string name)
     {
         if (_anim != null && _anim.HasAnimation(name))

@@ -158,7 +158,7 @@ Ver skill `/terrain` para contexto completo. Resumen:
 ### `Player.cs` — Entidad Jugador
 Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene el modelo bípedo (`Shaman.glb`, nodo `"Model"`) y un dron companion (`Drone.fbx`).
 
-- **Movimiento:** `SetTilePos()` lanza un `Tween` de 2 segundos + `_shamanAnim.PlayWalk()`, al completar llama a `_shamanAnim.PlayIdle()`. Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
+- **Movimiento:** `SetTilePos()` lanza un `Tween` cuya duración (`BaseMoveDuration / SpeedFactor`) y el `SpeedScale` de la animación escalan con el time unit del servidor (`Connection.ApplySpeedFactor` → `Player.SetSpeedFactor`, desde `OnSpeedChanged`/`sgt`/`pnw`). Por debajo del umbral camina (`PlayWalk`), por encima corre (`PlayRun`); al completar, `PlayIdle()`. Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
 - **Orientación:** `SetOrientation()` mapea 1=N, 2=E, 3=S, 4=W a rotación Y.
 - **Equipamiento:** `_Ready()` y `SetLevel()` llaman a `equipmentManager.ApplyLoadout()` con el loadout de `ShamanEquipmentConfig.GetLoadout(level)`.
 - **Animaciones:** delegadas a `ShamanAnimationController` (ver abajo).

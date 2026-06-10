@@ -39,6 +39,10 @@ public partial class PlayerManager : Node
     public bool TryGet(int id, out Player player)
 		=> players.TryGetValue(id, out player);
 
+	// Vista de solo lectura de todos los jugadores activos (para propagar velocidad,
+	// posicionamiento, etc.).
+	public IReadOnlyCollection<Player> All => players.Values;
+
 	public void Remove(int id)
 	{
 		if (!players.TryGetValue(id, out var p))

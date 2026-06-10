@@ -43,6 +43,10 @@ public partial class Connection : Node
 	// Pon a true para usar el servidor simulado sin intentar conexión real
 	[Export] public bool UseMockServer = true;
 
+	// Time unit que corresponde a velocidad normal (factor 1). El slider va de 1 a 10.
+	private const float SpeedReference = 1f;
+	private float _currentSpeedFactor = 1f;
+
 	public override void _Ready()
 	{
 		playerManager = GetNode<PlayerManager>("PlayerManager");
@@ -415,6 +419,17 @@ public partial class Connection : Node
 			_mockServer.SetSpeed(t);
 		else
 			SendMessage($"sst {t}");
+
+		ApplySpeedFactor(t);
+	}
+
+	// Propaga el factor de velocidad (derivado del time unit) a todos los jugadores,
+	// para escalar movimiento y animación. Se llama al cambiar el slider y al recibir sgt.
+	private void ApplySpeedFactor(int t)
+	{
+		_currentSpeedFactor = Mathf.Max(1, t) / SpeedReference;
+		foreach (var player in playerManager.All)
+			player.SetSpeedFactor(_currentSpeedFactor);
 	}
 
 	private void sgt(string[] parts)
@@ -422,6 +437,7 @@ public partial class Connection : Node
 		int tick = int.Parse(parts[1]);
 		GD.Print($"[sgt] Tiempo actual del servidor: {tick}");
 		_speedPanel?.SetDisplayValue(tick);
+		ApplySpeedFactor(tick);
 	}
 
 	private void edi(string[] parts)
@@ -834,6 +850,7 @@ public partial class Connection : Node
 		player.SetTerrain(terrainManager);
 		player.SetOrientation(o);
 		player.SetLevel(level);
+		player.SetSpeedFactor(_currentSpeedFactor);
 
 		_teamPanel?.AddPlayer(id, team, level);
 		GD.Print($"[pnw] Player #{id} team={team} pos=({x},{y}) o={o} lvl={level}");

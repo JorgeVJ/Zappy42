@@ -21,6 +21,14 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     public int Orientation { get; private set; } = 1; // 1..4 en Zappy
     public Vector2I TilePos { get; private set; } = new Vector2I(0, 0);
 
+    // Factor de velocidad derivado del time unit del servidor (D1). 1 = normal.
+    public float SpeedFactor { get; private set; } = 1f;
+
+    private const float BaseMoveDuration = 2.0f; // segundos por tile a factor 1 (sustituye el 2.0f fijo, ex-B6)
+    private const float RunThreshold     = 3.0f; // a partir de este factor se usa correr en vez de andar
+    private const float MinSpeedFactor   = 0.25f;
+    private const float MaxSpeedFactor   = 12.0f;
+
     public override string DisplayTitle => $"Jugador #{Id} — {TeamName} — Nv.{Level}";
 
     [Signal]
@@ -56,10 +64,13 @@ public partial class Player : SelectableInventoryNode3D, IInventory
             GD.PrintErr($"SetTilePos: error killing previous tween for player {Id}: {ex.Message}");
         }
 
-        _shamanAnim?.PlayWalk();
+        if (SpeedFactor >= RunThreshold)
+            _shamanAnim?.PlayRun();
+        else
+            _shamanAnim?.PlayWalk();
 
         moveTween = CreateTween();
-        float duration = 2.0f;
+        float duration = BaseMoveDuration / SpeedFactor; // a mayor velocidad del servidor, menor duración
         GD.Print($"SetTilePos: starting tween for player {Id} to {target} duration {duration}s");
         moveTween.TweenProperty(this, "position", target, duration);
         moveTween.TweenCallback(Callable.From(() => OnMoveCompleted()));
@@ -149,6 +160,13 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     public void SetTerrain(Terrain terrain)
     {
         _terrain = terrain;
+    }
+
+    // Ajusta la velocidad de movimiento y de animación según el time unit del servidor.
+    public void SetSpeedFactor(float factor)
+    {
+        SpeedFactor = Mathf.Clamp(factor, MinSpeedFactor, MaxSpeedFactor);
+        _shamanAnim?.SetSpeedScale(SpeedFactor);
     }
 
     public void Init(int id, string teamName)
