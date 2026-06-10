@@ -32,7 +32,8 @@ public partial class InventoryPanel : Control
 			GD.Print("Owner is null");
 			return;
 		}
-		// title.Text = $"Tile ({tile.GridPos.X}, {tile.GridPos.Y})";
+		if (title != null)
+			title.Text = owner.DisplayTitle;
 
 		food.Text = $"Food:";
 		foodDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Nourriture)}";

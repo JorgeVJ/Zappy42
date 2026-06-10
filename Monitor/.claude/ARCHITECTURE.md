@@ -16,7 +16,7 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Requisito | Estado | Notas |
 |-----------|--------|-------|
 | Visualización en tiempo real del mundo | ✅ | Terreno 3D con grid shader |
-| Click en casilla → info específica | ✅ | Raycast + InventoryPanel |
+| Click en casilla → info específica | ✅ | Raycast + InventoryPanel; el título muestra coordenadas de casilla o identidad del jugador (`IInventory.DisplayTitle`) |
 | Visualización mínima 2D | ✅ (3D bonus) | 3D con shader de grid |
 | Visualización de broadcasts | ✅ | `pbc`: texto flotante (`Label3D`) + onda expansiva 3D (`SoundWave`) sobre el emisor, además de MessageLogPanel |
 | Seguimiento de progreso por equipo | ✅ | TeamProgressPanel: jugadores, niveles y equipo líder |

@@ -21,6 +21,8 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     public int Orientation { get; private set; } = 1; // 1..4 en Zappy
     public Vector2I TilePos { get; private set; } = new Vector2I(0, 0);
 
+    public override string DisplayTitle => $"Jugador #{Id} — {TeamName} — Nv.{Level}";
+
     [Signal]
     public delegate void PlayerClickedEventHandler(Player player);
 

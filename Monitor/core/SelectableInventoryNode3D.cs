@@ -8,6 +8,8 @@ public partial class SelectableInventoryNode3D : Node3D, ISelectable, IInventory
     private Inventory inventory;
     public Inventory Inventory => inventory ??= new Inventory();
 
+    public virtual string DisplayTitle => "Objeto";
+
     public override void _Ready()
     {
         mesh = GetNodeOrNull<MeshInstance3D>("Mesh");
