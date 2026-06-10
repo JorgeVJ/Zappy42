@@ -106,26 +106,32 @@ private void UpdateTileResources(int x, int y)
     float h = (heightMap[x + 1, y] + heightMap[x, y + 1]) / 2f;
     Vector3 center = new Vector3(x * TILE_SIZE + TILE_SIZE / 2f, h, y * TILE_SIZE + TILE_SIZE / 2f);
 
-    // 3. Un nodo Resource por tipo con cantidad > 0, con pequeño offset X/Z
-    int slot = 0;
-    foreach (var kvp in tiles[x, y].Inventory.All)
+    // 3. Un nodo Resource por tipo con cantidad > 0, con offset pseudoaleatorio dentro del tile
+    foreach (var kvp in tiles[x, y].Inventory.AllOrdered)
     {
         if (kvp.Value <= 0) continue;
-        var offset = ResourceOffsets[slot % 7];
+        var offset = GetResourceOffset(x, y, kvp.Key);
         var resource = resourceScene.Instantiate<Resource>();
         resource.Position = center + new Vector3(offset.X, 0.05f, offset.Y);
         AddChild(resource);
         resource.SetResourceType(kvp.Key);
-        slot++;
+        tileResources[(x, y)].Add(resource);
     }
 }
 ```
 
-**Offsets dentro del tile** (en unidades de mundo, no de tile):
+**Offset pseudoaleatorio dentro del tile** (C9): sembrado por `(x, y, tipo)` mediante `RandomNumberGenerator`, en el rango `±ResourcePlacementRange` (0.7, en unidades de mundo). Al ser determinista por semilla, no cambia entre actualizaciones de inventario del mismo tile (sin parpadeos), pero sí varía entre tiles y tipos de recurso:
 ```csharp
-static readonly Vector2[] ResourceOffsets = {
-    (0, 0), (-0.6, 0), (0.6, 0), (0, -0.6), (0, 0.6), (-0.6, -0.6), (0.6, 0.6)
-};
+private static Vector2 GetResourceOffset(int x, int y, Resource.ResourceType type)
+{
+    uint seed = (uint)(x * 73856093) ^ (uint)(y * 19349663) ^ (uint)((int)type * 83492791);
+    var rng = new RandomNumberGenerator();
+    rng.Seed = seed;
+    return new Vector2(
+        rng.RandfRange(-ResourcePlacementRange, ResourcePlacementRange),
+        rng.RandfRange(-ResourcePlacementRange, ResourcePlacementRange)
+    );
+}
 ```
 
 ---

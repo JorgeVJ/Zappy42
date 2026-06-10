@@ -32,16 +32,8 @@ public partial class Terrain : Node3D
 	private static readonly PackedScene resourceScene = ResourceLoader.Load<PackedScene>("res://entities/resources/resource.tscn");
 	private readonly Dictionary<(int, int), List<Resource>> tileResources = new();
 
-	// Offsets within a tile for placing up to 7 resource nodes (one per type)
-	private static readonly Vector2[] ResourceOffsets = {
-		new( 0,      0),
-		new(-0.6f,   0),
-		new( 0.6f,   0),
-		new( 0,     -0.6f),
-		new( 0,      0.6f),
-		new(-0.6f,  -0.6f),
-		new( 0.6f,   0.6f),
-	};
+	// Half-extent of the area within a tile where resources can be placed (TILE_SIZE / 2 minus a margin)
+	private const float ResourcePlacementRange = 0.7f;
 
 	public override void _Ready()
 	{
@@ -86,19 +78,31 @@ public partial class Terrain : Node3D
 		float h = (heightMap[x + 1, y] + heightMap[x, y + 1]) / 2f;
 		Vector3 center = new Vector3(x * TILE_SIZE + TILE_SIZE / 2f, h, y * TILE_SIZE + TILE_SIZE / 2f);
 
-		int slot = 0;
-		foreach (var kvp in tiles[x, y].Inventory.All)
+		foreach (var kvp in tiles[x, y].Inventory.AllOrdered)
 		{
 			if (kvp.Value <= 0) continue;
 
-			var offset = ResourceOffsets[slot % ResourceOffsets.Length];
+			var offset = GetResourceOffset(x, y, kvp.Key);
 			var resource = resourceScene.Instantiate<Resource>();
 			resource.Position = center + new Vector3(offset.X, 0.05f, offset.Y);
 			AddChild(resource);
 			resource.SetResourceType(kvp.Key);
 			tileResources[(x, y)].Add(resource);
-			slot++;
 		}
+	}
+
+	// Posición pseudoaleatoria dentro del tile, sembrada por (x, y, tipo) para que sea
+	// determinista: no cambia entre actualizaciones de inventario (sin parpadeos), pero
+	// varía entre tiles y tipos en lugar de repetir siempre el mismo patrón (C9).
+	private static Vector2 GetResourceOffset(int x, int y, Resource.ResourceType type)
+	{
+		uint seed = (uint)(x * 73856093) ^ (uint)(y * 19349663) ^ (uint)((int)type * 83492791);
+		var rng = new RandomNumberGenerator();
+		rng.Seed = seed;
+		return new Vector2(
+			rng.RandfRange(-ResourcePlacementRange, ResourcePlacementRange),
+			rng.RandfRange(-ResourcePlacementRange, ResourcePlacementRange)
+		);
 	}
 
 	void GenerateHeightMap()

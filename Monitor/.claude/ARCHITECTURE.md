@@ -150,7 +150,7 @@ Ver skill `/terrain` para contexto completo. Resumen:
 - `TILE_SIZE = 10.0f` (const pública) — controla escala de todo el mundo
 - Genera `ArrayMesh` con heightmap Perlin en `InitializeMap()`
 - Sincroniza `tile_size` del shader al generar el mesh
-- Instancia nodos `Resource` en tiles al recibir `bct` vía `Inventory.Changed`
+- Instancia nodos `Resource` en tiles al recibir `bct` vía `Inventory.Changed`; cada recurso se posiciona con un offset pseudoaleatorio dentro del tile, sembrado por `(x, y, tipo)` (`GetResourceOffset`) — varía por tile/tipo pero es estable entre actualizaciones de inventario, evitando parpadeos posicionales
 - `GetTileFromPosition()` divide por `TILE_SIZE` antes de hacer `FloorToInt`
 
 ---
