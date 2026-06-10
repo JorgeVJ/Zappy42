@@ -152,9 +152,21 @@ public partial class Connection : Node
 				return;
 			}
 
-			if (node is Resource resource)
+			if (node is Resource)
 			{
 				GD.Print("Colisiona con Recurso");
+
+				// Clicar un recurso muestra el inventario de la casilla que lo contiene.
+				Tile resourceTile = terrainManager.GetTileFromPosition(position);
+				if (resourceTile != null)
+				{
+					terrainManager.SelectTile(resourceTile.Coord.X, resourceTile.Coord.Y);
+					ShowInventory(resourceTile);
+				}
+				else
+				{
+					terrainManager.DeselectTile();
+				}
 				return;
 			}
 
