@@ -141,6 +141,8 @@ El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p
 
 **Selección y UI:** `HandleLeftClick()` hace raycast desde la cámara. Si impacta un `Player` o `Tile`, llama a `ShowInventory()` que actualiza el `InventoryPanel`. Si impacta un `Resource`, resuelve la casilla bajo él (`GetTileFromPosition`) y muestra el inventario de esa casilla.
 
+**Lectura de red robusta:** `_Process()` acumula el stream TCP en `_recvBuffer` y procesa solo líneas completas (terminadas en `\n`), conservando los fragmentos parciales entre frames. Ante fin de stream (`bytesRead == 0`) o error de socket (`IOException`/`ObjectDisposedException`), `HandleDisconnect()` cierra limpiamente `stream`/`client` y avisa en el `MessageLogPanel`.
+
 ---
 
 ### `Terrain.cs` — Mundo Procedural

@@ -11,6 +11,10 @@ public partial class Connection : Node
 	private NetworkStream _stream;
 	private byte[] _buffer = new byte[4096];
 
+	// Acumula bytes recibidos entre frames: TCP es un stream y una línea del
+	// protocolo puede llegar partida en varios paquetes (ver B1).
+	private string _recvBuffer = "";
+
 	// Destino de conexión real; sobrescrito por los flags -h/-p (ver ParseConnectionArgs).
 	private string _host = "127.0.0.1";
 	private int _port = 12345;
@@ -240,35 +244,84 @@ public partial class Connection : Node
 			return;
 		}
 
-		if (_stream == null || !_stream.DataAvailable)
+		if (_stream == null)
 		{
 			return;
 		}
 
-		byte[] buffer = new byte[_client.Available];
-		int bytesRead = _stream.Read(buffer, 0, buffer.Length);
-
-		string msg;
 		try
 		{
-			// Forzar excepción si hay bytes inválidos para UTF-8, así los detectamos y los registramos.
-			msg = new System.Text.UTF8Encoding(false, true).GetString(buffer, 0, bytesRead);
-		}
-		catch (System.Text.DecoderFallbackException)
-		{
-			// Loguear los bytes crudos en hex para depuración
-			GD.PrintErr($"Unicode parsing error: invalid UTF-8 bytes recibidos. Raw: {BitConverter.ToString(buffer, 0, bytesRead)}");
+			if (!_stream.DataAvailable)
+			{
+				return;
+			}
 
-			// Intentar decodificar con el fallback permissivo para seguir procesando (reemplaza por �)
-			msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-		}
+			byte[] buffer = new byte[_client.Available];
+			int bytesRead = _stream.Read(buffer, 0, buffer.Length);
 
-		string[] lines = msg.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-		foreach (string line in lines)
-		{
-			GD.Print("Processing line: " + line);
-			HandleServerMessage(line);
+			if (bytesRead == 0)
+			{
+				// Lectura de 0 bytes con datos disponibles = cierre ordenado del servidor.
+				HandleDisconnect("el servidor cerró la conexión");
+				return;
+			}
+
+			string chunk;
+			try
+			{
+				// Forzar excepción si hay bytes inválidos para UTF-8, así los detectamos y los registramos.
+				chunk = new System.Text.UTF8Encoding(false, true).GetString(buffer, 0, bytesRead);
+			}
+			catch (System.Text.DecoderFallbackException)
+			{
+				// Loguear los bytes crudos en hex para depuración
+				GD.PrintErr($"Unicode parsing error: invalid UTF-8 bytes recibidos. Raw: {BitConverter.ToString(buffer, 0, bytesRead)}");
+
+				// Intentar decodificar con el fallback permissivo para seguir procesando (reemplaza por �)
+				chunk = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+			}
+
+			// Acumular y procesar SOLO líneas completas (terminadas en \n);
+			// conservar el residuo parcial para la siguiente iteración.
+			_recvBuffer += chunk;
+
+			int newline;
+			while ((newline = _recvBuffer.IndexOf('\n')) >= 0)
+			{
+				string line = _recvBuffer.Substring(0, newline).TrimEnd('\r');
+				_recvBuffer = _recvBuffer.Substring(newline + 1);
+
+				if (line.Length == 0)
+				{
+					continue;
+				}
+
+				GD.Print("Processing line: " + line);
+				HandleServerMessage(line);
+			}
 		}
+		catch (System.IO.IOException ex)
+		{
+			HandleDisconnect($"IOException: {ex.Message}");
+		}
+		catch (ObjectDisposedException ex)
+		{
+			HandleDisconnect($"socket cerrado: {ex.Message}");
+		}
+	}
+
+	// Cierre limpio ante desconexión / fin de stream del servidor (B7).
+	private void HandleDisconnect(string reason)
+	{
+		GD.PrintErr($"[Connection] Servidor desconectado ({reason}).");
+		_logPanel?.Log("NET", $"Servidor desconectado: {reason}");
+
+		try { _stream?.Close(); } catch { /* ya cerrado */ }
+		try { _client?.Close(); } catch { /* ya cerrado */ }
+
+		_stream = null;
+		_client = null;
+		_recvBuffer = "";
 	}
 
 	public override void _UnhandledInput(InputEvent e)
