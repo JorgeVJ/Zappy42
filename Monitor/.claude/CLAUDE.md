@@ -51,7 +51,7 @@ Antes de modificar áreas específicas del proyecto, invocar la skill correspond
 | Skill | Archivo | Cuándo usarla |
 |---|---|---|
 | `/terrain` | `.claude/commands/terrain.md` | Cualquier cambio en terreno, coordenadas, recursos sobre el mapa, shader de grid, altura de entidades |
-| `/meshy` | `C:\Users\desarrollo\tools\meshy-client\.claude\commands\meshy.md` | Generar o actualizar assets 3D con Meshy AI (modelos GLB para `res://models/`) |
+| `/meshy-assets` | `.claude/commands/meshy-assets.md` | Generar o actualizar assets 3D (GLB) con Meshy AI: rutas, nombres de archivo y estado de recursos/equipamiento de Zappy Monitor |
 | `/trello-board` | `.claude/commands/trello-board.md` | Antes de crear/editar/mover tarjetas en Trello para este proyecto: IDs del tablero "Zappy Monitor", listas, etiquetas, formato de descripción y flujo de movimiento de tarjetas |
 
 ## Notas de Desarrollo
@@ -59,4 +59,4 @@ Antes de modificar áreas específicas del proyecto, invocar la skill correspond
 - `MockServer.cs` permite probar sin servidor real; útil para desarrollo de UI.
 - La IP/puerto están hardcodeados en `Connection._Ready()` (`127.0.0.1:12345`).
 - El typo `UnHightlight` (falta una 'h') existe intencionalmente por compatibilidad; corregir sólo si se refactoriza la interfaz completa.
-- Assets 3D generados con Meshy AI: herramienta en `C:\Users\desarrollo\tools\meshy-client\`. Ver `/meshy` skill para el workflow completo.
+- Assets 3D generados con Meshy AI. Ver `/meshy-assets` skill para rutas, convenciones y workflow completo.

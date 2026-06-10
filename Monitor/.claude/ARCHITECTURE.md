@@ -33,7 +33,9 @@ Monitor/
 │   ├── CLAUDE.md           # Instrucciones para Claude Code (este archivo vive aquí)
 │   ├── ARCHITECTURE.md     # Este archivo
 │   └── commands/
-│       └── terrain.md      # Skill: contexto completo del sistema de terreno
+│       ├── terrain.md      # Skill: contexto completo del sistema de terreno
+│       ├── meshy-assets.md # Skill: assets 3D (Meshy AI) — rutas, nombres y estado
+│       └── trello-board.md # Skill: tablero Trello del proyecto (IDs, listas, etiquetas)
 ├── Camera.cs               # Cámara libre WASD + raycast
 ├── Connection.cs           # Hub de red TCP + dispatcher de protocolo
 ├── Egg.cs / EggManager.cs  # Entidad huevo + gestión
