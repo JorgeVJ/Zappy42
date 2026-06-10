@@ -29,6 +29,30 @@ public partial class Resource : Node3D
 	public override void _Ready()
 	{
 		mesh = GetNode<MeshInstance3D>("Mesh");
+		PlaySpawnAnimation();
+	}
+
+	// Animación genérica de aparición: el recurso cae un poco y crece con un "pop".
+	// Framework reutilizable; los efectos temáticos por tipo (meteorito, volcán, rayo)
+	// se añadirán encima en una fase posterior (requieren assets/VFX).
+	private void PlaySpawnAnimation()
+	{
+		Vector3 finalPos   = Position;
+		Vector3 finalScale = Scale;
+		const float dropHeight = 0.4f;
+
+		// Estado inicial: encogido y un poco por encima de su posición final.
+		Position = finalPos + new Vector3(0f, dropHeight, 0f);
+		Scale    = finalScale * 0.01f;
+
+		var tween = CreateTween();
+		tween.SetParallel(true);
+		tween.TweenProperty(this, "position", finalPos, 1.5f)
+			 .SetTrans(Tween.TransitionType.Bounce)
+			 .SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(this, "scale", finalScale, 1f)
+			 .SetTrans(Tween.TransitionType.Back)
+			 .SetEase(Tween.EaseType.Out);
 	}
 
 	public void SetResourceType(ResourceType type)

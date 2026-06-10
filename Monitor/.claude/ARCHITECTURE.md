@@ -52,7 +52,7 @@ Monitor/
 ├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
 ├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
 ├── PlayerManager.cs        # Gestión centralizada de jugadores
-├── Resource.cs             # Entidad recurso: carga GLB de res://models/ o esfera coloreada
+├── Resource.cs             # Entidad recurso: carga GLB o esfera coloreada; animación de aparición (caída + pop) al instanciarse
 ├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
 ├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
 ├── Tile.cs                 # Datos de una casilla (coord + inventario)
