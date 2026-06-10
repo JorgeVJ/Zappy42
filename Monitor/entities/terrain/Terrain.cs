@@ -6,7 +6,7 @@ public partial class Terrain : Node3D
 	[Export] public int Width = 5;
 	[Export] public int Height = 5;
 
-	[Export] public float HeightScale = 3f;
+	[Export] public float HeightScale = 6f;
 	[Export] public float NoiseScale = 0.08f;
 	private float _lineWidth = 0.01f;
 	[Export] public float LineWidth

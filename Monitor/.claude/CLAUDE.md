@@ -19,6 +19,8 @@ Este es el **cliente gráfico (monitor)** del proyecto Zappy (42 Network). Es un
 
 Al actualizar, modificar sólo las secciones relevantes; no reescribir el archivo completo salvo que sea necesario.
 
+**No ejecutar comandos `git`** (status, diff, add, commit, push, etc.) salvo que el usuario lo pida explícitamente para esa tarea concreta.
+
 ## Stack Técnico
 
 - **Motor:** Godot 4.x

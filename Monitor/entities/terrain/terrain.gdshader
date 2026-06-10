@@ -4,8 +4,8 @@ uniform float tile_size = 10.0;
 uniform float line_width = 0.01;
 
 uniform vec4 line_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
-uniform vec4 ground_color : source_color = vec4(0.4, 0.8, 0.4, 1.0);
-uniform vec4 ground_color_b : source_color = vec4(0.28, 0.62, 0.22, 1.0);
+uniform vec4 ground_color_b : source_color = vec4(0.4, 0.8, 0.4, 1.0);
+uniform vec4 ground_color : source_color = vec4(0.28, 0.62, 0.22, 1.0);
 uniform float color_variation = 0.42;
 uniform float noise_scale = 0.25;
 uniform vec4 highlight_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
