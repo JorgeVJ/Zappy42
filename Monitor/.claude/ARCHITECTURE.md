@@ -130,8 +130,8 @@ El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p
 | `pgt #N ITEM` | — | Jugador recoge recurso |
 | `pdi #N` | → `PlayerManager.Remove()` | Jugador muere |
 | `enw #E #N X Y` | → `EggManager.CreateEgg()` | Huevo puesto |
-| `eht #E` | → `EggManager.Remove()` | Huevo eclosiona |
-| `ebo #E` | — | Conexión de huevo |
+| `eht #E` | → `Egg.Hatch()` | Eclosión: transición visual (no elimina el huevo) |
+| `ebo #E` | → `EggManager.Remove()` | Jugador se conecta desde el huevo: lo consume (tolerante si ya no existe) |
 | `edi #E` | → `EggManager.Remove()` | Huevo muere |
 | `sgt T` | — | Tiempo del servidor |
 | `seg TEAM` | — | Fin de partida |

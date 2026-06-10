@@ -442,33 +442,39 @@ public partial class Connection : Node
 
 	private void ebo(string[] parts)
 	{
-		// ebo #e
+		// ebo #e — un jugador se conecta desde el huevo: aquí SÍ se elimina.
+		if (parts.Length < 2)
+			return;
+
 		int eggId = int.Parse(parts[1].TrimStart('#'));
 
 		if (!eggManager.TryGet(eggId, out var egg))
 		{
-			GD.PrintErr($"[ebo] Egg #{eggId} no existe.");
+			// Tolerante: el huevo puede haberse eliminado ya (p. ej. por edi); no es un error.
+			GD.Print($"[ebo] Egg #{eggId} ya no existe (ignorado).");
 			return;
 		}
 
-		// eliminamos el huevo porque el jugador se conecta
 		eggManager.Remove(eggId);
 
-		GD.Print($"[ebo] Egg #{eggId} ahora es controlado por un jugador (se conecto).");
+		GD.Print($"[ebo] Egg #{eggId} consumido: un jugador se conectó.");
 	}
 
 	private void eht(string[] parts)
 	{
-		// eht #e
+		// eht #e — el huevo eclosiona: señal visual, NO se elimina (eso lo hace ebo).
+		if (parts.Length < 2)
+			return;
+
 		int eggId = int.Parse(parts[1].TrimStart('#'));
 
 		if (!eggManager.TryGet(eggId, out var egg))
 		{
-			GD.PrintErr($"[eht] Egg #{eggId} no existe.");
+			GD.Print($"[eht] Egg #{eggId} ya no existe (ignorado).");
 			return;
 		}
 
-		eggManager.Remove(eggId);
+		egg.Hatch();
 
 		GD.Print($"[eht] Egg #{eggId} ha eclosionado.");
 	}
