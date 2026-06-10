@@ -52,8 +52,7 @@ Antes de modificar áreas específicas del proyecto, invocar la skill correspond
 |---|---|---|
 | `/terrain` | `.claude/commands/terrain.md` | Cualquier cambio en terreno, coordenadas, recursos sobre el mapa, shader de grid, altura de entidades |
 | `/meshy` | `C:\Users\desarrollo\tools\meshy-client\.claude\commands\meshy.md` | Generar o actualizar assets 3D con Meshy AI (modelos GLB para `res://models/`) |
-| `/trello` | `C:\Users\desarrollo\tools\trello-client\.claude\commands\trello.md` | Crear, listar o mover tareas en Trello |
-| `/trello-board` | `.claude/commands/trello-board.md` | Antes de crear/editar tarjetas en Trello para este proyecto: IDs del tablero "Zappy Monitor", listas, etiquetas y formato de descripción |
+| `/trello-board` | `.claude/commands/trello-board.md` | Antes de crear/editar/mover tarjetas en Trello para este proyecto: IDs del tablero "Zappy Monitor", listas, etiquetas, formato de descripción y flujo de movimiento de tarjetas |
 
 ## Notas de Desarrollo
 

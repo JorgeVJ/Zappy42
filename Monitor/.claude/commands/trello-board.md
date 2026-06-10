@@ -1,9 +1,12 @@
 # trello-board — Tablero Trello del proyecto Zappy Monitor
 
-Skill de referencia para saber **qué tablero usar** y **cómo están organizadas las tarjetas**
-en este proyecto. Para los comandos del CLI (`trello ...`), ver la skill `/trello` (en
-`C:\Users\desarrollo\tools\trello-client\.claude\commands\trello.md`). Esta skill solo documenta
-los IDs y convenciones específicas de **Zappy Monitor**.
+Skill de referencia para saber **qué tablero usar**, **cómo están organizadas las tarjetas** y
+**qué movimientos puede hacer Claude** en este proyecto. Para los comandos del CLI
+(`trello ...`), ver `C:\Users\desarrollo\tools\trello-client\README.md` (instalación, `.env`,
+y la tabla de subcomandos: `cards`, `add-card`, `move-card`, `update-card`, etc.). Si esa
+referencia no fuera suficiente, recurrir a la skill `/trello`
+(`C:\Users\desarrollo\tools\trello-client\.claude\commands\trello.md`). Esta skill solo
+documenta los IDs y convenciones específicas de **Zappy Monitor**.
 
 ---
 
@@ -75,5 +78,19 @@ de prioridad + contexto, párrafo de "qué hacer", dependencias, y una línea fi
 de arquitectura (`A/B/C`) preferir el formato con secciones en negrita por consistencia con
 las existentes.
 
-Al cerrar una tarea, mover la tarjeta a **Hecho** (`trello move-card --card <id> --list
-6a272cc3153a0d242d644652`); si queda pendiente de verificación manual, usar **Test**.
+Al terminar el trabajo de una tarjeta, moverla a **Test** (ver sección siguiente) — no a Hecho.
+
+---
+
+## Flujo de tarjetas (qué puede mover Claude)
+
+| Transición | ¿Permitida? | Cuándo |
+|---|---|---|
+| `Por hacer` (`6a272cc2848c9f5bab3ab986`) → `En curso` (`6a272cc2a361c002e2bbc9bd`) | ✅ | Al empezar a trabajar una tarea |
+| `En curso` → `Test` (`6a27310e546b0e82ee1d092b`) | ✅ | Al terminar la implementación, lista para revisión del usuario |
+| `Test` → `En curso` | ✅ | Solo si el usuario pide rehacer/ajustar algo de esa tarjeta |
+| Cualquiera → `Hecho` (`6a272cc3153a0d242d644652`) | ❌ **Nunca** | El usuario es quien mueve tarjetas a Hecho, tras revisarlas |
+
+Las tarjetas **nuevas** que documenten trabajo ya implementado en la misma sesión se crean (o
+se mueven) directamente a **Test** — nunca a Hecho —, quedando pendientes de validación del
+usuario.
