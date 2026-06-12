@@ -78,18 +78,20 @@ entrada en `ShamanEquipmentConfig.cs` antes de generar el asset.
 |---|---|---|---|
 | `Staff.glb` | 2-7 | `RightHand` | ✅ |
 | `skull_mask.glb` | 3, 4, 5, 6, 7 | `Head` | ✅ |
-| `Staff_Gem_Lvl1.glb` | 3, 4 (hijo de `Staff.glb`); 4, 5 x2 + 6, 7 x3 (gemas orbitales sobre `Head`) | hijo de `Staff.glb` / `OrbitingPivot` | ✅ |
+| `Staff_Gem_Lvl1.glb` | 3, 4 (hijo de `Staff.glb`) | hijo de `Staff.glb` | ✅ |
 | `Staff_Gem_Lvl2.glb` | 5, 6 (reemplaza Lvl1) | hijo de `Staff.glb` | ✅ |
 | `shoulder_bone.glb` | 6, 7 | `LeftShoulder` + `RightShoulder` | ❌ pendiente |
 | `Staff_Gem_Lvl3.glb` | 7 (reemplaza Lvl2) | hijo de `Staff.glb` | ✅ |
 | `horns.glb` | 7 | `Head` | ❌ pendiente |
 
 > El slot `neck` (collares `collar_bone.glb` / `collar_gem.glb`) se eliminó: se sustituye por
-> un sistema de gemas en órbita sobre la cabeza, anclado al hueso `Head` mediante un
+> un sistema de orbes brillantes en órbita sobre la cabeza, anclado al hueso `Head` mediante un
 > `OrbitingPivot` (`core/OrbitingPivot.cs`, rota sobre Y). `ShamanEquipmentConfig.GetOrbitingGems(level)`
-> devuelve `null` en niveles 1-3, 2 gemas en 4-5 y 3 gemas en 6-7, reutilizando
-> `Staff_Gem_Lvl1.glb` (ver tarjeta D6 en Trello). Si se quiere un modelo distinto para las
-> gemas orbitales, generar uno nuevo (p.ej. `Orb_Gem.glb`) y referenciarlo en `OrbitGems2`/`OrbitGems3`.
+> devuelve `null` en niveles 1-3, 2 orbes en 4-5 y 3 orbes en 6-7 (ver tarjeta D6 en Trello).
+> Cada orbe es un `GlowOrb` (`core/GlowOrb.cs`): una esfera procedural (sin GLB) con material
+> translúcido + rim y un `GlowEffect` (`core/GlowEffect.cs`) para el brillo emisivo. Color y
+> energía de brillo se definen en `ShamanEquipmentConfig.OrbColor`/`OrbGlow`. Esta feature no
+> requiere ningún asset de Meshy.
 
 > `staff_basic.glb` y `staff_orb.glb` quedan sin uso (superados por `Staff.glb` +
 > gemas hijas); los archivos permanecen en disco pero ya no se referencian desde
@@ -107,10 +109,11 @@ Tras generar el GLB:
    `ShamanEquipmentConfig.cs` — usar `StaffOffsets` y `SkullMaskOffsets` como
    referencia de formato (posición/rotación en grados/escala por hueso). Para
    las gemas hijas de `Staff.glb`, ajustar `GemOffsets` (offsets relativos al
-   espacio local de `Staff.glb`, no al hueso). Para las gemas orbitales sobre
-   la cabeza, ajustar `OrbitPivotOffsets` (posición del pivote respecto al
-   hueso `Head`) y `OrbitGems2`/`OrbitGems3` (radio/ángulo/escala de cada
-   gema respecto al pivote).
+   espacio local de `Staff.glb`, no al hueso). Para las orbes brillantes sobre
+   la cabeza (sin GLB, ver más abajo), ajustar `OrbitPivotOffsets` (posición
+   del pivote respecto al hueso `Head`) y `OrbitGems2`/`OrbitGems3` (radio/
+   ángulo/escala de cada orbe respecto al pivote, y color/brillo en
+   `OrbColor`/`OrbGlow`).
 
 ---
 

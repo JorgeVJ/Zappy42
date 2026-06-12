@@ -53,6 +53,7 @@ Antes de modificar áreas específicas del proyecto, invocar la skill correspond
 | Skill | Archivo | Cuándo usarla |
 |---|---|---|
 | `/terrain` | `.claude/commands/terrain.md` | Cualquier cambio en terreno, coordenadas, recursos sobre el mapa, shader de grid, altura de entidades |
+| `/equipment` | `.claude/commands/equipment.md` | Cualquier cambio en el equipamiento por nivel del Shaman: piezas/offsets/gemas, brillos (`GlowEffect`) y orbes orbitales sobre la cabeza (`OrbitingPivot`/`GlowOrb`/`OrbSpec`) |
 | `/meshy-assets` | `.claude/commands/meshy-assets.md` | Generar o actualizar assets 3D (GLB) con Meshy AI: rutas, nombres de archivo y estado de recursos/equipamiento de Zappy Monitor |
 | `/trello-board` | `.claude/commands/trello-board.md` | Antes de crear/editar/mover tarjetas en Trello para este proyecto: IDs del tablero "Zappy Monitor", listas, etiquetas, formato de descripción y flujo de movimiento de tarjetas |
 

@@ -216,16 +216,35 @@ public class EquipmentManager
     }
 
     /// <summary>
+    /// Instantiates a procedural <see cref="GlowOrb"/> as a regular child of <paramref name="parent"/>,
+    /// applying its offsets in the parent's local space. Mirrors <see cref="AttachChild"/> but for
+    /// procedural orbs instead of GLB scenes.
+    /// </summary>
+    private void AttachOrb(Node3D parent, OrbSpec spec)
+    {
+        var orb = new GlowOrb { OrbColor = spec.Color, Glow = spec.Glow };
+        parent.AddChild(orb);
+        orb.Transform = Transform3D.Identity;
+
+        orb.Position = spec.Offsets.Position;
+        orb.Rotation = new Vector3(
+            Mathf.DegToRad(spec.Offsets.RotationDeg.X),
+            Mathf.DegToRad(spec.Offsets.RotationDeg.Y),
+            Mathf.DegToRad(spec.Offsets.RotationDeg.Z));
+        orb.Scale = spec.Offsets.Scale;
+    }
+
+    /// <summary>
     /// Attaches a continuously-rotating <see cref="OrbitingPivot"/> to the specified bone,
-    /// with a group of child models (e.g. orbiting gems) arranged around it. The whole
-    /// group spins together around the pivot's local Y axis. If children is null or
-    /// empty, nothing is attached (e.g. for levels where the group is not yet unlocked).
+    /// with a group of procedural glowing orbs arranged around it. The whole group spins
+    /// together around the pivot's local Y axis. If orbs is null or empty, nothing is
+    /// attached (e.g. for levels where the group is not yet unlocked).
     /// Tracked alongside regular attachments, so ClearAll()/ApplyLoadout() remove it too.
     /// Returns the created BoneAttachment3D or null if nothing was attached.
     /// </summary>
-    public BoneAttachment3D AttachOrbitingGroup(Node owner, string boneName, Offsets pivotOffsets, float rotationSpeedDeg, IReadOnlyList<EquipmentChild> children)
+    public BoneAttachment3D AttachOrbitingGroup(Node owner, string boneName, Offsets pivotOffsets, float rotationSpeedDeg, IReadOnlyList<OrbSpec> orbs)
     {
-        if (children == null || children.Count == 0)
+        if (orbs == null || orbs.Count == 0)
             return null;
 
         Skeleton3D skeleton = FindSkeleton3D(owner);
@@ -255,8 +274,8 @@ public class EquipmentManager
             Mathf.DegToRad(pivotOffsets.RotationDeg.Z));
         pivot.Scale = pivotOffsets.Scale;
 
-        foreach (var child in children)
-            AttachChild(pivot, child);
+        foreach (var orb in orbs)
+            AttachOrb(pivot, orb);
 
         if (!attachments.TryGetValue(boneName, out var list))
         {
@@ -265,7 +284,7 @@ public class EquipmentManager
         }
         list.Add(boneAttach);
 
-        GD.Print($"EquipmentManager: attached orbiting group of {children.Count} gem(s) to bone '{boneName}'");
+        GD.Print($"EquipmentManager: attached orbiting group of {orbs.Count} orb(s) to bone '{boneName}'");
         return boneAttach;
     }
 

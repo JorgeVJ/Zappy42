@@ -5,7 +5,8 @@ using System.Collections.Generic;
 /// Maps each player level (1-7) to a list of equipment slots (bone + GLB asset).
 ///
 /// To reuse the equipment system in another project:
-///   - Copy EquipmentManager.cs, EquipmentSlot.cs, EquipmentChild.cs, OrbitingPivot.cs and Offsets.cs unchanged.
+///   - Copy EquipmentManager.cs, EquipmentSlot.cs, EquipmentChild.cs, OrbitingPivot.cs,
+///     OrbSpec.cs, GlowOrb.cs, GlowEffect.cs and Offsets.cs unchanged.
 ///   - Create a new XxxEquipmentConfig.cs with the correct bone names and asset paths.
 ///
 /// Shaman bone hierarchy (relevant slots):
@@ -86,26 +87,31 @@ public static class ShamanEquipmentConfig
     // One full rotation every 6 seconds.
     public const float OrbitRotationSpeedDeg = 60f;
 
-    // Reuses the smallest staff gem model. Position (orbit radius/angle) and scale are
+    // Shared arcane look for every orbiting orb. Placeholder — needs visual
+    // tuning in-editor (color, glow energy).
+    private static readonly Godot.Color OrbColor = new(0.45f, 0.55f, 1f, 0.6f);
+    private static readonly GlowEffect OrbGlow = new(new Godot.Color(0.5f, 0.65f, 1f), 2.5f);
+
+    // Procedural glowing orbs (GlowOrb). Position (orbit radius/angle) and scale are
     // placeholders — needs visual tuning in-editor once visible above the head.
-    private static readonly List<EquipmentChild> OrbitGems2 = new()
+    private static readonly List<OrbSpec> OrbitGems2 = new()
     {
-        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
-        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(-18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
+        new(new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
+        new(new Offsets(new Godot.Vector3(-18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
     };
 
-    private static readonly List<EquipmentChild> OrbitGems3 = new()
+    private static readonly List<OrbSpec> OrbitGems3 = new()
     {
-        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
-        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(-9, 0, 15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
-        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(-9, 0, -15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
+        new(new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
+        new(new Offsets(new Godot.Vector3(-9, 0, 15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
+        new(new Offsets(new Godot.Vector3(-9, 0, -15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
     };
 
     /// <summary>
-    /// Returns the orbiting gem group for the given level, or null if no group
+    /// Returns the orbiting orb group for the given level, or null if no group
     /// should be shown (levels 1-3).
     /// </summary>
-    public static IReadOnlyList<EquipmentChild> GetOrbitingGems(int level) =>
+    public static IReadOnlyList<OrbSpec> GetOrbitingGems(int level) =>
         level switch
         {
             4 or 5 => OrbitGems2,
