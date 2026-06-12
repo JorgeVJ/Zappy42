@@ -187,9 +187,17 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     // Applies the level's equipment loadout plus the orbiting gem group above the head.
     private void ApplyEquipment()
     {
-        if (modelNode == null) return;
-        equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
-        equipmentManager.AttachOrbitingGroup(modelNode, "Head", ShamanEquipmentConfig.OrbitPivotOffsets, ShamanEquipmentConfig.OrbitRotationSpeedDeg, ShamanEquipmentConfig.GetOrbitingGems(Level));
+        if (modelNode == null) 
+            return;
+
+        equipmentManager.ApplyLoadout(modelNode, 
+            ShamanEquipmentConfig.GetLoadout(Level));
+
+        equipmentManager.AttachOrbitingGroup(modelNode, 
+            "Head", 
+            ShamanEquipmentConfig.OrbitPivotOffsets, 
+            ShamanEquipmentConfig.OrbitRotationSpeedDeg, 
+            ShamanEquipmentConfig.GetOrbitingGems(Level));
     }
 
     public void SetOrientation(int o)

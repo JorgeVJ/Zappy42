@@ -80,7 +80,7 @@ public static class ShamanEquipmentConfig
 
     // Pivot anchored above the Head bone. Placeholder — needs visual tuning in-editor.
     public static readonly Offsets OrbitPivotOffsets =
-        new(new Godot.Vector3(0, 45f, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(1, 1, 1));
+        new(new Godot.Vector3(0, 80f, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(1, 1, 1));
 
     // One full rotation every 6 seconds.
     public const float OrbitRotationSpeedDeg = 60f;
@@ -133,7 +133,6 @@ public static class ShamanEquipmentConfig
     // Level 3 — skull mask + Staff with Gem Lvl1
     private static readonly List<EquipmentSlot> Level3 = new()
     {
-        new("Head", Eq + "skull_mask.glb"),
         new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl1),
     };
 
@@ -147,21 +146,21 @@ public static class ShamanEquipmentConfig
     // Level 5 — skull mask + Staff with Gem Lvl2 (replaces Lvl1)
     private static readonly List<EquipmentSlot> Level5 = new()
     {
-        new("Head", Eq + "skull_mask.glb"),
+        new("Head", Eq + "skull_mask.glb", SkullMaskOffsets),
         new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl2),
     };
 
     // Level 6 — skull mask + Staff with Gem Lvl2
     private static readonly List<EquipmentSlot> Level6 = new()
     {
-        new("Head",     Eq + "skull_mask.glb"),
+        new("Head",     Eq + "skull_mask.glb", SkullMaskOffsets),
         new("RightHand",     Eq + "Staff.glb", StaffOffsets, GemLvl2),
     };
 
     // Level 7 — skull mask + Staff with Gem Lvl3 (replaces Lvl2, glows — see Gem3Glow)
     private static readonly List<EquipmentSlot> Level7 = new()
     {
-        new("Head",     Eq + "skull_mask.glb"),
+        new("Head",     Eq + "skull_mask.glb", SkullMaskOffsets),
         new("RightHand",     Eq + "Staff.glb", StaffOffsets, GemLvl3),
     };
 }
