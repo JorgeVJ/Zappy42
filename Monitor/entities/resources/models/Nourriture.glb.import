@@ -3,12 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bbg8s3ro2mn0w"
-valid=false
+uid="uid://ceuisef8qxdr5"
+path="res://.godot/imported/Nourriture.glb-0258a0e8691cd29f9534aff5ab5751fa.scn"
 
 [deps]
 
 source_file="res://entities/resources/models/Nourriture.glb"
+dest_files=["res://.godot/imported/Nourriture.glb-0258a0e8691cd29f9534aff5ab5751fa.scn"]
 
 [params]
 
