@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0pw34r3xjns6"
-path.s3tc="res://.godot/imported/staff_basic_3.jpg-d5d775766903ee1ec5c69ee387864537.s3tc.ctex"
+uid="uid://bhciwvf1jjuu"
+path.s3tc="res://.godot/imported/Staff_Image_1.jpg-219a0bd77d424d6d7dbf764e5fdf185c.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "22dc72c3f1a128e3d1e0b2c342e9674d"
+"md5": "9f06957cf16926e636a297a98656f68f"
 }
 
 [deps]
 
-source_file="res://entities/player/models/equipments/staff_basic_3.jpg"
-dest_files=["res://.godot/imported/staff_basic_3.jpg-d5d775766903ee1ec5c69ee387864537.s3tc.ctex"]
+source_file="res://entities/player/models/equipments/Staff_Image_1.jpg"
+dest_files=["res://.godot/imported/Staff_Image_1.jpg-219a0bd77d424d6d7dbf764e5fdf185c.s3tc.ctex"]
 
 [params]
 
