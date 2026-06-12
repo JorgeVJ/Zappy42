@@ -71,23 +71,24 @@ Cada pieza se referencia desde `ShamanEquipmentConfig.cs`
 (loguea un aviso y sigue sin romper la escena), así que se puede dejar la
 entrada en `ShamanEquipmentConfig.cs` antes de generar el asset.
 
-**Huesos disponibles:** `neck`, `Head` / `headfront`, `RightHand`,
+**Huesos disponibles:** `Head` / `headfront`, `RightHand`,
 `LeftShoulder`, `RightShoulder`, `LeftForeArm`, `RightForeArm`.
 
 | Archivo | Nivel(es) | Hueso | Estado |
 |---|---|---|---|
-| `collar_bone.glb` | 2, 3, 4 | `neck` | ❌ pendiente |
 | `skull_mask.glb` | 3, 4, 5, 6, 7 | `Head` | ✅ |
 | `staff_basic.glb` | 4, 5 | `RightHand` | ✅ |
-| `collar_gem.glb` | 5, 6, 7 | `neck` | ❌ pendiente |
 | `staff_orb.glb` | 6, 7 | `RightHand` | ❌ pendiente |
 | `shoulder_bone.glb` | 6, 7 | `LeftShoulder` + `RightShoulder` | ❌ pendiente |
 | `horns.glb` | 7 | `Head` | ❌ pendiente |
 
+> El slot `neck` (collares `collar_bone.glb` / `collar_gem.glb`) se eliminó: se sustituye por
+> un sistema de orbes/gemas en órbita sobre la cabeza (ver tarjeta D6 en Trello).
+
 Ejemplo:
 
 ```cmd
-meshy generate --prompt "<descripción>, low-poly, isometric, white background" --name collar_bone --output-dir entities/player/models/equipments
+meshy generate --prompt "<descripción>, low-poly, isometric, white background" --name staff_orb --output-dir entities/player/models/equipments
 ```
 
 Tras generar el GLB:

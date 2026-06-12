@@ -62,10 +62,8 @@ Monitor/
 │   ├── Shaman/
 │   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
 │   ├── equipment/           # Accesorios por nivel (generados con Meshy AI)
-│   │   ├── collar_bone.glb  # Lvl 2
 │   │   ├── skull_mask.glb   # Lvl 3
 │   │   ├── staff_basic.glb  # Lvl 4
-│   │   ├── collar_gem.glb   # Lvl 5
 │   │   ├── staff_orb.glb    # Lvl 6
 │   │   ├── shoulder_bone.glb # Lvl 6
 │   │   └── horns.glb        # Lvl 7

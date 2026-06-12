@@ -9,7 +9,6 @@ using System.Collections.Generic;
 ///   - Create a new XxxEquipmentConfig.cs with the correct bone names and asset paths.
 ///
 /// Shaman bone hierarchy (relevant slots):
-///   neck          → necklace / pendant
 ///   Headfront     → mask / face piece
 ///   Head          → horns / hat
 ///   RightHand     → staff / weapon
@@ -44,39 +43,32 @@ public static class ShamanEquipmentConfig
     // Level 1 — no accessories
     private static readonly List<EquipmentSlot> Level1 = new();
 
-    // Level 2 — bone necklace
-    private static readonly List<EquipmentSlot> Level2 = new()
-    {
-        new("neck", Eq + "collar_bone.glb"),
-    };
+    // Level 2 — no accessories yet
+    private static readonly List<EquipmentSlot> Level2 = new();
 
-    // Level 3 — bone necklace + skull mask
+    // Level 3 — skull mask
     private static readonly List<EquipmentSlot> Level3 = new()
     {
-        new("neck",      Eq + "collar_bone.glb"),
         new("Head", Eq + "skull_mask.glb"),
     };
 
-    // Level 4 — bone necklace + skull mask + basic staff
+    // Level 4 — skull mask + basic staff
     private static readonly List<EquipmentSlot> Level4 = new()
     {
-        new("neck",      Eq + "collar_bone.glb"),
         new("Head", Eq + "skull_mask.glb", new Offsets(new Godot.Vector3(0, 28f, 16f), new Godot.Vector3(-15F, 0.7f, -0.4f), new Godot.Vector3(16, 16, 16))),
         new("RightHand", Eq + "staff_basic.glb", new Offsets(new Godot.Vector3(-10.455f, 15.318f, -2.096f), new Godot.Vector3(-41.7f, 104.2f, -104.6f), new Godot.Vector3(50, 80, 50))),
     };
 
-    // Level 5 — gem necklace (replaces bone) + skull mask + basic staff
+    // Level 5 — skull mask + basic staff
     private static readonly List<EquipmentSlot> Level5 = new()
     {
-        new("neck",      Eq + "collar_gem.glb"),
         new("Head", Eq + "skull_mask.glb"),
         new("RightHand", Eq + "staff_basic.glb"),
     };
 
-    // Level 6 — gem necklace + skull mask + orb staff + shoulder bones
+    // Level 6 — skull mask + orb staff + shoulder bones
     private static readonly List<EquipmentSlot> Level6 = new()
     {
-        new("neck",          Eq + "collar_gem.glb"),
         new("Head",     Eq + "skull_mask.glb"),
         new("RightHand",     Eq + "staff_orb.glb"),
         new("LeftShoulder",  Eq + "shoulder_bone.glb"),
@@ -86,7 +78,6 @@ public static class ShamanEquipmentConfig
     // Level 7 — full set + horns (glow applied via shader in Player.cs, not here)
     private static readonly List<EquipmentSlot> Level7 = new()
     {
-        new("neck",          Eq + "collar_gem.glb"),
         new("Head",     Eq + "skull_mask.glb"),
         new("RightHand",     Eq + "staff_orb.glb"),
         new("LeftShoulder",  Eq + "shoulder_bone.glb"),
