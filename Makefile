@@ -6,7 +6,7 @@ BACKGROUND				:=	4
 BLINK					:=	5
 UNBLINK					:=	25
 FOREGROUND_BRIGHT		:=	9
-BACKGROUND_BRIGHT		:=	10 FORE/BACKGROUND_SET		:=	8 #red_number 0-255;green_number 0-255; blue_number 0-255; RGB						:=	;2;#255;0;0 3-4BITS					:=	:5:#nm
+BACKGROUND_BRIGHT		:=	10 #FORE/BACKGROUND_SET		:=	8 #red_number 0-255;green_number 0-255; blue_number 0-255; RGB						:=	;2;#255;0;0 3-4BITS					:=	:5:#nm
 BLACK					:=	0
 RED						:=	1
 GREEN					:=	2
@@ -37,6 +37,7 @@ TEST_VALIDATORS_SERVER   := $(TEST_VALIDATORS_DIR)server
 SRC-CORE			:=  Connection \
 									Tile \
 									CommandHistory \
+									CommandEntry \
 									Core \
 									pch \
 									utils \
@@ -46,12 +47,13 @@ SRC-CORE			:=  Connection \
 									CommandType \
 									GetOpt \
 									validators \
+									Player \
+									Direction \
 
 
-SRC-CLIENT := \
-  $(addprefix Client/, main IAgent AgentBreeder AgentExplorer \
-    AgentChaman AgentHungry AgentStoner ExplorationService \
-    InfluenceService Bid Blackboard ClientGame) \
+SRC-CLIENT := $(addprefix Client/, main IAgent AgentBreeder AgentExplorer \
+    AgentChaman AgentFeeder AgentStoner ExplorationService \
+    InfluenceService Bid Blackboard ClientGame responses) \
   $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER := \
