@@ -134,8 +134,8 @@ emisivo. `offsets.Scale` controla el tamaño final de la esfera;
 | 3 | `skull_mask.glb` en `Head` + `Staff.glb` con `GemLvl1` |
 | 4 | `skull_mask.glb` en `Head` (`SkullMaskOffsets`) + `Staff.glb` con `GemLvl1` |
 | 5 | `skull_mask.glb` en `Head` + `Staff.glb` con `GemLvl2` |
-| 6 | `skull_mask.glb` + `Staff.glb` con `GemLvl2` + `shoulder_bone.glb` x2 (hombros) |
-| 7 | `skull_mask.glb` + `Staff.glb` con `GemLvl3` (brilla, `Gem3Glow`) + hombros + `horns.glb` en `Head` |
+| 6 | `skull_mask.glb` + `Staff.glb` con `GemLvl2` |
+| 7 | `skull_mask.glb` + `Staff.glb` con `GemLvl3` (brilla, `Gem3Glow`) |
 
 Las gemas del bastón (`GemLvl1/2/3`, todas con `Eq + "Staff_Gem_LvlN.glb"` +
 `GemOffsets`) **reemplazan** a la anterior, no son acumulativas.

@@ -71,9 +71,7 @@ Monitor/
 │   │   ├── skull_mask.glb   # Lvl 3
 │   │   ├── Staff_Gem_Lvl1.glb # Lvl 3-4 (hija de Staff.glb)
 │   │   ├── Staff_Gem_Lvl2.glb # Lvl 5-6 (hija de Staff.glb, reemplaza Lvl1)
-│   │   ├── shoulder_bone.glb # Lvl 6
-│   │   ├── Staff_Gem_Lvl3.glb # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
-│   │   └── horns.glb        # Lvl 7
+│   │   └── Staff_Gem_Lvl3.glb # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
 │   └── meshy_models/        # Recursos del mundo (linemate, deraumere, etc.)
 ├── game.tscn
 ├── player.tscn

@@ -80,9 +80,7 @@ entrada en `ShamanEquipmentConfig.cs` antes de generar el asset.
 | `skull_mask.glb` | 3, 4, 5, 6, 7 | `Head` | ✅ |
 | `Staff_Gem_Lvl1.glb` | 3, 4 (hijo de `Staff.glb`) | hijo de `Staff.glb` | ✅ |
 | `Staff_Gem_Lvl2.glb` | 5, 6 (reemplaza Lvl1) | hijo de `Staff.glb` | ✅ |
-| `shoulder_bone.glb` | 6, 7 | `LeftShoulder` + `RightShoulder` | ❌ pendiente |
 | `Staff_Gem_Lvl3.glb` | 7 (reemplaza Lvl2) | hijo de `Staff.glb` | ✅ |
-| `horns.glb` | 7 | `Head` | ❌ pendiente |
 
 > El slot `neck` (collares `collar_bone.glb` / `collar_gem.glb`) se eliminó: se sustituye por
 > un sistema de orbes brillantes en órbita sobre la cabeza, anclado al hueso `Head` mediante un
@@ -100,7 +98,7 @@ entrada en `ShamanEquipmentConfig.cs` antes de generar el asset.
 Ejemplo:
 
 ```cmd
-meshy generate --prompt "<descripción>, low-poly, isometric, white background" --name shoulder_bone --output-dir entities/player/models/equipments
+meshy generate --prompt "<descripción>, low-poly, isometric, white background" --name <nombre_pieza> --output-dir entities/player/models/equipments
 ```
 
 Tras generar el GLB:

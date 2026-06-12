@@ -11,10 +11,8 @@ using System.Collections.Generic;
 ///
 /// Shaman bone hierarchy (relevant slots):
 ///   Headfront     → mask / face piece
-///   Head          → horns / hat
+///   Head          → hat
 ///   RightHand     → staff / weapon
-///   LeftShoulder / RightShoulder → shoulder pieces
-///   LeftForeArm  / RightForeArm  → bracers
 /// </summary>
 public static class ShamanEquipmentConfig
 {
@@ -153,22 +151,17 @@ public static class ShamanEquipmentConfig
         new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl2),
     };
 
-    // Level 6 — skull mask + Staff with Gem Lvl2 + shoulder bones
+    // Level 6 — skull mask + Staff with Gem Lvl2
     private static readonly List<EquipmentSlot> Level6 = new()
     {
         new("Head",     Eq + "skull_mask.glb"),
         new("RightHand",     Eq + "Staff.glb", StaffOffsets, GemLvl2),
-        new("LeftShoulder",  Eq + "shoulder_bone.glb"),
-        new("RightShoulder", Eq + "shoulder_bone.glb"),
     };
 
-    // Level 7 — full set + horns + Staff with Gem Lvl3 (replaces Lvl2, glows — see Gem3Glow)
+    // Level 7 — skull mask + Staff with Gem Lvl3 (replaces Lvl2, glows — see Gem3Glow)
     private static readonly List<EquipmentSlot> Level7 = new()
     {
         new("Head",     Eq + "skull_mask.glb"),
         new("RightHand",     Eq + "Staff.glb", StaffOffsets, GemLvl3),
-        new("LeftShoulder",  Eq + "shoulder_bone.glb"),
-        new("RightShoulder", Eq + "shoulder_bone.glb"),
-        new("Head",          Eq + "horns.glb"),
     };
 }
