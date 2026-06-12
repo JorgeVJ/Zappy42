@@ -124,7 +124,7 @@ El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p
 | `msz W H` | → `Terrain.InitializeMap()` | Crea el mundo |
 | `bct X Y q0..q6` | → `Tile.Inventory` | Actualiza recursos de casilla |
 | `tna NAME` | → `teams` list | Registra nombre de equipo |
-| `pnw #N X Y O L TEAM` | → `PlayerManager.GetOrCreate()` | Crea jugador |
+| `pnw #N X Y O L TEAM` | → `PlayerManager.GetOrCreate()` + `Player.SetTilePos()` | Crea jugador y fija su tile lógico (sin esto `TilePos` queda en (0,0) y CrowdSystem arrastra al jugador al tile (0,0) hasta su primer `ppo`/`pin`) |
 | `ppo #N X Y O` | → `Player.SetTilePos()` / `SetOrientation()` | Mueve jugador |
 | `plv #N L` | → `Player.SetLevel()` | Actualiza nivel |
 | `pin #N X Y q0..q6` | → `Player.Inventory` | Actualiza inventario |
@@ -168,7 +168,7 @@ Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que c
 - **Movimiento (steering / boids):** `SetTilePos()` solo registra el tile destino; el desplazamiento real lo conduce `CrowdSystem` (ver abajo), que cada frame dirige al jugador al centro de su tile (*arrival*) separándolo de los vecinos (*separation*). La velocidad máxima y el `SpeedScale` de la animación escalan con el time unit del servidor (`Connection.ApplySpeedFactor` → `Player.SetSpeedFactor`, desde `OnSpeedChanged`/`sgt`/`pnw`). `UpdateLocomotion(speed)` elige idle/`PlayWalk`/`PlayRun` (corre cuando `SpeedFactor` supera el umbral).
 
 ### `CrowdSystem.cs` — Posicionamiento dinámico
-Nodo bajo `Connection`. Cada frame itera `PlayerManager.All`, agrupa implícitamente por tile y aplica steering tipo boids (Reynolds): **arrival** hacia `TerrainSnap.TileCenter` + **separation** de los jugadores cercanos, con velocidad escalada por `Player.SpeedFactor` y la altura siguiendo `Terrain.GetTileHeight`. Resultado: varios jugadores comparten tile agrupándose sin solaparse. Parámetros (`BaseSpeed`, `SeparationDist`, pesos, `Damping`) son `[Export]` tuneables.
+Nodo bajo `Connection`. Cada frame itera `PlayerManager.All` y aplica steering tipo boids (Reynolds): **arrival** hacia `TerrainSnap.TileCenter(p.TilePos)` + **separation** de los jugadores cercanos, con velocidad escalada por `Player.SpeedFactor` y la altura siguiendo `Terrain.GetTileHeight`. La **separation es tile-local**: solo considera vecinos con el mismo `TilePos`, y su alcance efectivo se acota a `Terrain.TILE_SIZE` (`sepDist = Min(SeparationDist, TILE_SIZE * 0.9f)`), de modo que la afección nunca cruza a celdas vecinas. Resultado: varios jugadores comparten tile agrupándose sin solaparse, sin empujar a los de celdas contiguas. Parámetros (`BaseSpeed`, `SeparationDist`, pesos, `Damping`) son `[Export]` tuneables.
 - **Movimiento:** `SetTilePos()` lanza un `Tween` cuya duración (`BaseMoveDuration / SpeedFactor`) y el `SpeedScale` de la animación escalan con el time unit del servidor (`Connection.ApplySpeedFactor` → `Player.SetSpeedFactor`, desde `OnSpeedChanged`/`sgt`/`pnw`). Por debajo del umbral camina (`PlayWalk`), por encima corre (`PlayRun`); al completar, `PlayIdle()`. Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
 - **Orientación:** `SetOrientation()` mapea 1=N, 2=E, 3=S, 4=W a rotación Y.
 - **Equipamiento:** `_Ready()` y `SetLevel()` llaman a `equipmentManager.ApplyLoadout()` con el loadout de `ShamanEquipmentConfig.GetLoadout(level)`.

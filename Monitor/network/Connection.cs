@@ -855,6 +855,10 @@ public partial class Connection : Node
 		// si ya existía, lo actualizamos también
 		player.Position = worldPos;
 		player.SetTerrain(terrainManager);
+		// Alinear el tile lógico con la posición de spawn: sin esto TilePos queda
+		// en (0,0) por defecto y CrowdSystem arrastra a todos los jugadores al
+		// tile (0,0) hasta su primer ppo/pin.
+		player.SetTilePos(x, y);
 		player.SetOrientation(o);
 		player.SetLevel(level);
 		player.SetSpeedFactor(_currentSpeedFactor);
