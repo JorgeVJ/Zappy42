@@ -87,22 +87,21 @@ public static class ShamanEquipmentConfig
 
     // Shared arcane look for every orbiting orb. Placeholder — needs visual
     // tuning in-editor (color, glow energy).
-    private static readonly Godot.Color OrbColor = new(0.45f, 0.55f, 1f, 0.6f);
-    private static readonly GlowEffect OrbGlow = new(new Godot.Color(0.5f, 0.65f, 1f), 2.5f);
+    private static readonly Godot.Color[] OrbColors = [new(1f, 0.25f, 1f, 0.6f), new(0f, 1f, 1f, 0.6f) , new(0.25f, 0.5f, 1f, 0.6f)];
 
     // Procedural glowing orbs (GlowOrb). Position (orbit radius/angle) and scale are
     // placeholders — needs visual tuning in-editor once visible above the head.
     private static readonly List<OrbSpec> OrbitGems2 = new()
     {
-        new(new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
-        new(new Offsets(new Godot.Vector3(-18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
+        new(new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColors[0], new (OrbColors[0])),
+        new(new Offsets(new Godot.Vector3(-18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColors[1], new (OrbColors[1]))
     };
 
     private static readonly List<OrbSpec> OrbitGems3 = new()
     {
-        new(new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
-        new(new Offsets(new Godot.Vector3(-9, 0, 15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
-        new(new Offsets(new Godot.Vector3(-9, 0, -15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColor, OrbGlow),
+        new(new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColors[0], new (OrbColors[0], 2)),
+        new(new Offsets(new Godot.Vector3(-9, 0, 15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColors[1], new (OrbColors[1], 2)),
+        new(new Offsets(new Godot.Vector3(-9, 0, -15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColors[2], new (OrbColors[2], 2))
     };
 
     /// <summary>

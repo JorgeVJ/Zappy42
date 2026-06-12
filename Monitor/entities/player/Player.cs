@@ -6,8 +6,6 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 {
     private static PackedScene scene = ResourceLoader.Load("res://entities/player/player.tscn") as PackedScene;
 
-    private Tween moveTween;
-
     private ShamanAnimationController _shamanAnim;
     private AnimationPlayer droneAnim;
 
@@ -24,12 +22,13 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     // Factor de velocidad derivado del time unit del servidor (D1). 1 = normal.
     public float SpeedFactor { get; private set; } = 1f;
 
-    private const float BaseMoveDuration = 2.0f; // segundos por tile a factor 1 (sustituye el 2.0f fijo, ex-B6)
-    private const float RunThreshold     = 3.0f; // a partir de este factor se usa correr en vez de andar
-    private const float MinSpeedFactor   = 0.25f;
-    private const float MaxSpeedFactor   = 12.0f;
+    // Velocidad de steering, gestionada por CrowdSystem (D3).
+    public Vector3 Velocity;
 
-    public override string DisplayTitle => $"Jugador #{Id} — {TeamName} — Nv.{Level}";
+    private const float RunThreshold       = 3.0f;  // a partir de este factor se corre en vez de andar
+    private const float MinSpeedFactor     = 0.25f;
+    private const float MaxSpeedFactor     = 12.0f;
+    private const float IdleSpeedThreshold = 0.15f; // por debajo de esta velocidad horizontal -> idle
 
     [Signal]
     public delegate void PlayerClickedEventHandler(Player player);
@@ -44,42 +43,22 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
     public void SetTilePos(int x, int y)
     {
-        if (TilePos.X == x && TilePos.Y == y)
-        {
-            GD.Print($"SetTilePos: player {Id} already at tile ({x},{y}), no move required");
-            return;
-        }
-
+        // El destino lógico es el tile; el desplazamiento real (steering hacia el
+        // centro del tile + separación de vecinos) lo conduce CrowdSystem (D3).
         TilePos = new Vector2I(x, y);
         GD.Print($"SetTilePos: player {Id} new tile ({x},{y})");
+    }
 
-        Vector3 target = TerrainSnap.TileCenter(_terrain, x, y, 0f);
-
-        try
-        {
-            moveTween?.Kill();
-        }
-        catch (Exception ex)
-        {
-            GD.PrintErr($"SetTilePos: error killing previous tween for player {Id}: {ex.Message}");
-        }
-
-        if (SpeedFactor >= RunThreshold)
+    // Llamado por CrowdSystem cada frame con la velocidad horizontal actual: elige
+    // idle / andar / correr (correr cuando el time unit del servidor es alto).
+    public void UpdateLocomotion(float speed)
+    {
+        if (speed < IdleSpeedThreshold)
+            _shamanAnim?.PlayIdle();
+        else if (SpeedFactor >= RunThreshold)
             _shamanAnim?.PlayRun();
         else
             _shamanAnim?.PlayWalk();
-
-        moveTween = CreateTween();
-        float duration = BaseMoveDuration / SpeedFactor; // a mayor velocidad del servidor, menor duración
-        GD.Print($"SetTilePos: starting tween for player {Id} to {target} duration {duration}s");
-        moveTween.TweenProperty(this, "position", target, duration);
-        moveTween.TweenCallback(Callable.From(() => OnMoveCompleted()));
-    }
-
-    private void OnMoveCompleted()
-    {
-        GD.Print($"OnMoveCompleted: movement finished for player {Id}");
-        _shamanAnim?.PlayIdle();
     }
 
     // Animación de incantación (hechizo). Delegan en el controlador del Shaman,

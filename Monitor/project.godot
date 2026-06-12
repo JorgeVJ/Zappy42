@@ -26,3 +26,7 @@ project/assembly_name="zappy"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/meshy-godot-plugin/plugin.cfg")
+
+[rendering]
+
+environment/glow/upscale_mode=0

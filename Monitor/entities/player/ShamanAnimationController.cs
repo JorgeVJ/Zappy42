@@ -38,8 +38,11 @@ public sealed class ShamanAnimationController
 
     private void TryPlay(string name)
     {
-        if (_anim != null && _anim.HasAnimation(name))
-            _anim.Play(name);
+        if (_anim == null || !_anim.HasAnimation(name))
+            return;
+        if (_anim.CurrentAnimation == name)
+            return; // ya se está reproduciendo; evita reiniciarla cada frame
+        _anim.Play(name);
     }
 
     private void EnableLoopOnAll()

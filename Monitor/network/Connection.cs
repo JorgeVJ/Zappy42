@@ -47,6 +47,8 @@ public partial class Connection : Node
 	private const float SpeedReference = 1f;
 	private float _currentSpeedFactor = 1f;
 
+	private CrowdSystem _crowd;
+
 	public override void _Ready()
 	{
 		playerManager = GetNode<PlayerManager>("PlayerManager");
@@ -56,6 +58,11 @@ public partial class Connection : Node
 		var followBehavior = new CameraFollowBehavior();
 		camera.AddChild(followBehavior);
 		eggManager = GetNode<EggManager>("EggManager");
+
+		// Posicionamiento dinámico (steering) de los jugadores dentro de su tile.
+		_crowd = new CrowdSystem();
+		AddChild(_crowd);
+		_crowd.Setup(playerManager, terrainManager);
 
 		_logPanel = new MessageLogPanel();
 		AddChild(_logPanel);

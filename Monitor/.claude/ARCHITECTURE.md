@@ -163,6 +163,10 @@ Ver skill `/terrain` para contexto completo. Resumen:
 ### `Player.cs` — Entidad Jugador
 Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene el modelo bípedo (`Shaman.glb`, nodo `"Model"`) y un dron companion (`Drone.fbx`).
 
+- **Movimiento (steering / boids):** `SetTilePos()` solo registra el tile destino; el desplazamiento real lo conduce `CrowdSystem` (ver abajo), que cada frame dirige al jugador al centro de su tile (*arrival*) separándolo de los vecinos (*separation*). La velocidad máxima y el `SpeedScale` de la animación escalan con el time unit del servidor (`Connection.ApplySpeedFactor` → `Player.SetSpeedFactor`, desde `OnSpeedChanged`/`sgt`/`pnw`). `UpdateLocomotion(speed)` elige idle/`PlayWalk`/`PlayRun` (corre cuando `SpeedFactor` supera el umbral).
+
+### `CrowdSystem.cs` — Posicionamiento dinámico
+Nodo bajo `Connection`. Cada frame itera `PlayerManager.All`, agrupa implícitamente por tile y aplica steering tipo boids (Reynolds): **arrival** hacia `TerrainSnap.TileCenter` + **separation** de los jugadores cercanos, con velocidad escalada por `Player.SpeedFactor` y la altura siguiendo `Terrain.GetTileHeight`. Resultado: varios jugadores comparten tile agrupándose sin solaparse. Parámetros (`BaseSpeed`, `SeparationDist`, pesos, `Damping`) son `[Export]` tuneables.
 - **Movimiento:** `SetTilePos()` lanza un `Tween` cuya duración (`BaseMoveDuration / SpeedFactor`) y el `SpeedScale` de la animación escalan con el time unit del servidor (`Connection.ApplySpeedFactor` → `Player.SetSpeedFactor`, desde `OnSpeedChanged`/`sgt`/`pnw`). Por debajo del umbral camina (`PlayWalk`), por encima corre (`PlayRun`); al completar, `PlayIdle()`. Posición = `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f`.
 - **Orientación:** `SetOrientation()` mapea 1=N, 2=E, 3=S, 4=W a rotación Y.
 - **Equipamiento:** `_Ready()` y `SetLevel()` llaman a `equipmentManager.ApplyLoadout()` con el loadout de `ShamanEquipmentConfig.GetLoadout(level)`.
