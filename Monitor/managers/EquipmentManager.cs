@@ -209,6 +209,9 @@ public class EquipmentManager
             childInst.Scale = child.Offsets.Value.Scale;
         }
 
+        if (child.Glow is not null)
+            child.Glow.Value.ApplyTo(childInst);
+
         GD.Print($"EquipmentManager: attached child scene '{child.ScenePath}' to '{parent.Name}'");
     }
 

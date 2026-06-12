@@ -65,9 +65,12 @@ public static class ShamanEquipmentConfig
         new(Eq + "Staff_Gem_Lvl2.glb", GemOffsets),
     };
 
+    // Gem Lvl3 (max level) glows to stand out — tune color/energy in-editor.
+    private static readonly GlowEffect Gem3Glow = new(new Godot.Color(0.25f, 0.85f, 1f), 2.5f);
+
     private static readonly List<EquipmentChild> GemLvl3 = new()
     {
-        new(Eq + "Staff_Gem_Lvl3.glb", GemOffsets),
+        new(Eq + "Staff_Gem_Lvl3.glb", GemOffsets, Gem3Glow),
     };
 
     // -------------------------------------------------------------------------
@@ -153,8 +156,7 @@ public static class ShamanEquipmentConfig
         new("RightShoulder", Eq + "shoulder_bone.glb"),
     };
 
-    // Level 7 — full set + horns + Staff with Gem Lvl3 (replaces Lvl2)
-    // (glow applied via shader in Player.cs, not here)
+    // Level 7 — full set + horns + Staff with Gem Lvl3 (replaces Lvl2, glows — see Gem3Glow)
     private static readonly List<EquipmentSlot> Level7 = new()
     {
         new("Head",     Eq + "skull_mask.glb"),

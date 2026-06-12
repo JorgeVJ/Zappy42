@@ -8,10 +8,12 @@ public readonly struct EquipmentChild
 {
     public readonly string ScenePath;
     public readonly Offsets? Offsets;
+    public readonly GlowEffect? Glow;
 
-    public EquipmentChild(string scenePath, Offsets? offsets = null)
+    public EquipmentChild(string scenePath, Offsets? offsets = null, GlowEffect? glow = null)
     {
         ScenePath = scenePath;
         Offsets   = offsets;
+        Glow      = glow;
     }
 }
