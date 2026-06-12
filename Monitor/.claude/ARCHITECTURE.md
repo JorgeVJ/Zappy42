@@ -60,6 +60,7 @@ Monitor/
 ├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
 ├── PlayerManager.cs        # Gestión centralizada de jugadores
 ├── Resource.cs             # Entidad recurso: carga GLB o esfera coloreada; animación de aparición (caída + pop) al instanciarse
+├── ScreenshotService.cs    # Herramienta dev: vuelca el framebuffer a .captures/*.png (auto periódico + F12)
 ├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
 ├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
 ├── Tile.cs                 # Datos de una casilla (coord + inventario)
@@ -98,8 +99,9 @@ game.tscn
     │   ├── InventoryPanel           [InventoryPanel.cs] (UI Control)
     │   ├── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
     │   └── TeamProgressPanel        [TeamProgressPanel.cs] (UI Control, creado en código)
-    └── Terrain (terrain.tscn)       [Terrain.cs]
-        └── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
+    ├── Terrain (terrain.tscn)       [Terrain.cs]
+    │   └── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
+    └── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
 
 player.tscn
 └── Node3D "Player"  [Player.cs]
@@ -216,6 +218,14 @@ Panel `Control` creado programáticamente en `Connection._Ready()`. Se ancla a l
 
 ### `MockServer.cs`
 Simula mensajes del protocolo Zappy con un timer de 1 segundo por mensaje. Permite desarrollo y testing sin servidor real. El tamaño del mapa lo controla el mensaje `msz`.
+
+---
+
+### `ScreenshotService.cs` — Herramienta de Desarrollo
+Nodo bajo `Game` que vuelca el framebuffer de la ventana principal a PNG en disco para verificación visual sin capturas manuales. Captura el render final (post-proceso/glow incluidos) tras esperar `RenderingServer.FramePostDraw`.
+- **Auto-captura:** un `Timer` (`CaptureInterval`, def. 2 s, `[Export]`) sobrescribe `res://.captures/latest.png` — el archivo refleja siempre el estado actual. Vía pensada para inspección automatizada.
+- **Tecla F12:** guarda `latest.png` + una copia con timestamp `shot_yyyyMMdd_HHmmss.png` (uso manual).
+- `OutputDir` resuelto con `ProjectSettings.GlobalizePath`; sólo escribible corriendo sin empaquetar (editor o `--path`). El directorio `.captures/` está en `.gitignore`.
 
 ---
 

@@ -56,6 +56,15 @@ Antes de modificar áreas específicas del proyecto, invocar la skill correspond
 | `/equipment` | `.claude/commands/equipment.md` | Cualquier cambio en el equipamiento por nivel del Shaman: piezas/offsets/gemas, brillos (`GlowEffect`) y orbes orbitales sobre la cabeza (`OrbitingPivot`/`GlowOrb`/`OrbSpec`) |
 | `/meshy-assets` | `.claude/commands/meshy-assets.md` | Generar o actualizar assets 3D (GLB) con Meshy AI: rutas, nombres de archivo y estado de recursos/equipamiento de Zappy Monitor |
 | `/trello-board` | `.claude/commands/trello-board.md` | Antes de crear/editar/mover tarjetas en Trello para este proyecto: IDs del tablero "Zappy Monitor", listas, etiquetas, formato de descripción y flujo de movimiento de tarjetas |
+| `/screenshot` | `.claude/commands/screenshot.md` | Para ver el monitor renderizado (verificar equipamiento, orbes, glows, terreno, UI): cómo lanzar el proyecto y leer las capturas que genera `ScreenshotService` (`.captures/latest.png`) |
+
+### Creación de nuevas skills
+
+Si para completar una tarea necesitas reunir mucho contexto específico de un área del
+proyecto (rutas, IDs, fórmulas, convenciones, comandos exactos) que probablemente vuelva
+a hacer falta en el futuro, **pregunta al usuario si conviene convertir ese contexto en
+una nueva skill** (`.claude/commands/<nombre>.md` + entrada en esta tabla), siguiendo el
+mismo patrón que `/terrain`, `/equipment`, etc. No la crees sin preguntar.
 
 ## Notas de Desarrollo
 

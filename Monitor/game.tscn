@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://dcfs6fcpowxpg" path="res://ui/InventoryPanel.cs" id="5_mwang"]
 [ext_resource type="PackedScene" uid="uid://c8qjyl3lsv5k1" path="res://ui/SpeedControlPanel.tscn" id="6_13bbc"]
 [ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://entities/terrain/terrain.tscn" id="6_bqi2m"]
+[ext_resource type="Script" uid="uid://cs8rn2vqkp4w" path="res://entities/shared/ScreenshotService.cs" id="7_scrn1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6sjpb"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -171,3 +172,6 @@ text = "X"
 environment = SubResource("Environment_k485n")
 
 [node name="Terrain" parent="." unique_id=1894563482 instance=ExtResource("6_bqi2m")]
+
+[node name="ScreenshotService" type="Node" parent="."]
+script = ExtResource("7_scrn1")
