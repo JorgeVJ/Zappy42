@@ -109,7 +109,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
             if (ap != null)
                 _shamanAnim = new ShamanAnimationController(ap);
 
-            equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
+            ApplyEquipment();
         }
         else
         {
@@ -181,8 +181,15 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     {
         Level = level;
         GD.Print($"SetLevel: player {Id} level set to {Level}");
-        if (modelNode != null)
-            equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
+        ApplyEquipment();
+    }
+
+    // Applies the level's equipment loadout plus the orbiting gem group above the head.
+    private void ApplyEquipment()
+    {
+        if (modelNode == null) return;
+        equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
+        equipmentManager.AttachOrbitingGroup(modelNode, "Head", ShamanEquipmentConfig.OrbitPivotOffsets, ShamanEquipmentConfig.OrbitRotationSpeedDeg, ShamanEquipmentConfig.GetOrbitingGems(Level));
     }
 
     public void SetOrientation(int o)

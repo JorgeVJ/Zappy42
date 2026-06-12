@@ -39,10 +39,11 @@ Monitor/
 ├── Camera.cs               # Cámara libre WASD + raycast
 ├── Connection.cs           # Hub de red TCP + dispatcher de protocolo
 ├── Egg.cs / EggManager.cs  # Entidad huevo + gestión
-├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout(), hijos de equipo (gemas)
+├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout(), hijos de equipo (gemas), AttachOrbitingGroup() (gemas en órbita)
 ├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?, Children?) — portable entre proyectos
-├── EquipmentChild.cs       # Struct genérico: (ScenePath, Offsets?) — modelo hijo anidado dentro de una pieza de equipo (ej. gema en bastón)
-├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman
+├── EquipmentChild.cs       # Struct genérico: (ScenePath, Offsets?) — modelo hijo anidado dentro de una pieza de equipo (ej. gema en bastón) o de un OrbitingPivot
+├── OrbitingPivot.cs        # Node3D genérico: rota sobre su eje Y a velocidad constante (gemas en órbita sobre la cabeza)
+├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman, incl. grupo de gemas orbitales
 ├── ShamanAnimationController.cs # Controlador de animaciones del Shaman: PlayWalk/Idle/Run/Spell/etc., loop automático
 ├── IInventory.cs           # Interfaz: objeto con inventario
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
@@ -173,10 +174,13 @@ Encapsula toda la lógica de animación del Shaman siguiendo el mismo patrón qu
 - `EnableLoopOnAll()` en el constructor activa `LoopModeEnum.Linear` en todas las clips al inicializar.
 
 ### `EquipmentManager.cs` + `EquipmentSlot.cs` — Sistema de Equipamiento
-Patrón portable entre proyectos. `EquipmentManager` y `EquipmentSlot` son genéricos (sin datos de proyecto). `ShamanEquipmentConfig` es el único archivo específico: mapea nivel → lista de `EquipmentSlot(boneName, glbPath)`.
+Patrón portable entre proyectos. `EquipmentManager`, `EquipmentSlot`, `EquipmentChild` y `OrbitingPivot` son genéricos (sin datos de proyecto). `ShamanEquipmentConfig` es el único archivo específico: mapea nivel → lista de `EquipmentSlot(boneName, glbPath)`.
 
 - `ApplyLoadout(owner, slots)` → limpia adjuntos actuales y adjunta los nuevos a los huesos del `Skeleton3D`.
-- Para reusar en otro proyecto: copiar `EquipmentManager.cs`, `EquipmentSlot.cs`, `Offsets.cs` y crear un nuevo `XxxEquipmentConfig.cs`.
+- `AttachOrbitingGroup(owner, boneName, pivotOffsets, rotationSpeedDeg, children)` → crea un `OrbitingPivot` (Node3D que rota sobre Y) anclado al hueso, con una lista de `EquipmentChild` (gemas) alrededor; si `children` es null/vacío no adjunta nada. Se registra junto al resto de adjuntos del hueso, así que `ApplyLoadout()`/`ClearAll()` también lo limpian.
+- Para reusar en otro proyecto: copiar `EquipmentManager.cs`, `EquipmentSlot.cs`, `EquipmentChild.cs`, `OrbitingPivot.cs`, `Offsets.cs` y crear un nuevo `XxxEquipmentConfig.cs`.
+
+**Gemas orbitales sobre la cabeza (D6, sustituyen al collar — ver C10):** `ShamanEquipmentConfig.GetOrbitingGems(level)` devuelve el grupo de gemas para el hueso `Head`: `null` en niveles 1-3 (sin gemas), 2 gemas en niveles 4-5, 3 gemas en niveles 6-7 (reutilizan `Staff_Gem_Lvl1.glb`, distribuidas en círculo). `Player.ApplyEquipment()` llama a `ApplyLoadout()` y luego a `AttachOrbitingGroup()` en `_Ready()` y `SetLevel()`. Offsets de posición/escala son placeholders pendientes de ajuste visual en el editor.
 
 **Huesos del Shaman disponibles para equipamiento:**
 `neck`, `headfront`, `Head`, `RightHand`, `LeftShoulder`, `RightShoulder`, `LeftForeArm`, `RightForeArm`

@@ -213,6 +213,60 @@ public class EquipmentManager
     }
 
     /// <summary>
+    /// Attaches a continuously-rotating <see cref="OrbitingPivot"/> to the specified bone,
+    /// with a group of child models (e.g. orbiting gems) arranged around it. The whole
+    /// group spins together around the pivot's local Y axis. If children is null or
+    /// empty, nothing is attached (e.g. for levels where the group is not yet unlocked).
+    /// Tracked alongside regular attachments, so ClearAll()/ApplyLoadout() remove it too.
+    /// Returns the created BoneAttachment3D or null if nothing was attached.
+    /// </summary>
+    public BoneAttachment3D AttachOrbitingGroup(Node owner, string boneName, Offsets pivotOffsets, float rotationSpeedDeg, IReadOnlyList<EquipmentChild> children)
+    {
+        if (children == null || children.Count == 0)
+            return null;
+
+        Skeleton3D skeleton = FindSkeleton3D(owner);
+        if (skeleton == null)
+        {
+            GD.PrintErr("EquipmentManager.AttachOrbitingGroup: skeleton is null");
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(boneName) || skeleton.FindBone(boneName) == -1)
+        {
+            GD.Print($"EquipmentManager: bone not found: {boneName}");
+            return null;
+        }
+
+        BoneAttachment3D boneAttach = new();
+        boneAttach.BoneName = boneName;
+        skeleton.AddChild(boneAttach);
+
+        var pivot = new OrbitingPivot { RotationSpeedDeg = rotationSpeedDeg };
+        boneAttach.AddChild(pivot);
+
+        pivot.Position = pivotOffsets.Position;
+        pivot.Rotation = new Vector3(
+            Mathf.DegToRad(pivotOffsets.RotationDeg.X),
+            Mathf.DegToRad(pivotOffsets.RotationDeg.Y),
+            Mathf.DegToRad(pivotOffsets.RotationDeg.Z));
+        pivot.Scale = pivotOffsets.Scale;
+
+        foreach (var child in children)
+            AttachChild(pivot, child);
+
+        if (!attachments.TryGetValue(boneName, out var list))
+        {
+            list = new List<BoneAttachment3D>();
+            attachments[boneName] = list;
+        }
+        list.Add(boneAttach);
+
+        GD.Print($"EquipmentManager: attached orbiting group of {children.Count} gem(s) to bone '{boneName}'");
+        return boneAttach;
+    }
+
+    /// <summary>
     /// Returns the list of BoneAttachment3D attached to a bone (if any).
     /// </summary>
     public List<BoneAttachment3D> GetAttachments(string boneName)

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /// Maps each player level (1-7) to a list of equipment slots (bone + GLB asset).
 ///
 /// To reuse the equipment system in another project:
-///   - Copy EquipmentManager.cs, EquipmentSlot.cs, EquipmentChild.cs and Offsets.cs unchanged.
+///   - Copy EquipmentManager.cs, EquipmentSlot.cs, EquipmentChild.cs, OrbitingPivot.cs and Offsets.cs unchanged.
 ///   - Create a new XxxEquipmentConfig.cs with the correct bone names and asset paths.
 ///
 /// Shaman bone hierarchy (relevant slots):
@@ -69,6 +69,46 @@ public static class ShamanEquipmentConfig
     {
         new(Eq + "Staff_Gem_Lvl3.glb", GemOffsets),
     };
+
+    // -------------------------------------------------------------------------
+    // Orbiting gems above the head — replaces the old neck collar (see C10/D6).
+    // A small group of gems spins continuously above the Shaman's head, growing
+    // from 0 (levels 1-3) to 2 (levels 4-5) to 3 (levels 6-7).
+    // -------------------------------------------------------------------------
+
+    // Pivot anchored above the Head bone. Placeholder — needs visual tuning in-editor.
+    public static readonly Offsets OrbitPivotOffsets =
+        new(new Godot.Vector3(0, 45f, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(1, 1, 1));
+
+    // One full rotation every 6 seconds.
+    public const float OrbitRotationSpeedDeg = 60f;
+
+    // Reuses the smallest staff gem model. Position (orbit radius/angle) and scale are
+    // placeholders — needs visual tuning in-editor once visible above the head.
+    private static readonly List<EquipmentChild> OrbitGems2 = new()
+    {
+        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
+        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(-18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
+    };
+
+    private static readonly List<EquipmentChild> OrbitGems3 = new()
+    {
+        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
+        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(-9, 0, 15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
+        new(Eq + "Staff_Gem_Lvl1.glb", new Offsets(new Godot.Vector3(-9, 0, -15.6f), new Godot.Vector3(0, 0, 0), new Godot.Vector3(30, 30, 30))),
+    };
+
+    /// <summary>
+    /// Returns the orbiting gem group for the given level, or null if no group
+    /// should be shown (levels 1-3).
+    /// </summary>
+    public static IReadOnlyList<EquipmentChild> GetOrbitingGems(int level) =>
+        level switch
+        {
+            4 or 5 => OrbitGems2,
+            6 or 7 => OrbitGems3,
+            _ => null
+        };
 
     // -------------------------------------------------------------------------
     // Level definitions — edit here to change what each level wears
