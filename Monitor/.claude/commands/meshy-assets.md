@@ -74,29 +74,36 @@ entrada en `ShamanEquipmentConfig.cs` antes de generar el asset.
 **Huesos disponibles:** `Head` / `headfront`, `RightHand`,
 `LeftShoulder`, `RightShoulder`, `LeftForeArm`, `RightForeArm`.
 
-| Archivo | Nivel(es) | Hueso | Estado |
+| Archivo | Nivel(es) | Hueso / Padre | Estado |
 |---|---|---|---|
+| `Staff.glb` | 2-7 | `RightHand` | ✅ |
 | `skull_mask.glb` | 3, 4, 5, 6, 7 | `Head` | ✅ |
-| `staff_basic.glb` | 4, 5 | `RightHand` | ✅ |
-| `staff_orb.glb` | 6, 7 | `RightHand` | ❌ pendiente |
+| `Staff_Gem_Lvl1.glb` | 3, 4 | hijo de `Staff.glb` | ✅ |
+| `Staff_Gem_Lvl2.glb` | 5, 6 (reemplaza Lvl1) | hijo de `Staff.glb` | ✅ |
 | `shoulder_bone.glb` | 6, 7 | `LeftShoulder` + `RightShoulder` | ❌ pendiente |
+| `Staff_Gem_Lvl3.glb` | 7 (reemplaza Lvl2) | hijo de `Staff.glb` | ✅ |
 | `horns.glb` | 7 | `Head` | ❌ pendiente |
 
 > El slot `neck` (collares `collar_bone.glb` / `collar_gem.glb`) se eliminó: se sustituye por
 > un sistema de orbes/gemas en órbita sobre la cabeza (ver tarjeta D6 en Trello).
 
+> `staff_basic.glb` y `staff_orb.glb` quedan sin uso (superados por `Staff.glb` +
+> gemas hijas); los archivos permanecen en disco pero ya no se referencian desde
+> `ShamanEquipmentConfig.cs`.
+
 Ejemplo:
 
 ```cmd
-meshy generate --prompt "<descripción>, low-poly, isometric, white background" --name staff_orb --output-dir entities/player/models/equipments
+meshy generate --prompt "<descripción>, low-poly, isometric, white background" --name shoulder_bone --output-dir entities/player/models/equipments
 ```
 
 Tras generar el GLB:
 1. Probar in-game (subir el nivel del jugador o usar `MockServer.cs`).
 2. Ajustar `Offsets` (Position, RotationDeg, Scale) en
-   `ShamanEquipmentConfig.cs` — usar los offsets ya definidos para
-   `staff_basic.glb` y `skull_mask.glb` en el nivel 4 como referencia de
-   formato (posición/rotación en grados/escala por hueso).
+   `ShamanEquipmentConfig.cs` — usar `StaffOffsets` y `SkullMaskOffsets` como
+   referencia de formato (posición/rotación en grados/escala por hueso). Para
+   las gemas hijas de `Staff.glb`, ajustar `GemOffsets` (offsets relativos al
+   espacio local de `Staff.glb`, no al hueso).
 
 ---
 

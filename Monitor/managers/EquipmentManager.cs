@@ -79,9 +79,12 @@ public class EquipmentManager
     /// <summary>
     /// Attaches an instantiated scene to the specified bone of the skeleton.
     /// sceneKey can be the registered key or a path to the scene.
+    /// Optionally instantiates a list of child scenes as children of the attached
+    /// instance itself (e.g. a gem socketed into a staff), each with its own offsets
+    /// relative to the parent instance's local space.
     /// Returns the created BoneAttachment3D or null on error.
     /// </summary>
-    public BoneAttachment3D AttachToBone(Node owner, string boneName, string sceneKey, Offsets? offsets = null)
+    public BoneAttachment3D AttachToBone(Node owner, string boneName, string sceneKey, Offsets? offsets = null, IReadOnlyList<EquipmentChild> children = null)
     {
         Skeleton3D skeleton = FindSkeleton3D(owner);
         if (skeleton == null)
@@ -142,6 +145,16 @@ public class EquipmentManager
             inst.Scale = offsets.Value.Scale;
         }
 
+        // Instantiate optional child models attached to this equipment instance
+        // (e.g. a gem socketed into a staff). Offsets are relative to inst's local space.
+        if (children is not null)
+        {
+            foreach (var child in children)
+            {
+                AttachChild(inst, child);
+            }
+        }
+
         // Store reference
         if (!attachments.TryGetValue(boneName, out var list))
         {
@@ -152,6 +165,51 @@ public class EquipmentManager
 
         GD.Print($"EquipmentManager: attached scene '{sceneKey}' to bone '{boneName}'");
         return boneAttach;
+    }
+
+    /// <summary>
+    /// Instantiates a child scene as a regular child Node3D of an already-attached
+    /// equipment instance, applying its own offsets in the parent's local space.
+    /// Errors are logged but non-fatal — a missing/invalid child model does not
+    /// affect the parent equipment piece.
+    /// </summary>
+    private void AttachChild(Node3D parent, EquipmentChild child)
+    {
+        if (string.IsNullOrEmpty(child.ScenePath))
+            return;
+
+        PackedScene scene = ResolveScene(child.ScenePath);
+        if (scene == null)
+        {
+            GD.PrintErr($"EquipmentManager: child scene not found for path '{child.ScenePath}'");
+            return;
+        }
+
+        Node3D childInst;
+        try
+        {
+            childInst = scene.Instantiate<Node3D>();
+        }
+        catch (Exception ex)
+        {
+            GD.PrintErr($"EquipmentManager: failed to instantiate child scene '{child.ScenePath}': {ex.Message}");
+            return;
+        }
+
+        parent.AddChild(childInst);
+        childInst.Transform = Transform3D.Identity;
+
+        if (child.Offsets is not null)
+        {
+            childInst.Position = child.Offsets.Value.Position;
+            childInst.Rotation = new Vector3(
+                Mathf.DegToRad(child.Offsets.Value.RotationDeg.X),
+                Mathf.DegToRad(child.Offsets.Value.RotationDeg.Y),
+                Mathf.DegToRad(child.Offsets.Value.RotationDeg.Z));
+            childInst.Scale = child.Offsets.Value.Scale;
+        }
+
+        GD.Print($"EquipmentManager: attached child scene '{child.ScenePath}' to '{parent.Name}'");
     }
 
     /// <summary>
@@ -207,6 +265,6 @@ public class EquipmentManager
     {
         ClearAll();
         foreach (var slot in slots)
-            AttachToBone(owner, slot.BoneName, slot.ScenePath, slot.Offsets);
+            AttachToBone(owner, slot.BoneName, slot.ScenePath, slot.Offsets, slot.Children);
     }
 }

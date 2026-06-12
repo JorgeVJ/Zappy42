@@ -39,8 +39,9 @@ Monitor/
 ├── Camera.cs               # Cámara libre WASD + raycast
 ├── Connection.cs           # Hub de red TCP + dispatcher de protocolo
 ├── Egg.cs / EggManager.cs  # Entidad huevo + gestión
-├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout()
-├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?) — portable entre proyectos
+├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout(), hijos de equipo (gemas)
+├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?, Children?) — portable entre proyectos
+├── EquipmentChild.cs       # Struct genérico: (ScenePath, Offsets?) — modelo hijo anidado dentro de una pieza de equipo (ej. gema en bastón)
 ├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman
 ├── ShamanAnimationController.cs # Controlador de animaciones del Shaman: PlayWalk/Idle/Run/Spell/etc., loop automático
 ├── IInventory.cs           # Interfaz: objeto con inventario
@@ -62,10 +63,12 @@ Monitor/
 │   ├── Shaman/
 │   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
 │   ├── equipment/           # Accesorios por nivel (generados con Meshy AI)
+│   │   ├── Staff.glb        # Lvl 2+ (bastón base; gema hija reemplazable)
 │   │   ├── skull_mask.glb   # Lvl 3
-│   │   ├── staff_basic.glb  # Lvl 4
-│   │   ├── staff_orb.glb    # Lvl 6
+│   │   ├── Staff_Gem_Lvl1.glb # Lvl 3-4 (hija de Staff.glb)
+│   │   ├── Staff_Gem_Lvl2.glb # Lvl 5-6 (hija de Staff.glb, reemplaza Lvl1)
 │   │   ├── shoulder_bone.glb # Lvl 6
+│   │   ├── Staff_Gem_Lvl3.glb # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
 │   │   └── horns.glb        # Lvl 7
 │   └── meshy_models/        # Recursos del mundo (linemate, deraumere, etc.)
 ├── game.tscn

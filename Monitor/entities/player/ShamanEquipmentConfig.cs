@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /// Maps each player level (1-7) to a list of equipment slots (bone + GLB asset).
 ///
 /// To reuse the equipment system in another project:
-///   - Copy EquipmentManager.cs, EquipmentSlot.cs and Offsets.cs unchanged.
+///   - Copy EquipmentManager.cs, EquipmentSlot.cs, EquipmentChild.cs and Offsets.cs unchanged.
 ///   - Create a new XxxEquipmentConfig.cs with the correct bone names and asset paths.
 ///
 /// Shaman bone hierarchy (relevant slots):
@@ -37,49 +37,88 @@ public static class ShamanEquipmentConfig
         };
 
     // -------------------------------------------------------------------------
+    // Shared offsets — reused across levels
+    // -------------------------------------------------------------------------
+
+    // Staff.glb on RightHand. Adapted from the old staff_basic.glb offsets;
+    // re-tune in-editor once Staff.glb is visible on the character.
+    private static readonly Offsets StaffOffsets =
+        new(new Godot.Vector3(-10.455f, 15.318f, -2.096f), new Godot.Vector3(-41.7f, 104.2f, -104.6f), new Godot.Vector3(50, 80, 50));
+
+    // skull_mask.glb on Head, as used from Level 4 onward.
+    private static readonly Offsets SkullMaskOffsets =
+        new(new Godot.Vector3(0, 28f, 16f), new Godot.Vector3(-15F, 0.7f, -0.4f), new Godot.Vector3(16, 16, 16));
+
+    // Placeholder identity offsets for the staff gem children — needs visual
+    // tuning in-editor once the gem is visible attached to Staff.glb.
+    private static readonly Offsets GemOffsets =
+        new(new Godot.Vector3(0, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(1, 1, 1));
+
+    // Gem children — each level's "active" gem replaces the previous one (not cumulative).
+    private static readonly List<EquipmentChild> GemLvl1 = new()
+    {
+        new(Eq + "Staff_Gem_Lvl1.glb", GemOffsets),
+    };
+
+    private static readonly List<EquipmentChild> GemLvl2 = new()
+    {
+        new(Eq + "Staff_Gem_Lvl2.glb", GemOffsets),
+    };
+
+    private static readonly List<EquipmentChild> GemLvl3 = new()
+    {
+        new(Eq + "Staff_Gem_Lvl3.glb", GemOffsets),
+    };
+
+    // -------------------------------------------------------------------------
     // Level definitions — edit here to change what each level wears
     // -------------------------------------------------------------------------
 
     // Level 1 — no accessories
     private static readonly List<EquipmentSlot> Level1 = new();
 
-    // Level 2 — no accessories yet
-    private static readonly List<EquipmentSlot> Level2 = new();
+    // Level 2 — Staff
+    private static readonly List<EquipmentSlot> Level2 = new()
+    {
+        new("RightHand", Eq + "Staff.glb", StaffOffsets),
+    };
 
-    // Level 3 — skull mask
+    // Level 3 — skull mask + Staff with Gem Lvl1
     private static readonly List<EquipmentSlot> Level3 = new()
     {
         new("Head", Eq + "skull_mask.glb"),
+        new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl1),
     };
 
-    // Level 4 — skull mask + basic staff
+    // Level 4 — skull mask (with offsets) + Staff with Gem Lvl1
     private static readonly List<EquipmentSlot> Level4 = new()
     {
-        new("Head", Eq + "skull_mask.glb", new Offsets(new Godot.Vector3(0, 28f, 16f), new Godot.Vector3(-15F, 0.7f, -0.4f), new Godot.Vector3(16, 16, 16))),
-        new("RightHand", Eq + "staff_basic.glb", new Offsets(new Godot.Vector3(-10.455f, 15.318f, -2.096f), new Godot.Vector3(-41.7f, 104.2f, -104.6f), new Godot.Vector3(50, 80, 50))),
+        new("Head", Eq + "skull_mask.glb", SkullMaskOffsets),
+        new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl1),
     };
 
-    // Level 5 — skull mask + basic staff
+    // Level 5 — skull mask + Staff with Gem Lvl2 (replaces Lvl1)
     private static readonly List<EquipmentSlot> Level5 = new()
     {
         new("Head", Eq + "skull_mask.glb"),
-        new("RightHand", Eq + "staff_basic.glb"),
+        new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl2),
     };
 
-    // Level 6 — skull mask + orb staff + shoulder bones
+    // Level 6 — skull mask + Staff with Gem Lvl2 + shoulder bones
     private static readonly List<EquipmentSlot> Level6 = new()
     {
         new("Head",     Eq + "skull_mask.glb"),
-        new("RightHand",     Eq + "staff_orb.glb"),
+        new("RightHand",     Eq + "Staff.glb", StaffOffsets, GemLvl2),
         new("LeftShoulder",  Eq + "shoulder_bone.glb"),
         new("RightShoulder", Eq + "shoulder_bone.glb"),
     };
 
-    // Level 7 — full set + horns (glow applied via shader in Player.cs, not here)
+    // Level 7 — full set + horns + Staff with Gem Lvl3 (replaces Lvl2)
+    // (glow applied via shader in Player.cs, not here)
     private static readonly List<EquipmentSlot> Level7 = new()
     {
         new("Head",     Eq + "skull_mask.glb"),
-        new("RightHand",     Eq + "staff_orb.glb"),
+        new("RightHand",     Eq + "Staff.glb", StaffOffsets, GemLvl3),
         new("LeftShoulder",  Eq + "shoulder_bone.glb"),
         new("RightShoulder", Eq + "shoulder_bone.glb"),
         new("Head",          Eq + "horns.glb"),
