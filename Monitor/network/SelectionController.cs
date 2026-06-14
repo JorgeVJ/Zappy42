@@ -72,7 +72,7 @@ public class SelectionController
 
     public void ShowInventory(object owner)
     {
-        _selection?.UnHightlight();
+        _selection?.UnHighlight();
 
         if (owner is ISelectable selectable)
         {

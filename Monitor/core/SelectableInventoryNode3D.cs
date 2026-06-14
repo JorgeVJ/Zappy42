@@ -28,7 +28,7 @@ public partial class SelectableInventoryNode3D : Node3D, ISelectable, IInventory
         mesh.MaterialOverlay = mat;
     }
 
-    public virtual void UnHightlight()
+    public virtual void UnHighlight()
     {
         if (mesh == null)
         {

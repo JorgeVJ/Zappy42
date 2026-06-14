@@ -4,6 +4,6 @@
     {
         public void Highlight();
 
-        public void UnHightlight();
+        public void UnHighlight();
     }
 }

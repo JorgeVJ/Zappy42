@@ -339,6 +339,5 @@ SelectionController.HandleLeftClick()
 ## Áreas de Mejora / Pendientes
 
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
-- **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs`.
 - **Altura de jugadores:** Y fija en `0.3f`; no sigue la altura real del terreno.
 - **Barra de tiempo (UI):** el backend (`EventLog`/`TimelineController`, ver sección dedicada) está implementado; falta `TimelineBar.cs`/`.tscn` (slider + "Live") — tarjeta Trello D9.
