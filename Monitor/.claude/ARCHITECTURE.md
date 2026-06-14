@@ -111,7 +111,6 @@ game.tscn
 player.tscn
 └── Node3D "Player"  [Player.cs]
     ├── Node3D "Model" (Shaman.glb) — esqueleto bípedo + AnimationPlayer
-    ├── Node3D "Drone"  (Drone.fbx)
     └── StaticBody3D + CollisionShape3D
 ```
 
@@ -176,7 +175,7 @@ Ver skill `/terrain` para contexto completo. Resumen:
 ---
 
 ### `Player.cs` — Entidad Jugador
-Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene el modelo bípedo (`Shaman.glb`, nodo `"Model"`) y un dron companion (`Drone.fbx`).
+Hereda de `SelectableInventoryNode3D`. Al crearse instancia `player.tscn`, que contiene el modelo bípedo (`Shaman.glb`, nodo `"Model"`).
 
 - **Movimiento (steering / boids):** `SetTilePos()` solo registra el tile destino; el desplazamiento real lo conduce `CrowdSystem` (ver abajo), que cada frame dirige al jugador al centro de su tile (*arrival*) separándolo de los vecinos (*separation*). La velocidad máxima y el `SpeedScale` de la animación escalan con el time unit del servidor (`Connection.ApplySpeedFactor` → `Player.SetSpeedFactor`, desde `OnSpeedChanged`/`sgt`/`pnw`). `UpdateLocomotion(speed)` elige idle/`PlayWalk`/`PlayRun` (corre cuando `SpeedFactor` supera el umbral).
 

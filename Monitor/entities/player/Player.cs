@@ -7,7 +7,6 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     private static PackedScene scene = ResourceLoader.Load("res://entities/player/player.tscn") as PackedScene;
 
     private ShamanAnimationController _shamanAnim;
-    private AnimationPlayer droneAnim;
 
     private EquipmentManager equipmentManager;
     private Node3D modelNode;
@@ -93,31 +92,6 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         else
         {
             GD.Print("_Ready: no 'Model' node found as child of Player.");
-        }
-
-        var droneNode = GetNodeOrNull<Node3D>("Drone");
-        if (droneNode != null)
-        {
-            droneAnim = FindAnimationPlayer(droneNode);
-            if (droneAnim != null)
-            {
-                const string droneIdle = "ArmatureDrone|Dron_Idle_Bake2";
-                var anim = droneAnim.GetAnimation(droneIdle);
-                if (anim != null)
-                {
-                    anim.LoopMode = Animation.LoopModeEnum.Linear;
-                    droneAnim.Play(droneIdle);
-                    GD.Print($"_Ready: Drone playing '{droneIdle}' in loop.");
-                }
-                else
-                {
-                    GD.Print($"_Ready: Drone animation '{droneIdle}' not found.");
-                }
-            }
-        }
-        else
-        {
-            GD.Print("_Ready: no 'Drone' node found as child of Player.");
         }
     }
 
