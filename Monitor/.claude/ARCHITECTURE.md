@@ -37,6 +37,7 @@ Monitor/
 │       ├── meshy-assets.md # Skill: assets 3D (Meshy AI) — rutas, nombres y estado
 │       └── trello-board.md # Skill: tablero Trello del proyecto (IDs, listas, etiquetas)
 ├── Camera.cs               # Cámara libre WASD + raycast
+├── CameraFollowBehavior.cs # Lock de cámara sobre un jugador (TeamProgressPanel): orbita (WASD) y zoom (rueda) alrededor del objetivo sin romper el lock; clic derecho lo desactiva
 ├── Connection.cs           # Hub central: cablea transporte/dispatcher/managers/UI (lógica de protocolo repartida en Connection.Players.cs / Connection.Eggs.cs / Connection.System.cs)
 ├── ServerTransport.cs      # Transporte TCP real o MockServer; emite LineReceived(line), expone SendMessage()/SetMockSpeed()
 ├── MessageDispatcher.cs    # Router string→Action<string[]> del protocolo (sustituye al switch de HandleServerMessage)
@@ -95,6 +96,7 @@ Monitor/
 game.tscn
 └── Node3D "Game"
     ├── Camera3D "Camera"          [Camera.cs]
+    │   └── CameraFollowBehavior   [CameraFollowBehavior.cs] (Node, añadido en código por Connection._Ready(); lock/orbit/zoom sobre jugador seleccionado)
     ├── DirectionalLight3D
     ├── WorldEnvironment
     ├── Connection (connection.tscn) [Connection.cs]

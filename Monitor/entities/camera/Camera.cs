@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 
 public partial class Camera : Camera3D
 {
@@ -10,6 +11,7 @@ public partial class Camera : Camera3D
 	private float _yaw = 0f;
 	private float _pitch = 0f;
 	private bool _mouseCaptured = false;
+	private CameraFollowBehavior _followBehavior;
 
 	[Signal]
 	public delegate void OnLeftClickEventHandler(GodotObject collider, Vector3 position);
@@ -51,6 +53,17 @@ public partial class Camera : Camera3D
 	public override void _Process(double delta)
 	{
 		float dt = (float)delta;
+
+		// El comportamiento de seguimiento (si existe) se añade como hijo
+		// dinámicamente desde Connection, así que se busca de forma perezosa.
+		if (_followBehavior == null)
+			_followBehavior = GetChildren().OfType<CameraFollowBehavior>().FirstOrDefault();
+
+		// Mientras la cámara está "lockeada" sobre un objetivo, el movimiento
+		// libre WASD/QE se desactiva: CameraFollowBehavior se encarga de
+		// orbitar/zoomear sin que ambos comportamientos compitan por GlobalPosition.
+		if (_followBehavior != null && _followBehavior.IsLocked)
+			return;
 
         // Shift to move faster
         float speed = MoveSpeed;
