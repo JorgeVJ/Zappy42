@@ -36,7 +36,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     {
         Player instance = scene.Instantiate<Player>();
         instance.Position = pos;
-        GD.Print($"Player.Create: created instance at {pos}");
+        Log.Debug($"Player.Create: created instance at {pos}");
         return instance;
     }
 
@@ -45,7 +45,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         // El destino lógico es el tile; el desplazamiento real (steering hacia el
         // centro del tile + separación de vecinos) lo conduce CrowdSystem (D3).
         TilePos = new Vector2I(x, y);
-        GD.Print($"SetTilePos: player {Id} new tile ({x},{y})");
+        Log.Debug($"SetTilePos: player {Id} new tile ({x},{y})");
     }
 
     // Llamado por CrowdSystem cada frame con la velocidad horizontal actual: elige
@@ -76,7 +76,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     {
         base._Ready();
 
-        GD.Print($"_Ready: player node ready, Id placeholder = {Id}");
+        Log.Debug($"_Ready: player node ready, Id placeholder = {Id}");
 
         equipmentManager = new EquipmentManager();
 
@@ -91,7 +91,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         }
         else
         {
-            GD.Print("_Ready: no 'Model' node found as child of Player.");
+            Log.Debug("_Ready: no 'Model' node found as child of Player.");
         }
     }
 
@@ -127,13 +127,13 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         Id = id;
         TeamName = teamName;
         Name = $"Player_{id}";
-        GD.Print($"Init: player initialized Id={Id}, team={TeamName}");
+        Log.Debug($"Init: player initialized Id={Id}, team={TeamName}");
     }
 
     public void SetLevel(int level)
     {
         Level = level;
-        GD.Print($"SetLevel: player {Id} level set to {Level}");
+        Log.Debug($"SetLevel: player {Id} level set to {Level}");
         ApplyEquipment();
     }
 
@@ -168,10 +168,6 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         };
 
         Rotation = new Vector3(0, yaw, 0);
-        GD.Print($"SetOrientation: player {Id} orientation set to {o} (yaw {yaw})");
-    }
-
-    public override void _Process(double delta)
-    {
+        Log.Debug($"SetOrientation: player {Id} orientation set to {o} (yaw {yaw})");
     }
 }

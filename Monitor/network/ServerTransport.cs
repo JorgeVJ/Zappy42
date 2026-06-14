@@ -41,7 +41,7 @@ public partial class ServerTransport : Node
         if (UseMockServer)
         {
             _mockServer = new MockServer();
-            GD.Print("[ServerTransport] Modo mock activo — sin conexión TCP.");
+            Log.Debug("[ServerTransport] Modo mock activo — sin conexión TCP.");
             return;
         }
 
@@ -51,13 +51,13 @@ public partial class ServerTransport : Node
             _client.Connect(_host, _port);
             _stream = _client.GetStream();
 
-            GD.Print($"[ServerTransport] Conectado a {_host}:{_port}. Esperando WELCOME...");
+            Log.Debug($"[ServerTransport] Conectado a {_host}:{_port}. Esperando WELCOME...");
             // El GRAPHIC se envía al recibir WELCOME (handshake Zappy), no al conectar.
         }
         catch (Exception ex)
         {
-            GD.PrintErr($"[ServerTransport] Error al conectar a {_host}:{_port}: {ex.Message}");
-            GD.PrintErr("[ServerTransport] Uso: zappy_gui -p <puerto> -h <host> [--mock]");
+            Log.Error($"[ServerTransport] Error al conectar a {_host}:{_port}: {ex.Message}");
+            Log.Error("[ServerTransport] Uso: zappy_gui -p <puerto> -h <host> [--mock]");
         }
     }
 
@@ -85,7 +85,7 @@ public partial class ServerTransport : Node
                     }
                     else
                     {
-                        GD.PrintErr($"[ServerTransport] Puerto inválido: '{args[i + 1]}'");
+                        Log.Error($"[ServerTransport] Puerto inválido: '{args[i + 1]}'");
                     }
                     break;
                 case "-h" when i + 1 < args.Count:
@@ -103,7 +103,7 @@ public partial class ServerTransport : Node
         else if (hasConnArgs)
             UseMockServer = false;
 
-        GD.Print($"[ServerTransport] Args de conexión: host={_host}, port={_port}, mock={UseMockServer}");
+        Log.Debug($"[ServerTransport] Args de conexión: host={_host}, port={_port}, mock={UseMockServer}");
     }
 
     // Envía un comando al servidor real. En modo mock no hay socket: el ajuste
@@ -116,7 +116,7 @@ public partial class ServerTransport : Node
             return;
         }
 
-        GD.Print($"Sending: {msg}");
+        Log.Debug($"Sending: {msg}");
         byte[] data = Encoding.UTF8.GetBytes(msg + "\n");
         _stream.Write(data, 0, data.Length);
     }
@@ -136,7 +136,7 @@ public partial class ServerTransport : Node
             string mockMsg = _mockServer.GetNextCommand(delta);
             if (!string.IsNullOrEmpty(mockMsg))
             {
-                GD.Print("[MOCK] " + mockMsg);
+                Log.Debug("[MOCK] " + mockMsg);
                 LineReceived?.Invoke(mockMsg);
             }
             return;
@@ -173,7 +173,7 @@ public partial class ServerTransport : Node
             catch (System.Text.DecoderFallbackException)
             {
                 // Loguear los bytes crudos en hex para depuración
-                GD.PrintErr($"Unicode parsing error: invalid UTF-8 bytes recibidos. Raw: {BitConverter.ToString(buffer, 0, bytesRead)}");
+                Log.Error($"Unicode parsing error: invalid UTF-8 bytes recibidos. Raw: {BitConverter.ToString(buffer, 0, bytesRead)}");
 
                 // Intentar decodificar con el fallback permissivo para seguir procesando (reemplaza por caracter de sustitucion)
                 chunk = Encoding.UTF8.GetString(buffer, 0, bytesRead);
@@ -194,7 +194,7 @@ public partial class ServerTransport : Node
                     continue;
                 }
 
-                GD.Print("Processing line: " + line);
+                Log.Debug("Processing line: " + line);
                 LineReceived?.Invoke(line);
             }
         }
@@ -211,7 +211,7 @@ public partial class ServerTransport : Node
     // Cierre limpio ante desconexión / fin de stream del servidor (B7).
     private void HandleDisconnect(string reason)
     {
-        GD.PrintErr($"[ServerTransport] Servidor desconectado ({reason}).");
+        Log.Error($"[ServerTransport] Servidor desconectado ({reason}).");
 
         try { _stream?.Close(); } catch { /* ya cerrado */ }
         try { _client?.Close(); } catch { /* ya cerrado */ }

@@ -1,4 +1,3 @@
-using Godot;
 using System;
 using System.Collections.Generic;
 
@@ -32,7 +31,7 @@ public class MessageDispatcher
         }
         else
         {
-            GD.Print("Mensaje desconocido: " + line);
+            Log.Debug("Mensaje desconocido: " + line);
         }
     }
 }

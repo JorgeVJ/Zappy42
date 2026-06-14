@@ -37,12 +37,12 @@ public partial class Connection
 
     private void sbp(string[] parts)
     {
-        GD.Print("[sbp] Parámetros inválidos en comando enviado al servidor");
+        Log.Debug("[sbp] Parámetros inválidos en comando enviado al servidor");
     }
 
     private void suc(string[] parts)
     {
-        GD.Print("[suc] Comando desconocido recibido del servidor");
+        Log.Debug("[suc] Comando desconocido recibido del servidor");
     }
 
     private void smg(string[] parts)
@@ -53,14 +53,14 @@ public partial class Connection
             return;
 
         string message = string.Join(" ", parts, 1, parts.Length - 1);
-        GD.Print($"[smg] {message}");
+        Log.Debug($"[smg] {message}");
         // El mensaje ya queda visible en MessageLogPanel vía OnLineReceived.
     }
 
     private void seg(string[] parts)
     {
         string winner = parts[1];
-        GD.Print($"[seg] ¡Juego terminado! Equipo ganador: {winner}");
+        Log.Info($"[seg] ¡Juego terminado! Equipo ganador: {winner}");
         _teamPanel?.ShowWinner(winner);
         GetTree().Paused = true;
     }
@@ -87,7 +87,7 @@ public partial class Connection
     private void sgt(string[] parts)
     {
         int tick = int.Parse(parts[1]);
-        GD.Print($"[sgt] Tiempo actual del servidor: {tick}");
+        Log.Debug($"[sgt] Tiempo actual del servidor: {tick}");
         _speedPanel?.SetDisplayValue(tick);
         ApplySpeedFactor(tick);
     }
@@ -96,7 +96,7 @@ public partial class Connection
     {
         if (parts.Length < 2)
         {
-            GD.PrintErr("[tna] Formato incorrecto.");
+            Log.Error("[tna] Formato incorrecto.");
             return;
         }
 
@@ -107,7 +107,7 @@ public partial class Connection
         }
 
         _teamPanel?.RegisterTeam(teamName);
-        GD.Print($"[tna] Equipo registrado: {teamName}");
+        Log.Debug($"[tna] Equipo registrado: {teamName}");
     }
 
     private void bct(string[] parts)
@@ -126,8 +126,7 @@ public partial class Connection
     {
         var mapW = int.Parse(parts[1]);
         var mapH = int.Parse(parts[2]);
-        GD.Print($"Mapa de tamaño: {mapW} x {mapH}");
-        //CreateMap();
+        Log.Debug($"Mapa de tamaño: {mapW} x {mapH}");
         terrainManager.InitializeMap(mapW, mapH);
         SendMessage("mct");
     }

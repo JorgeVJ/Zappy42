@@ -19,13 +19,13 @@ public partial class Connection
 
         if (!eggManager.TryGet(eggId, out var egg))
         {
-            GD.PrintErr($"[edi] Egg #{eggId} no existe.");
+            Log.Error($"[edi] Egg #{eggId} no existe.");
             return;
         }
 
         eggManager.Remove(eggId);
 
-        GD.Print($"[edi] Egg #{eggId} murio de hambre.");
+        Log.Debug($"[edi] Egg #{eggId} murio de hambre.");
     }
 
     private void ebo(string[] parts)
@@ -39,13 +39,13 @@ public partial class Connection
         if (!eggManager.TryGet(eggId, out var egg))
         {
             // Tolerante: el huevo puede haberse eliminado ya (p. ej. por edi); no es un error.
-            GD.Print($"[ebo] Egg #{eggId} ya no existe (ignorado).");
+            Log.Debug($"[ebo] Egg #{eggId} ya no existe (ignorado).");
             return;
         }
 
         eggManager.Remove(eggId);
 
-        GD.Print($"[ebo] Egg #{eggId} consumido: un jugador se conectó.");
+        Log.Debug($"[ebo] Egg #{eggId} consumido: un jugador se conectó.");
     }
 
     private void eht(string[] parts)
@@ -58,13 +58,13 @@ public partial class Connection
 
         if (!eggManager.TryGet(eggId, out var egg))
         {
-            GD.Print($"[eht] Egg #{eggId} ya no existe (ignorado).");
+            Log.Debug($"[eht] Egg #{eggId} ya no existe (ignorado).");
             return;
         }
 
         egg.Hatch();
 
-        GD.Print($"[eht] Egg #{eggId} ha eclosionado.");
+        Log.Debug($"[eht] Egg #{eggId} ha eclosionado.");
     }
 
     private void enw(string[] parts)
@@ -75,10 +75,10 @@ public partial class Connection
         int x = int.Parse(parts[3]);
         int y = int.Parse(parts[4]);
 
-        Vector3 worldPos = TerrainSnap.TileCenter(terrainManager, x, y, 0.15f);
+        Vector3 worldPos = TerrainSnap.TileCenter(terrainManager, x, y, Terrain.EntityGroundOffset);
 
         var egg = eggManager.CreateEgg(eggId, worldPos);
 
-        GD.Print($"[enw] Egg #{eggId} puesto por Player #{playerId} en ({x},{y})");
+        Log.Debug($"[enw] Egg #{eggId} puesto por Player #{playerId} en ({x},{y})");
     }
 }

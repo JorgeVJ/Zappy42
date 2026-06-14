@@ -29,7 +29,7 @@ public partial class InventoryPanel : Control
 	{
 		if (owner == null)
 		{
-			GD.Print("Owner is null");
+			Log.Debug("Owner is null");
 			return;
 		}
 		if (title != null)

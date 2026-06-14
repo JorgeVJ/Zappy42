@@ -36,6 +36,13 @@ public partial class Terrain : Node3D
 	// Half-extent of the area within a tile where resources can be placed (TILE_SIZE / 2 minus a margin)
 	private const float ResourcePlacementRange = 0.7f;
 
+	// Vertical offset above the tile surface so resources don't z-fight with the ground mesh.
+	public const float ResourceGroundOffset = 0.05f;
+
+	// Vertical offset above the tile surface used by entities (players, eggs) and effects
+	// (sound waves, incantation pulses) positioned via TerrainSnap.TileCenter.
+	public const float EntityGroundOffset = 0.15f;
+
 	public override void _Ready()
 	{
 		terrainMesh = GetNode<MeshInstance3D>("MeshInstance3D");
@@ -86,7 +93,7 @@ public partial class Terrain : Node3D
 
 			var offset = GetResourceOffset(x, y, kvp.Key);
 			var resource = resourceScene.Instantiate<Resource>();
-			resource.Position = center + new Vector3(offset.X, 0.05f, offset.Y);
+			resource.Position = center + new Vector3(offset.X, ResourceGroundOffset, offset.Y);
 			AddChild(resource);
 			resource.SetResourceType(kvp.Key);
 			tileResources[(x, y)].Add(resource);

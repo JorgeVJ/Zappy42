@@ -21,7 +21,7 @@ Skill de referencia para cualquier modificación del terreno en el Zappy Monitor
 
 ```csharp
 // Terrain.cs
-public const float TILE_SIZE = 10.0f;
+public const float TILE_SIZE = 2.0f;
 ```
 
 **Esta constante controla TODA la escala del mundo.** Al cambiarla:

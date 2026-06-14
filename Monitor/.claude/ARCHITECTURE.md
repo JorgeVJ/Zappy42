@@ -32,60 +32,49 @@ Monitor/
 ├── .claude/
 │   ├── CLAUDE.md           # Instrucciones para Claude Code (este archivo vive aquí)
 │   ├── ARCHITECTURE.md     # Este archivo
-│   └── commands/
-│       ├── terrain.md      # Skill: contexto completo del sistema de terreno
-│       ├── meshy-assets.md # Skill: assets 3D (Meshy AI) — rutas, nombres y estado
-│       └── trello-board.md # Skill: tablero Trello del proyecto (IDs, listas, etiquetas)
-├── Camera.cs               # Cámara libre WASD + raycast
-├── CameraFollowBehavior.cs # Lock de cámara sobre un jugador (TeamProgressPanel): orbita (WASD) y zoom (rueda) alrededor del objetivo sin romper el lock; clic derecho lo desactiva
-├── Connection.cs           # Hub central: cablea transporte/dispatcher/managers/UI (lógica de protocolo repartida en Connection.Players.cs / Connection.Eggs.cs / Connection.System.cs)
-├── ServerTransport.cs      # Transporte TCP real o MockServer; emite LineReceived(line), expone SendMessage()/SetMockSpeed()
-├── MessageDispatcher.cs    # Router string→Action<string[]> del protocolo (sustituye al switch de HandleServerMessage)
-├── SelectionController.cs  # Selección por click (raycast) + InventoryPanel: HandleLeftClick/ShowInventory/PlayerClicked
-├── EntityManager.cs        # Base genérica EntityManager<T> (Node3D): Dictionary<int,T> + contenedor + TryGet()/Remove(); heredada por PlayerManager y EggManager
-├── Egg.cs / EggManager.cs  # Entidad huevo + gestión (EggManager : EntityManager<Egg>)
-├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout(), hijos de equipo (gemas), AttachOrbitingGroup() (orbes en órbita)
-├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?, Children?) — portable entre proyectos
-├── EquipmentChild.cs       # Struct genérico: (ScenePath, Offsets?, GlowEffect?) — modelo hijo anidado dentro de una pieza de equipo (ej. gema en bastón)
-├── OrbitingPivot.cs        # Node3D genérico: rota sobre su eje Y a velocidad constante (orbes en órbita sobre la cabeza)
-├── OrbSpec.cs              # Struct genérico: (Offsets, Color, GlowEffect) — define una orbe procedural alrededor de un OrbitingPivot
-├── GlowOrb.cs              # MeshInstance3D genérico: esfera procedural translúcida + rim + GlowEffect (orbe brillante, sin GLB)
-├── GlowEffect.cs           # Struct genérico: (Color, EnergyMultiplier) — aplica emisión a los materiales de un Node3D
-├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman, incl. grupo de orbes brillantes en órbita
-├── ShamanAnimationController.cs # Controlador de animaciones del Shaman: PlayWalk/Idle/Run/Spell/etc., loop automático
-├── IInventory.cs           # Interfaz: objeto con inventario
-├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
-├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
-├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ y botón de restauración
-├── InventoryPanel.cs       # UI: panel de inventario seleccionado
-├── MessageLogPanel.cs      # UI: log de mensajes (hereda CollapsiblePanel)
-├── TeamProgressPanel.cs    # UI: progreso por equipo (hereda CollapsiblePanel)
-├── MockServer.cs           # Servidor simulado para tests sin red
-├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
-├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
-├── PlayerManager.cs        # Gestión centralizada de jugadores (PlayerManager : EntityManager<Player>)
-├── Resource.cs             # Entidad recurso: carga GLB o esfera coloreada; animación de aparición (caída + pop) al instanciarse
-├── ScreenshotService.cs    # Herramienta dev: vuelca el framebuffer a .captures/*.png (auto periódico + F12)
-├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
-├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
-├── Tile.cs                 # Datos de una casilla (coord + inventario)
-├── models/
-│   ├── Shaman/
-│   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
-│   ├── equipment/           # Accesorios por nivel (generados con Meshy AI)
-│   │   ├── Staff.glb        # Lvl 2+ (bastón base; gema hija reemplazable)
-│   │   ├── skull_mask.glb   # Lvl 3
-│   │   ├── Staff_Gem_Lvl1.glb # Lvl 3-4 (hija de Staff.glb)
-│   │   ├── Staff_Gem_Lvl2.glb # Lvl 5-6 (hija de Staff.glb, reemplaza Lvl1)
-│   │   └── Staff_Gem_Lvl3.glb # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
-│   └── meshy_models/        # Recursos del mundo (linemate, deraumere, etc.)
-├── game.tscn
-├── player.tscn
-├── terrain.tscn
-├── connection.tscn
-├── egg.tscn
-├── resource.tscn
-└── terrain.gdshader
+│   └── commands/           # Skills: terrain, equipment, meshy-assets, trello-board, work-on-trello, screenshot
+├── core/                   # Interfaces y clases base genéricas, portables entre proyectos
+│   ├── IInventory.cs / ISelectable.cs / Inventory.cs
+│   ├── SelectableInventoryNode3D.cs # Clase base: Node3D seleccionable con inventario
+│   ├── EquipmentSlot.cs / EquipmentChild.cs / Offsets.cs
+│   ├── OrbitingPivot.cs / OrbSpec.cs / GlowOrb.cs / GlowEffect.cs
+│   └── Log.cs              # Logging centralizado con niveles Debug/Info/Warn/Error
+├── managers/
+│   ├── EntityManager.cs    # Base genérica EntityManager<T> (Node3D): Dictionary<int,T> + TryGet()/Remove()
+│   ├── PlayerManager.cs / EggManager.cs # : EntityManager<Player> / EntityManager<Egg>
+│   └── EquipmentManager.cs # BoneAttachment3D, caché de escenas, ApplyLoadout(), AttachOrbitingGroup()
+├── network/
+│   ├── Connection.cs           # Hub central: cablea transporte/dispatcher/managers/UI
+│   ├── Connection.Players.cs   # Handlers pnw/ppo/plv/pin/pex/pbc/pic/pie/pfk/pdr/pgt/pdi
+│   ├── Connection.Eggs.cs      # Handlers enw/eht/ebo/edi
+│   ├── Connection.System.cs    # Handshake, msz/bct/tna, sgt, smg/seg/suc/sbp
+│   ├── MessageDispatcher.cs    # Router string→Action<string[]> del protocolo
+│   ├── SelectionController.cs  # Selección por click (raycast) + InventoryPanel
+│   ├── ServerTransport.cs      # Transporte TCP real o MockServer
+│   ├── MockServer.cs           # Servidor simulado para tests sin red
+│   └── connection.tscn
+├── entities/
+│   ├── camera/             Camera.cs (libre WASD + raycast), CameraFollowBehavior.cs (lock/orbit/zoom)
+│   ├── player/
+│   │   ├── Player.cs, ShamanAnimationController.cs, ShamanEquipmentConfig.cs, player.tscn
+│   │   └── models/
+│   │       ├── Shaman.glb          # Modelo principal del jugador (esqueleto + AnimationPlayer)
+│   │       └── equipments/         # Accesorios por nivel (generados con Meshy AI)
+│   │           ├── Staff.glb           # Lvl 2+ (bastón base; gema hija reemplazable)
+│   │           ├── skull_mask.glb      # Lvl 4+
+│   │           ├── Staff_Gem_Lvl1.glb  # Lvl 3-4 (hija de Staff.glb)
+│   │           ├── Staff_Gem_Lvl2.glb  # Lvl 5-6 (hija de Staff.glb, reemplaza Lvl1)
+│   │           ├── Staff_Gem_Lvl3.glb  # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
+│   │           └── staff_basic.glb     # legacy, sin usar (offsets de referencia en ShamanEquipmentConfig.cs)
+│   ├── egg/                 Egg.cs, egg.tscn
+│   ├── resources/           Resource.cs, resource.tscn, models/*.glb (7 tipos de recurso)
+│   ├── terrain/
+│   │   ├── Terrain.cs, Tile.cs, GrassSystem.cs, DecorationSystem.cs
+│   │   ├── terrain.tscn, terrain.gdshader, grass.gdshader
+│   │   └── models/          # Props GLB para DecorationSystem: <Tipo>_<Letra>_<Ancho>x<Largo>.glb (Tree_*, Rock_*, Bush_*, Grass_*)
+│   └── shared/               CrowdSystem.cs, ScreenshotService.cs, SoundWave.cs, TerrainSnap.cs
+├── ui/                        CollapsiblePanel.cs, InventoryPanel.cs, MessageLogPanel.cs, TeamProgressPanel.cs, SpeedControlPanel.cs(+.tscn), ResizeBehavior.cs
+└── game.tscn
 ```
 
 ---
@@ -170,13 +159,13 @@ El corazón del monitor, ahora repartido en varios archivos para mantenerlo delg
 
 ### `Terrain.cs` — Mundo Procedural
 Ver skill `/terrain` para contexto completo. Resumen:
-- `TILE_SIZE = 10.0f` (const pública) — controla escala de todo el mundo
+- `TILE_SIZE = 2.0f` (const pública) — controla escala de todo el mundo
 - Genera `ArrayMesh` con heightmap Perlin en `InitializeMap()`
 - Sincroniza `tile_size` del shader al generar el mesh
 - Instancia nodos `Resource` en tiles al recibir `bct` vía `Inventory.Changed`; cada recurso se posiciona con un offset pseudoaleatorio dentro del tile, sembrado por `(x, y, tipo)` (`GetResourceOffset`) — varía por tile/tipo pero es estable entre actualizaciones de inventario, evitando parpadeos posicionales
 - `GetTileFromPosition()` divide por `TILE_SIZE` antes de hacer `FloorToInt`
-- Tras generar el mesh, `DecorationSystem.Generate()` esparce props FBX (árboles/rocas/arbustos/hierba) sobre el heightmap, descubriendo modelos por convención de nombre `<Tipo>_<Letra>_<Ancho>x<Largo>.fbx` en `entities/terrain/models/` (sin listas hardcodeadas)
-- `GrassSystem` y `DecorationSystem` son complementarios, no redundantes (C11): `GrassSystem` cubre todo el mapa con una "alfombra" densa de billboards animados por shader (viento); `DecorationSystem` reparte props grandes y estáticos de forma dispersa vía occupancy grid — las matas `Grass_*_1x1.fbx` son solo uno de sus cuatro tipos de prop, a modo de variedad puntual junto a árboles/rocas/arbustos, no un sustituto del césped base
+- Tras generar el mesh, `DecorationSystem.Generate()` esparce props GLB (árboles/rocas/arbustos/hierba) sobre el heightmap, descubriendo modelos por convención de nombre `<Tipo>_<Letra>_<Ancho>x<Largo>.glb` en `entities/terrain/models/` (sin listas hardcodeadas)
+- `GrassSystem` y `DecorationSystem` son complementarios, no redundantes (C11): `GrassSystem` cubre todo el mapa con una "alfombra" densa de billboards animados por shader (viento); `DecorationSystem` reparte props grandes y estáticos de forma dispersa vía occupancy grid — las matas `Grass_*_1x1.glb` son solo uno de sus cuatro tipos de prop, a modo de variedad puntual junto a árboles/rocas/arbustos, no un sustituto del césped base
 
 ---
 
@@ -282,7 +271,5 @@ SelectionController.HandleLeftClick()
 
 ## Áreas de Mejora / Pendientes
 
-- **Fin de partida (`seg`):** Evento recibido pero sin pantalla de resultado.
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
-- **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs`.
-- **Altura de jugadores:** Y fija en `0.3f`; no sigue la altura real del terreno.
+- **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs` (C4) — se corrige solo si se refactoriza la interfaz completa, según `CLAUDE.md`.

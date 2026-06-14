@@ -19,7 +19,7 @@ public class SelectionController
 
     public void HandleLeftClick(GodotObject collider, Vector3 position)
     {
-        GD.Print($"Entra en HandleLeftClick: {position}");
+        Log.Debug($"Entra en HandleLeftClick: {position}");
 
         Node node = collider as Node;
 
@@ -27,7 +27,7 @@ public class SelectionController
         {
             if (node is Player player)
             {
-                GD.Print("Colisiona con Player");
+                Log.Debug("Colisiona con Player");
                 _terrainManager.DeselectTile();
                 PlayerClicked(player);
                 return;
@@ -35,7 +35,7 @@ public class SelectionController
 
             if (node is Resource)
             {
-                GD.Print("Colisiona con Recurso");
+                Log.Debug("Colisiona con Recurso");
 
                 // Clicar un recurso muestra el inventario de la casilla que lo contiene.
                 Tile resourceTile = _terrainManager.GetTileFromPosition(position);
@@ -55,7 +55,7 @@ public class SelectionController
         }
 
         // Si no es entidad → terreno
-        GD.Print("Colisiona con Terreno");
+        Log.Debug("Colisiona con Terreno");
 
         Tile tile = _terrainManager.GetTileFromPosition(position);
 

@@ -33,7 +33,7 @@ public partial class ScreenshotService : Node
             AddChild(timer);
         }
 
-        GD.Print($"[ScreenshotService] capturas en: {_dirAbs} (auto={AutoCapture}, F12 manual)");
+        Log.Debug($"[ScreenshotService] capturas en: {_dirAbs} (auto={AutoCapture}, F12 manual)");
     }
 
     public override void _UnhandledKeyInput(InputEvent @event)

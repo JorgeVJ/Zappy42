@@ -33,14 +33,14 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[pdi] Player #{id} no existe.");
+            Log.Error($"[pdi] Player #{id} no existe.");
             return;
         }
 
         playerManager.Remove(id);
         _teamPanel?.RemovePlayer(id);
 
-        GD.Print($"[pdi] Player #{id} murio (eliminado).");
+        Log.Debug($"[pdi] Player #{id} murio (eliminado).");
     }
 
     private void pgt(string[] parts)
@@ -53,7 +53,7 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[pgt] Player #{id} no existe todavia.");
+            Log.Error($"[pgt] Player #{id} no existe todavia.");
             return;
         }
 
@@ -62,7 +62,7 @@ public partial class Connection
         var tilePos = player.TilePos;
         terrainManager[tilePos.X, tilePos.Y]?.Inventory.Remove(type, 1);
         _teamPanel?.SetLastAction(id, $"+ {type}");
-        GD.Print($"[pgt] Player #{id} tomo {type}");
+        Log.Debug($"[pgt] Player #{id} tomo {type}");
     }
 
     private void pdr(string[] parts)
@@ -75,14 +75,14 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[pdr] Player #{id} no existe todavia.");
+            Log.Error($"[pdr] Player #{id} no existe todavia.");
             return;
         }
 
         player.Inventory.Remove(type, 1);
 
         _teamPanel?.SetLastAction(id, $"- {type}");
-        GD.Print($"[pdr] Player #{id} dejo {type}");
+        Log.Debug($"[pdr] Player #{id} dejo {type}");
     }
 
     private void pfk(string[] parts)
@@ -92,37 +92,12 @@ public partial class Connection
 
         if (!playerManager.TryGet(playerId, out var player))
         {
-            GD.PrintErr($"[pfk] Player #{playerId} no encontrado");
+            Log.Error($"[pfk] Player #{playerId} no encontrado");
             return;
         }
 
-        GD.Print($"[pfk] Player #{playerId} esta poniendo un huevo");
+        Log.Debug($"[pfk] Player #{playerId} esta poniendo un huevo");
         _teamPanel?.SetLastAction(playerId, "🥚 pone huevo");
-
-        // Highlight del tile donde está el jugador
-        Vector2I tilePos = player.TilePos;
-
-        //if (tilePos.X < 0 || tilePos.X >= mapW || tilePos.Y < 0 || tilePos.Y >= mapH)
-        //{
-        //	return;
-        //}
-
-        var tile = terrainManager[tilePos.X, tilePos.Y];
-
-        // Color "pre-huevo" (verde amarillento)
-        //tile.Highlight();
-
-        // Opcional: feedback visual en el jugador
-        // player.Flash(new Color(1f, 1f, 0.4f));
-    }
-
-    private async System.Threading.Tasks.Task FadeOutTile(Node3D mesh, float seconds)
-    {
-        await System.Threading.Tasks.Task.Delay((int)(seconds * 1000));
-        if (mesh != null && mesh.IsInsideTree())
-        {
-            mesh.QueueFree();
-        }
     }
 
     private void pie(string[] parts)
@@ -136,7 +111,7 @@ public partial class Connection
         int result = int.Parse(parts[3]);
         bool success = result == 1;
 
-        GD.Print($"[pie] Incantacion en tile ({x},{y}) {(success ? "EXITOSA" : "FALLIDA")}");
+        Log.Debug($"[pie] Incantacion en tile ({x},{y}) {(success ? "EXITOSA" : "FALLIDA")}");
 
         // Terminar la animación de hechizo de los jugadores que estaban incantando aquí.
         if (_incantations.TryGetValue((x, y), out var playerIds))
@@ -172,7 +147,7 @@ public partial class Connection
             playerIds.Add(int.Parse(parts[i].TrimStart('#')));
         }
 
-        GD.Print($"[pic] Incantacion en tile ({x},{y}) nivel {level} con jugadores: {string.Join(",", playerIds)}");
+        Log.Debug($"[pic] Incantacion en tile ({x},{y}) nivel {level} con jugadores: {string.Join(",", playerIds)}");
 
         _incantations[(x, y)] = playerIds;
 
@@ -195,7 +170,7 @@ public partial class Connection
             return;
 
         Color color = success ? new Color(0.3f, 1f, 0.4f, 0.85f) : new Color(1f, 0.3f, 0.3f, 0.85f);
-        Vector3 center = TerrainSnap.TileCenter(terrainManager, x, y, 0.15f);
+        Vector3 center = TerrainSnap.TileCenter(terrainManager, x, y, Terrain.EntityGroundOffset);
         var wave = SoundWave.Create(center, color);
         terrainManager.AddChild(wave);
     }
@@ -219,14 +194,14 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[pbc] Player #{id} no existe.");
+            Log.Error($"[pbc] Player #{id} no existe.");
             return;
         }
 
         // reconstruimos el mensaje (puede contener espacios)
         string message = string.Join(" ", parts, 2, parts.Length - 2);
 
-        GD.Print($"[pbc] Player #{id} dice: {message}");
+        Log.Debug($"[pbc] Player #{id} dice: {message}");
         _teamPanel?.SetLastAction(id, $"📢 {message}");
         ShowPlayerMessage(player, message);
         ShowSoundWave(player);
@@ -239,7 +214,7 @@ public partial class Connection
         if (terrainManager == null)
             return;
 
-        Vector3 center = TerrainSnap.TileCenter(terrainManager, player.TilePos.X, player.TilePos.Y, 0.15f);
+        Vector3 center = TerrainSnap.TileCenter(terrainManager, player.TilePos.X, player.TilePos.Y, Terrain.EntityGroundOffset);
         var wave = SoundWave.Create(center);
         terrainManager.AddChild(wave);
     }
@@ -251,11 +226,11 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[pex] Player #{id} no existe.");
+            Log.Error($"[pex] Player #{id} no existe.");
             return;
         }
 
-        GD.Print($"[pex] Player #{id} expulso a otros jugadores.");
+        Log.Debug($"[pex] Player #{id} expulso a otros jugadores.");
         _teamPanel?.SetLastAction(id, "💨 expulsó");
     }
 
@@ -268,7 +243,7 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[pin] Player #{id} no existe todavía.");
+            Log.Error($"[pin] Player #{id} no existe todavía.");
             return;
         }
 
@@ -286,7 +261,7 @@ public partial class Connection
         inv.Set(Resource.ResourceType.Phiras, int.Parse(parts[9]));
         inv.Set(Resource.ResourceType.Thystame, int.Parse(parts[10]));
 
-        GD.Print($"[pin] Player #{id} inventario actualizado");
+        Log.Debug($"[pin] Player #{id} inventario actualizado");
     }
 
     private void plv(string[] parts)
@@ -297,14 +272,14 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[plv] Player #{id} no existe todavia.");
+            Log.Error($"[plv] Player #{id} no existe todavia.");
             return;
         }
 
         player.SetLevel(level);
         _teamPanel?.SetLevel(id, level);
 
-        GD.Print($"[plv] Player #{id} -> level {level}");
+        Log.Debug($"[plv] Player #{id} -> level {level}");
     }
 
     private void ppo(string[] parts)
@@ -317,15 +292,13 @@ public partial class Connection
 
         if (!playerManager.TryGet(id, out var player))
         {
-            GD.PrintErr($"[ppo] Player #{id} no existe todavia.");
+            Log.Error($"[ppo] Player #{id} no existe todavia.");
             return;
         }
 
         player.SetTilePos(x, y);
         player.SetOrientation(o);
         _teamPanel?.SetLastAction(id, $"→ ({x},{y})");
-
-        // GD.Print($"[ppo] Player #{id} -> ({x},{y}) o={o}");
     }
 
     private void pnw(string[] parts)
@@ -355,6 +328,6 @@ public partial class Connection
         player.SetSpeedFactor(_currentSpeedFactor);
 
         _teamPanel?.AddPlayer(id, team, level);
-        GD.Print($"[pnw] Player #{id} team={team} pos=({x},{y}) o={o} lvl={level}");
+        Log.Debug($"[pnw] Player #{id} team={team} pos=({x},{y}) o={o} lvl={level}");
     }
 }

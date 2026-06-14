@@ -7,6 +7,11 @@ public partial class Egg : Node3D
     private MeshInstance3D mesh;
     private bool _hatched;
 
+    // Hatch "pop" animation: scale up then settle back to normal size.
+    private const float PopScaleFactor = 1.3f;
+    private const float PopScaleUpDuration = 0.15f;
+    private const float PopScaleDownDuration = 0.2f;
+
     public int Id { get; private set; }
 
     public static Egg Create(Vector3 pos, int id)
@@ -43,11 +48,7 @@ public partial class Egg : Node3D
         }
 
         var tween = CreateTween();
-        tween.TweenProperty(this, "scale", Vector3.One * 1.3f, 0.15f);
-        tween.TweenProperty(this, "scale", Vector3.One, 0.2f);
-    }
-
-    public override void _Process(double delta)
-    {
+        tween.TweenProperty(this, "scale", Vector3.One * PopScaleFactor, PopScaleUpDuration);
+        tween.TweenProperty(this, "scale", Vector3.One, PopScaleDownDuration);
     }
 }

@@ -19,19 +19,19 @@ public class EquipmentManager
     {
         if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(scenePath))
         {
-            GD.PrintErr("EquipmentManager.RegisterScene: key or scenePath is null/empty");
+            Log.Error("EquipmentManager.RegisterScene: key or scenePath is null/empty");
             return;
         }
 
         PackedScene scene = ResourceLoader.Load<PackedScene>(scenePath);
         if (scene == null)
         {
-            GD.PrintErr($"EquipmentManager.RegisterScene: failed to load scene at '{scenePath}'");
+            Log.Error($"EquipmentManager.RegisterScene: failed to load scene at '{scenePath}'");
             return;
         }
 
         sceneCache[key] = scene;
-        GD.Print($"EquipmentManager: scene '{scenePath}' registered as '{key}'");
+        Log.Debug($"EquipmentManager: scene '{scenePath}' registered as '{key}'");
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class EquipmentManager
         if (scene != null)
         {   
             sceneCache[keyOrPath] = scene;
-            GD.Print($"EquipmentManager: implicitly loaded scene from path '{keyOrPath}'");
+            Log.Debug($"EquipmentManager: implicitly loaded scene from path '{keyOrPath}'");
             return scene;
         }
 
@@ -89,26 +89,26 @@ public class EquipmentManager
         Skeleton3D skeleton = FindSkeleton3D(owner);
         if (skeleton == null)
         {
-            GD.PrintErr("EquipmentManager.AttachToBone: skeleton is null");
+            Log.Error("EquipmentManager.AttachToBone: skeleton is null");
             return null;
         }
 
         if (string.IsNullOrEmpty(boneName) || string.IsNullOrEmpty(sceneKey))
         {
-            GD.PrintErr("EquipmentManager.AttachToBone: boneName or sceneKey is null/empty");
+            Log.Error("EquipmentManager.AttachToBone: boneName or sceneKey is null/empty");
             return null;
         }
 
         if (skeleton.FindBone(boneName) == -1)
         {
-            GD.Print($"EquipmentManager: bone not found: {boneName}");
+            Log.Debug($"EquipmentManager: bone not found: {boneName}");
             return null;
         }
 
         PackedScene scene = ResolveScene(sceneKey);
         if (scene == null)
         {
-            GD.PrintErr($"EquipmentManager: scene not found for key/path '{sceneKey}'");
+            Log.Error($"EquipmentManager: scene not found for key/path '{sceneKey}'");
             return null;
         }
 
@@ -124,7 +124,7 @@ public class EquipmentManager
         }
         catch (Exception ex)
         {
-            GD.PrintErr($"EquipmentManager: failed to instantiate scene '{sceneKey}': {ex.Message}");
+            Log.Error($"EquipmentManager: failed to instantiate scene '{sceneKey}': {ex.Message}");
             boneAttach.QueueFree();
             return null;
         }
@@ -163,7 +163,7 @@ public class EquipmentManager
         }
         list.Add(boneAttach);
 
-        GD.Print($"EquipmentManager: attached scene '{sceneKey}' to bone '{boneName}'");
+        Log.Debug($"EquipmentManager: attached scene '{sceneKey}' to bone '{boneName}'");
         return boneAttach;
     }
 
@@ -181,7 +181,7 @@ public class EquipmentManager
         PackedScene scene = ResolveScene(child.ScenePath);
         if (scene == null)
         {
-            GD.PrintErr($"EquipmentManager: child scene not found for path '{child.ScenePath}'");
+            Log.Error($"EquipmentManager: child scene not found for path '{child.ScenePath}'");
             return;
         }
 
@@ -192,7 +192,7 @@ public class EquipmentManager
         }
         catch (Exception ex)
         {
-            GD.PrintErr($"EquipmentManager: failed to instantiate child scene '{child.ScenePath}': {ex.Message}");
+            Log.Error($"EquipmentManager: failed to instantiate child scene '{child.ScenePath}': {ex.Message}");
             return;
         }
 
@@ -212,7 +212,7 @@ public class EquipmentManager
         if (child.Glow is not null)
             child.Glow.Value.ApplyTo(childInst);
 
-        GD.Print($"EquipmentManager: attached child scene '{child.ScenePath}' to '{parent.Name}'");
+        Log.Debug($"EquipmentManager: attached child scene '{child.ScenePath}' to '{parent.Name}'");
     }
 
     /// <summary>
@@ -250,13 +250,13 @@ public class EquipmentManager
         Skeleton3D skeleton = FindSkeleton3D(owner);
         if (skeleton == null)
         {
-            GD.PrintErr("EquipmentManager.AttachOrbitingGroup: skeleton is null");
+            Log.Error("EquipmentManager.AttachOrbitingGroup: skeleton is null");
             return null;
         }
 
         if (string.IsNullOrEmpty(boneName) || skeleton.FindBone(boneName) == -1)
         {
-            GD.Print($"EquipmentManager: bone not found: {boneName}");
+            Log.Debug($"EquipmentManager: bone not found: {boneName}");
             return null;
         }
 
@@ -284,7 +284,7 @@ public class EquipmentManager
         }
         list.Add(boneAttach);
 
-        GD.Print($"EquipmentManager: attached orbiting group of {orbs.Count} orb(s) to bone '{boneName}'");
+        Log.Debug($"EquipmentManager: attached orbiting group of {orbs.Count} orb(s) to bone '{boneName}'");
         return boneAttach;
     }
 
@@ -313,7 +313,7 @@ public class EquipmentManager
         }
 
         attachments.Remove(boneName);
-        GD.Print($"EquipmentManager: removed attachments for bone '{boneName}'");
+        Log.Debug($"EquipmentManager: removed attachments for bone '{boneName}'");
     }
 
     /// <summary>
@@ -330,7 +330,7 @@ public class EquipmentManager
             }
         }
         attachments.Clear();
-        GD.Print("EquipmentManager: cleared all attachments");
+        Log.Debug("EquipmentManager: cleared all attachments");
     }
 
     /// <summary>
