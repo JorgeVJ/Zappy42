@@ -114,7 +114,10 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         if (duration <= 0f)
             return;
 
-        await ToSignal(GetTree().CreateTimer(duration), "timeout");
+        float speedScale = Mathf.Max(0.01f, SpeedFactor);
+        float waitSeconds = duration / speedScale;
+
+        await ToSignal(GetTree().CreateTimer(waitSeconds), "timeout");
 
         // Solo volver a Idle si el jugador sigue vivo y la animación one-shot
         // sigue siendo la actual (si mientras tanto empezó otra, p.ej. una

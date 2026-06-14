@@ -59,6 +59,10 @@ public partial class Connection
 
     private void seg(string[] parts)
     {
+        // seg N
+        if (!RequireLength(parts, 2, "seg"))
+            return;
+
         string winner = parts[1];
         Log.Info($"[seg] ¡Juego terminado! Equipo ganador: {winner}");
         _teamPanel?.ShowWinner(winner);
@@ -86,7 +90,13 @@ public partial class Connection
 
     private void sgt(string[] parts)
     {
-        int tick = int.Parse(parts[1]);
+        // sgt T
+        if (!RequireLength(parts, 2, "sgt"))
+            return;
+
+        if (!TryParseField(parts[1], "sgt", "T", out int tick))
+            return;
+
         Log.Debug($"[sgt] Tiempo actual del servidor: {tick}");
         _speedPanel?.SetDisplayValue(tick);
         ApplySpeedFactor(tick);
@@ -112,20 +122,45 @@ public partial class Connection
 
     private void bct(string[] parts)
     {
-        int x = int.Parse(parts[1]);
-        int y = int.Parse(parts[2]);
+        // bct X Y q q q q q q q
+        if (!RequireLength(parts, 3, "bct"))
+            return;
+
+        if (!TryParseField(parts[1], "bct", "X", out int x))
+            return;
+        if (!TryParseField(parts[2], "bct", "Y", out int y))
+            return;
+
+        // El terreno aún no está inicializado (no llegó msz) o las coordenadas
+        // están fuera de rango: el indexador devuelve null, descartar el mensaje.
+        var tile = terrainManager?[x, y];
+        if (tile == null)
+        {
+            Log.Warn($"[bct] Tile ({x},{y}) fuera de rango o terreno sin inicializar; mensaje descartado.");
+            return;
+        }
 
         // Recursos son lo que viene a partir del índice 3
         for (int i = 3; i < parts.Length; i++)
         {
-            terrainManager[x, y].Inventory.Set((Resource.ResourceType)(i - 3), int.Parse(parts[i]));
+            if (!TryParseField(parts[i], "bct", $"q{i - 3}", out int amount))
+                return;
+
+            tile.Inventory.Set((Resource.ResourceType)(i - 3), amount);
         }
     }
 
     private void msz(string[] parts)
     {
-        var mapW = int.Parse(parts[1]);
-        var mapH = int.Parse(parts[2]);
+        // msz X Y
+        if (!RequireLength(parts, 3, "msz"))
+            return;
+
+        if (!TryParseField(parts[1], "msz", "X", out int mapW))
+            return;
+        if (!TryParseField(parts[2], "msz", "Y", out int mapH))
+            return;
+
         Log.Debug($"Mapa de tamaño: {mapW} x {mapH}");
         terrainManager.InitializeMap(mapW, mapH);
         SendMessage("mct");

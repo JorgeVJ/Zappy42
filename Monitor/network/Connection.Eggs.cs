@@ -15,7 +15,11 @@ public partial class Connection
     private void edi(string[] parts)
     {
         // edi #e
-        int eggId = int.Parse(parts[1].TrimStart('#'));
+        if (!RequireLength(parts, 2, "edi"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "edi", "#e", out int eggId))
+            return;
 
         if (!eggManager.TryGet(eggId, out var egg))
         {
@@ -31,10 +35,11 @@ public partial class Connection
     private void ebo(string[] parts)
     {
         // ebo #e — un jugador se conecta desde el huevo: aquí SÍ se elimina.
-        if (parts.Length < 2)
+        if (!RequireLength(parts, 2, "ebo"))
             return;
 
-        int eggId = int.Parse(parts[1].TrimStart('#'));
+        if (!TryParseField(parts[1].TrimStart('#'), "ebo", "#e", out int eggId))
+            return;
 
         if (!eggManager.TryGet(eggId, out var egg))
         {
@@ -51,10 +56,11 @@ public partial class Connection
     private void eht(string[] parts)
     {
         // eht #e — el huevo eclosiona: señal visual, NO se elimina (eso lo hace ebo).
-        if (parts.Length < 2)
+        if (!RequireLength(parts, 2, "eht"))
             return;
 
-        int eggId = int.Parse(parts[1].TrimStart('#'));
+        if (!TryParseField(parts[1].TrimStart('#'), "eht", "#e", out int eggId))
+            return;
 
         if (!eggManager.TryGet(eggId, out var egg))
         {
@@ -70,10 +76,17 @@ public partial class Connection
     private void enw(string[] parts)
     {
         // enw #e #n X Y
-        int eggId = int.Parse(parts[1].TrimStart('#'));
-        int playerId = int.Parse(parts[2].TrimStart('#'));
-        int x = int.Parse(parts[3]);
-        int y = int.Parse(parts[4]);
+        if (!RequireLength(parts, 5, "enw"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "enw", "#e", out int eggId))
+            return;
+        if (!TryParseField(parts[2].TrimStart('#'), "enw", "#n", out int playerId))
+            return;
+        if (!TryParseField(parts[3], "enw", "X", out int x))
+            return;
+        if (!TryParseField(parts[4], "enw", "Y", out int y))
+            return;
 
         Vector3 worldPos = TerrainSnap.TileCenter(terrainManager, x, y, Terrain.EntityGroundOffset);
 

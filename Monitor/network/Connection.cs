@@ -127,4 +127,32 @@ public partial class Connection : Node
                 _teamPanel.Toggle();
         }
     }
+
+    // --- Helpers compartidos para los handlers del protocolo (network/Connection*.cs) ---
+
+    // Comprueba que el mensaje tenga al menos `minLength` tokens (incluyendo
+    // parts[0], el comando). Si no, loguea un warning con el comando y la
+    // longitud recibida y devuelve false: el handler debe hacer `return` sin
+    // procesar el mensaje. Evita IndexOutOfRangeException con mensajes cortos
+    // o malformados.
+    private static bool RequireLength(string[] parts, int minLength, string command)
+    {
+        if (parts.Length >= minLength)
+            return true;
+
+        Log.Warn($"[{command}] Mensaje malformado: se esperaban al menos {minLength} campos, llegaron {parts.Length}.");
+        return false;
+    }
+
+    // int.TryParse con log de error si falla. Usar en lugar de int.Parse directo
+    // sobre campos del mensaje: un valor no numérico (mensaje corrupto/malformado)
+    // se descarta sin lanzar FormatException.
+    private static bool TryParseField(string text, string command, string fieldName, out int value)
+    {
+        if (int.TryParse(text, out value))
+            return true;
+
+        Log.Error($"[{command}] Campo '{fieldName}' inválido: \"{text}\" no es un entero.");
+        return false;
+    }
 }

@@ -29,7 +29,11 @@ public partial class Connection
     private void pdi(string[] parts)
     {
         // pdi #n
-        int id = int.Parse(parts[1].TrimStart('#'));
+        if (!RequireLength(parts, 2, "pdi"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pdi", "#n", out int id))
+            return;
 
         if (!playerManager.TryGet(id, out var player))
         {
@@ -46,8 +50,13 @@ public partial class Connection
     private void pgt(string[] parts)
     {
         // pgt #n i
-        int id = int.Parse(parts[1].TrimStart('#'));
-        int itemId = int.Parse(parts[2]);
+        if (!RequireLength(parts, 3, "pgt"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pgt", "#n", out int id))
+            return;
+        if (!TryParseField(parts[2], "pgt", "i", out int itemId))
+            return;
 
         var type = (Resource.ResourceType)itemId;
 
@@ -69,8 +78,13 @@ public partial class Connection
     private void pdr(string[] parts)
     {
         // pdr #n i
-        int id = int.Parse(parts[1].TrimStart('#'));
-        int itemId = int.Parse(parts[2]);
+        if (!RequireLength(parts, 3, "pdr"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pdr", "#n", out int id))
+            return;
+        if (!TryParseField(parts[2], "pdr", "i", out int itemId))
+            return;
 
         var type = (Resource.ResourceType)itemId;
 
@@ -90,7 +104,11 @@ public partial class Connection
     private void pfk(string[] parts)
     {
         // pfk #n
-        int playerId = int.Parse(parts[1].TrimStart('#'));
+        if (!RequireLength(parts, 2, "pfk"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pfk", "#n", out int playerId))
+            return;
 
         if (!playerManager.TryGet(playerId, out var player))
         {
@@ -105,12 +123,16 @@ public partial class Connection
     private void pie(string[] parts)
     {
         // pie X Y R
-        if (parts.Length < 4)
+        if (!RequireLength(parts, 4, "pie"))
             return;
 
-        int x = int.Parse(parts[1]);
-        int y = int.Parse(parts[2]);
-        int result = int.Parse(parts[3]);
+        if (!TryParseField(parts[1], "pie", "X", out int x))
+            return;
+        if (!TryParseField(parts[2], "pie", "Y", out int y))
+            return;
+        if (!TryParseField(parts[3], "pie", "R", out int result))
+            return;
+
         bool success = result == 1;
 
         Log.Debug($"[pie] Incantacion en tile ({x},{y}) {(success ? "EXITOSA" : "FALLIDA")}");
@@ -138,18 +160,24 @@ public partial class Connection
     private void pic(string[] parts)
     {
         // pic X Y L #n #n ...
-        if (parts.Length < 4)
+        if (!RequireLength(parts, 4, "pic"))
             return;
 
-        int x = int.Parse(parts[1]);
-        int y = int.Parse(parts[2]);
-        int level = int.Parse(parts[3]);
+        if (!TryParseField(parts[1], "pic", "X", out int x))
+            return;
+        if (!TryParseField(parts[2], "pic", "Y", out int y))
+            return;
+        if (!TryParseField(parts[3], "pic", "L", out int level))
+            return;
 
         // jugadores involucrados
         List<int> playerIds = new List<int>();
         for (int i = 4; i < parts.Length; i++)
         {
-            playerIds.Add(int.Parse(parts[i].TrimStart('#')));
+            if (!TryParseField(parts[i].TrimStart('#'), "pic", $"#n[{i - 4}]", out int pid))
+                return;
+
+            playerIds.Add(pid);
         }
 
         Log.Debug($"[pic] Incantacion en tile ({x},{y}) nivel {level} con jugadores: {string.Join(",", playerIds)}");
@@ -198,7 +226,11 @@ public partial class Connection
     private void pbc(string[] parts)
     {
         // pbc #n M
-        int id = int.Parse(parts[1].TrimStart('#'));
+        if (!RequireLength(parts, 3, "pbc"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pbc", "#n", out int id))
+            return;
 
         if (!playerManager.TryGet(id, out var player))
         {
@@ -236,7 +268,11 @@ public partial class Connection
     private void pex(string[] parts)
     {
         // pex #n
-        int id = int.Parse(parts[1].TrimStart('#'));
+        if (!RequireLength(parts, 2, "pex"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pex", "#n", out int id))
+            return;
 
         if (!playerManager.TryGet(id, out var player))
         {
@@ -251,9 +287,15 @@ public partial class Connection
     private void pin(string[] parts)
     {
         // pin #n X Y q0 q1 q2 q3 q4 q5 q6
-        int id = int.Parse(parts[1].TrimStart('#'));
-        int x = int.Parse(parts[2]);
-        int y = int.Parse(parts[3]);
+        if (!RequireLength(parts, 11, "pin"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pin", "#n", out int id))
+            return;
+        if (!TryParseField(parts[2], "pin", "X", out int x))
+            return;
+        if (!TryParseField(parts[3], "pin", "Y", out int y))
+            return;
 
         if (!playerManager.TryGet(id, out var player))
         {
@@ -267,13 +309,21 @@ public partial class Connection
         // Inventario
         var inv = player.Inventory;
 
-        inv.Set(Resource.ResourceType.Nourriture, int.Parse(parts[4]));
-        inv.Set(Resource.ResourceType.Linemate, int.Parse(parts[5]));
-        inv.Set(Resource.ResourceType.Deraumere, int.Parse(parts[6]));
-        inv.Set(Resource.ResourceType.Sibur, int.Parse(parts[7]));
-        inv.Set(Resource.ResourceType.Mendiane, int.Parse(parts[8]));
-        inv.Set(Resource.ResourceType.Phiras, int.Parse(parts[9]));
-        inv.Set(Resource.ResourceType.Thystame, int.Parse(parts[10]));
+        if (!TryParseField(parts[4], "pin", "q0 (Nourriture)", out int nourriture)) return;
+        if (!TryParseField(parts[5], "pin", "q1 (Linemate)", out int linemate)) return;
+        if (!TryParseField(parts[6], "pin", "q2 (Deraumere)", out int deraumere)) return;
+        if (!TryParseField(parts[7], "pin", "q3 (Sibur)", out int sibur)) return;
+        if (!TryParseField(parts[8], "pin", "q4 (Mendiane)", out int mendiane)) return;
+        if (!TryParseField(parts[9], "pin", "q5 (Phiras)", out int phiras)) return;
+        if (!TryParseField(parts[10], "pin", "q6 (Thystame)", out int thystame)) return;
+
+        inv.Set(Resource.ResourceType.Nourriture, nourriture);
+        inv.Set(Resource.ResourceType.Linemate, linemate);
+        inv.Set(Resource.ResourceType.Deraumere, deraumere);
+        inv.Set(Resource.ResourceType.Sibur, sibur);
+        inv.Set(Resource.ResourceType.Mendiane, mendiane);
+        inv.Set(Resource.ResourceType.Phiras, phiras);
+        inv.Set(Resource.ResourceType.Thystame, thystame);
 
         Log.Debug($"[pin] Player #{id} inventario actualizado");
     }
@@ -281,8 +331,13 @@ public partial class Connection
     private void plv(string[] parts)
     {
         // plv #n L
-        int id = int.Parse(parts[1].TrimStart('#'));
-        int level = int.Parse(parts[2]);
+        if (!RequireLength(parts, 3, "plv"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "plv", "#n", out int id))
+            return;
+        if (!TryParseField(parts[2], "plv", "L", out int level))
+            return;
 
         if (!playerManager.TryGet(id, out var player))
         {
@@ -299,10 +354,17 @@ public partial class Connection
     private void ppo(string[] parts)
     {
         // ppo #n X Y O
-        int id = int.Parse(parts[1].TrimStart('#'));
-        int x = int.Parse(parts[2]);
-        int y = int.Parse(parts[3]);
-        int o = int.Parse(parts[4]);
+        if (!RequireLength(parts, 5, "ppo"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "ppo", "#n", out int id))
+            return;
+        if (!TryParseField(parts[2], "ppo", "X", out int x))
+            return;
+        if (!TryParseField(parts[3], "ppo", "Y", out int y))
+            return;
+        if (!TryParseField(parts[4], "ppo", "O", out int o))
+            return;
 
         if (!playerManager.TryGet(id, out var player))
         {
@@ -318,11 +380,19 @@ public partial class Connection
     private void pnw(string[] parts)
     {
         // pnw #n X Y O L N
-        int id = int.Parse(parts[1].TrimStart('#'));
-        int x = int.Parse(parts[2]);
-        int y = int.Parse(parts[3]);
-        int o = int.Parse(parts[4]);
-        int level = int.Parse(parts[5]);
+        if (!RequireLength(parts, 7, "pnw"))
+            return;
+
+        if (!TryParseField(parts[1].TrimStart('#'), "pnw", "#n", out int id))
+            return;
+        if (!TryParseField(parts[2], "pnw", "X", out int x))
+            return;
+        if (!TryParseField(parts[3], "pnw", "Y", out int y))
+            return;
+        if (!TryParseField(parts[4], "pnw", "O", out int o))
+            return;
+        if (!TryParseField(parts[5], "pnw", "L", out int level))
+            return;
         string team = parts[6];
 
         // convertir coords tile -> mundo (centro del tile)

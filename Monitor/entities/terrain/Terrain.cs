@@ -240,6 +240,11 @@ public partial class Terrain : Node3D
 
 	public Tile GetTile(int x, int y)
 	{
+		// tiles es null hasta que InitializeMap() (msz) lo crea: si llega algún
+		// mensaje del protocolo antes de msz, devolver null en vez de lanzar
+		// NullReferenceException.
+		if (tiles == null)
+			return null;
 		if (x < 0 || x >= Width || y < 0 || y >= Height)
 			return null;
 		return tiles[x, y];
