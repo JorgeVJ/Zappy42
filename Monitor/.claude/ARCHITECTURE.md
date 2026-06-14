@@ -107,7 +107,9 @@ game.tscn
     │   ├── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
     │   └── TeamProgressPanel        [TeamProgressPanel.cs] (UI Control, creado en código)
     ├── Terrain (terrain.tscn)       [Terrain.cs]
-    │   └── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
+    │   ├── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
+    │   ├── GrassSystem              [GrassSystem.cs] (césped procedural via MultiMeshInstance3D)
+    │   └── DecorationSystem         [DecorationSystem.cs] (props FBX: árboles/rocas/arbustos/hierba)
     └── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
 
 player.tscn
@@ -173,6 +175,8 @@ Ver skill `/terrain` para contexto completo. Resumen:
 - Sincroniza `tile_size` del shader al generar el mesh
 - Instancia nodos `Resource` en tiles al recibir `bct` vía `Inventory.Changed`; cada recurso se posiciona con un offset pseudoaleatorio dentro del tile, sembrado por `(x, y, tipo)` (`GetResourceOffset`) — varía por tile/tipo pero es estable entre actualizaciones de inventario, evitando parpadeos posicionales
 - `GetTileFromPosition()` divide por `TILE_SIZE` antes de hacer `FloorToInt`
+- Tras generar el mesh, `DecorationSystem.Generate()` esparce props FBX (árboles/rocas/arbustos/hierba) sobre el heightmap, descubriendo modelos por convención de nombre `<Tipo>_<Letra>_<Ancho>x<Largo>.fbx` en `entities/terrain/models/` (sin listas hardcodeadas)
+- `GrassSystem` y `DecorationSystem` son complementarios, no redundantes (C11): `GrassSystem` cubre todo el mapa con una "alfombra" densa de billboards animados por shader (viento); `DecorationSystem` reparte props grandes y estáticos de forma dispersa vía occupancy grid — las matas `Grass_*_1x1.fbx` son solo uno de sus cuatro tipos de prop, a modo de variedad puntual junto a árboles/rocas/arbustos, no un sustituto del césped base
 
 ---
 
