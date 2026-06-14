@@ -38,7 +38,8 @@ Monitor/
 │       └── trello-board.md # Skill: tablero Trello del proyecto (IDs, listas, etiquetas)
 ├── Camera.cs               # Cámara libre WASD + raycast
 ├── Connection.cs           # Hub de red TCP + dispatcher de protocolo
-├── Egg.cs / EggManager.cs  # Entidad huevo + gestión
+├── EntityManager.cs        # Base genérica EntityManager<T> (Node3D): Dictionary<int,T> + contenedor + TryGet()/Remove(); heredada por PlayerManager y EggManager
+├── Egg.cs / EggManager.cs  # Entidad huevo + gestión (EggManager : EntityManager<Egg>)
 ├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout(), hijos de equipo (gemas), AttachOrbitingGroup() (orbes en órbita)
 ├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?, Children?) — portable entre proyectos
 ├── EquipmentChild.cs       # Struct genérico: (ScenePath, Offsets?, GlowEffect?) — modelo hijo anidado dentro de una pieza de equipo (ej. gema en bastón)
@@ -58,7 +59,7 @@ Monitor/
 ├── MockServer.cs           # Servidor simulado para tests sin red
 ├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
 ├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
-├── PlayerManager.cs        # Gestión centralizada de jugadores
+├── PlayerManager.cs        # Gestión centralizada de jugadores (PlayerManager : EntityManager<Player>)
 ├── Resource.cs             # Entidad recurso: carga GLB o esfera coloreada; animación de aparición (caída + pop) al instanciarse
 ├── ScreenshotService.cs    # Herramienta dev: vuelca el framebuffer a .captures/*.png (auto periódico + F12)
 ├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario

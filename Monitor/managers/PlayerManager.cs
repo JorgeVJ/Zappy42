@@ -1,54 +1,26 @@
 using Godot;
 using System.Collections.Generic;
 
-public partial class PlayerManager : Node
+public partial class PlayerManager : EntityManager<Player>
 {
-	private Dictionary<int, Player> players = new();
-
-	private Node3D playerContainer;
+    protected override string ContainerName => "Players";
 
     [Signal]
     public delegate void PlayerCreatedEventHandler(Player player);
 
-    public override void _Ready()
-	{
-		playerContainer = GetNodeOrNull<Node3D>("Players");
-		if (playerContainer == null)
-		{
-			playerContainer = new Node3D();
-			playerContainer.Name = "Players";
-			AddChild(playerContainer);
-		}
-	}
-
-	public Player GetOrCreate(int id, Vector3 pos, string teamName)
-	{
-		if (players.TryGetValue(id, out var existing))
-			return existing;
+    public Player GetOrCreate(int id, Vector3 pos, string teamName)
+    {
+        if (entities.TryGetValue(id, out var existing))
+            return existing;
 
         var p = Player.Create(pos);
         p.Init(id, teamName);
         EmitSignal(nameof(PlayerCreated), p);
 
-        playerContainer.AddChild(p);
-		players[id] = p;
+        return Register(id, p);
+    }
 
-		return p;
-	}
-
-    public bool TryGet(int id, out Player player)
-		=> players.TryGetValue(id, out player);
-
-	// Vista de solo lectura de todos los jugadores activos (para propagar velocidad,
-	// posicionamiento, etc.).
-	public IReadOnlyCollection<Player> All => players.Values;
-
-	public void Remove(int id)
-	{
-		if (!players.TryGetValue(id, out var p))
-			return;
-
-		p.QueueFree();
-		players.Remove(id);
-	}
+    // Vista de solo lectura de todos los jugadores activos (para propagar velocidad,
+    // posicionamiento, etc.).
+    public IReadOnlyCollection<Player> All => entities.Values;
 }
