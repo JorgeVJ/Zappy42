@@ -358,7 +358,7 @@ public partial class Connection : Node
 
 		switch (parts[0])
 		{
-			case "WELCOME": SendMessage("GRAPHIC"); break; // handshake: el servidor saluda; respondemos GRAPHIC
+			case "WELCOME": OnWelcome(); break; // handshake: el servidor saluda; respondemos GRAPHIC
 			case "msz": msz(parts); break; // msz X Y\n msz\n Map size
 			case "bct": bct(parts); break; // bct X Y q q q q q q q\n bct X Y\n Contents of a map tile
 			case "tna": tna(parts); break; // tna N\n(× nbr teams) tna\n Team names
@@ -388,6 +388,16 @@ public partial class Connection : Node
 				GD.Print("Mensaje desconocido: " + line);
 				break;
 		}
+	}
+
+	// Handshake: el servidor saluda con WELCOME; respondemos GRAPHIC y, de paso,
+	// pedimos el time unit actual (sgt sin argumentos) para que el slider de
+	// SpeedControlPanel arranque sincronizado con el valor real del servidor
+	// (la respuesta llega como "sgt T" y la procesa el handler sgt() ya existente).
+	private void OnWelcome()
+	{
+		SendMessage("GRAPHIC");
+		SendMessage("sgt");
 	}
 
 	private void sbp(string[] parts)

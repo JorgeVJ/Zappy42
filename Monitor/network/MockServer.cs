@@ -10,6 +10,12 @@ public class MockServer
     // Secuencia de mensajes simulados para probar funcionalidades
     private readonly List<string> _messages = new List<string>
     {
+        // ── 0. Handshake: WELCOME -> (Connection responde GRAPHIC + sgt) ──
+        // -> el servidor real respondería aquí con "sgt T"; lo simulamos para
+        //    que SpeedControlPanel se sincronice también en modo mock (B9).
+        "WELCOME",
+        "sgt 5",
+
         // ── 1. Inicialización del mapa (25x25) y equipos ──────────────────
         "msz 25 25",
         "tna TEAM_A",
