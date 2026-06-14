@@ -37,7 +37,10 @@ Monitor/
 │       ├── meshy-assets.md # Skill: assets 3D (Meshy AI) — rutas, nombres y estado
 │       └── trello-board.md # Skill: tablero Trello del proyecto (IDs, listas, etiquetas)
 ├── Camera.cs               # Cámara libre WASD + raycast
-├── Connection.cs           # Hub de red TCP + dispatcher de protocolo
+├── Connection.cs           # Hub central: cablea transporte/dispatcher/managers/UI (lógica de protocolo repartida en Connection.Players.cs / Connection.Eggs.cs / Connection.System.cs)
+├── ServerTransport.cs      # Transporte TCP real o MockServer; emite LineReceived(line), expone SendMessage()/SetMockSpeed()
+├── MessageDispatcher.cs    # Router string→Action<string[]> del protocolo (sustituye al switch de HandleServerMessage)
+├── SelectionController.cs  # Selección por click (raycast) + InventoryPanel: HandleLeftClick/ShowInventory/PlayerClicked
 ├── EntityManager.cs        # Base genérica EntityManager<T> (Node3D): Dictionary<int,T> + contenedor + TryGet()/Remove(); heredada por PlayerManager y EggManager
 ├── Egg.cs / EggManager.cs  # Entidad huevo + gestión (EggManager : EntityManager<Egg>)
 ├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout(), hijos de equipo (gemas), AttachOrbitingGroup() (orbes en órbita)
@@ -97,6 +100,7 @@ game.tscn
     ├── Connection (connection.tscn) [Connection.cs]
     │   ├── PlayerManager            [PlayerManager.cs]
     │   ├── EggManager               [EggManager.cs]
+    │   ├── ServerTransport          [ServerTransport.cs] (Node, creado en código: socket TCP o MockServer)
     │   ├── InventoryPanel           [InventoryPanel.cs] (UI Control)
     │   ├── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
     │   └── TeamProgressPanel        [TeamProgressPanel.cs] (UI Control, creado en código)
@@ -116,9 +120,17 @@ player.tscn
 ## Clases Principales
 
 ### `Connection.cs` — Hub Central
-El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p`/`-h`, fallback `--mock`; ver `ParseConnectionArgs()`), abre un socket TCP y completa el handshake Zappy: espera `WELCOME` y entonces responde `GRAPHIC`. En cada frame parsea mensajes del servidor en `HandleServerMessage()`, delegando a handlers específicos.
+El corazón del monitor, ahora repartido en varios archivos para mantenerlo delgado:
 
-**Mensajes soportados:**
+- **`Connection.cs`** (clase parcial principal): cablea los componentes en `_Ready()` — managers (`PlayerManager`, `EggManager`, `Terrain`, `Camera`), `SelectionController`, `CrowdSystem`, `MessageLogPanel`, `TeamProgressPanel`, `SpeedControlPanel`, `ServerTransport` y `MessageDispatcher`. Recibe `LineReceived(line)` de `ServerTransport`, loguea en `MessageLogPanel` y delega en `MessageDispatcher.Dispatch()`. Mantiene `_UnhandledInput` (F2/F3) y `SendMessage()` (delega a `ServerTransport`).
+- **`Connection.Players.cs`** (clase parcial): handlers de jugadores (`pnw/ppo/plv/pin/pex/pbc/pic/pie/pfk/pdr/pgt/pdi`) + estado/efectos asociados (`_incantations`, `ShowPlayerMessage`, `ShowSoundWave`, `ShowIncantationResult`, `FadeOutTile`). Registra sus handlers en `RegisterPlayerHandlers()`.
+- **`Connection.Eggs.cs`** (clase parcial): handlers de huevos (`enw/eht/ebo/edi`), registrados en `RegisterEggHandlers()`.
+- **`Connection.System.cs`** (clase parcial): handshake (`WELCOME`→`OnWelcome()`), mapa/equipos (`msz/bct/tna`), velocidad (`sgt`, `OnSpeedChanged`, `ApplySpeedFactor`, `_currentSpeedFactor`, `teams`) y mensajería genérica (`smg/seg/suc/sbp`), registrados en `RegisterSystemHandlers()`.
+- **`ServerTransport.cs`** (`Node`, hijo de `Connection`, creado en código): encapsula el socket TCP real **o** `MockServer` de forma transparente. Decide el modo en `ParseConnectionArgs()` (flags `-h`/`-p`/`--mock`) y expone `UseMockServer` (que `Connection` copia para su propio log/estado). En `_Process()` acumula el stream TCP en `_recvBuffer`, procesa solo líneas completas (`\n`) y emite `LineReceived(line)` — o, en modo mock, reenvía cada mensaje de `MockServer.GetNextCommand()`. Ante fin de stream o error de socket (`IOException`/`ObjectDisposedException`), cierra `stream`/`client` y emite `Disconnected(reason)` (que `Connection` loguea en `MessageLogPanel`). `SendMessage(string)` escribe al socket real (no-op en mock); `SetMockSpeed(t)` reenvía a `MockServer.SetSpeed()` (usado por `OnSpeedChanged`).
+- **`MessageDispatcher.cs`**: router `Dictionary<string, Action<string[]>>` que sustituye al switch monolítico de `HandleServerMessage`. Cada clase parcial de `Connection` registra sus comandos vía `Register(cmd, handler)`; `Dispatch(line)` parsea y enruta (o loguea "Mensaje desconocido").
+- **`SelectionController.cs`**: extrae `HandleLeftClick`/`ShowInventory`/`PlayerClicked` (selección por click vía raycast de `Camera` + `InventoryPanel`). Recibe `Terrain` e `InventoryPanel` por constructor; `Connection` lo instancia en `_Ready()` y suscribe `camera.OnLeftClick += _selectionController.HandleLeftClick`.
+
+**Mensajes soportados** (sin cambios de comportamiento, solo de enrutado/ubicación):
 | Mensaje | Handler | Efecto |
 |---------|---------|--------|
 | `WELCOME` | → `SendMessage("GRAPHIC")` | Handshake: respuesta al saludo del servidor |
@@ -147,9 +159,9 @@ El corazón del monitor. Lee host/puerto de los flags de línea de comandos (`-p
 
 **Posicionamiento de entidades:** todas usan `x * Terrain.TILE_SIZE + Terrain.TILE_SIZE / 2f` para centrarlas en su tile.
 
-**Selección y UI:** `HandleLeftClick()` hace raycast desde la cámara. Si impacta un `Player` o `Tile`, llama a `ShowInventory()` que actualiza el `InventoryPanel`. Si impacta un `Resource`, resuelve la casilla bajo él (`GetTileFromPosition`) y muestra el inventario de esa casilla.
+**Selección y UI:** `SelectionController.HandleLeftClick()` hace raycast desde la cámara. Si impacta un `Player` o `Tile`, llama a `ShowInventory()` que actualiza el `InventoryPanel`. Si impacta un `Resource`, resuelve la casilla bajo él (`GetTileFromPosition`) y muestra el inventario de esa casilla.
 
-**Lectura de red robusta:** `_Process()` acumula el stream TCP en `_recvBuffer` y procesa solo líneas completas (terminadas en `\n`), conservando los fragmentos parciales entre frames. Ante fin de stream (`bytesRead == 0`) o error de socket (`IOException`/`ObjectDisposedException`), `HandleDisconnect()` cierra limpiamente `stream`/`client` y avisa en el `MessageLogPanel`.
+**Lectura de red robusta:** `ServerTransport._Process()` acumula el stream TCP en `_recvBuffer` y procesa solo líneas completas (terminadas en `\n`), conservando los fragmentos parciales entre frames. Ante fin de stream (`bytesRead == 0`) o error de socket (`IOException`/`ObjectDisposedException`), cierra limpiamente `stream`/`client`, resetea `_recvBuffer` y emite `Disconnected(reason)`, que `Connection` registra en `MessageLogPanel`.
 
 ---
 
@@ -233,19 +245,22 @@ Nodo bajo `Game` que vuelca el framebuffer de la ventana principal a PNG en disc
 ## Flujo de Datos
 
 ```
-Servidor TCP
+Servidor TCP / MockServer
     │
     ▼
-Connection._Process()  ← lee stream TCP cada frame
+ServerTransport._Process()  ← lee stream TCP (o MockServer) cada frame, reensambla líneas por \n
+    │ evento LineReceived(line)
+    ▼
+Connection.OnLineReceived()  ← loguea en MessageLogPanel
     │
     ▼
-HandleServerMessage()  ← parsea comando y argumentos
+MessageDispatcher.Dispatch()  ← parsea comando y enruta a Action<string[]> registrada
     │
-    ├─► PlayerManager.GetOrCreate() → Player.Init() / SetTilePos() / SetLevel()
-    ├─► EggManager.CreateEgg() / Remove()
-    ├─► Terrain.InitializeMap() → genera mesh + shader sync
-    ├─► Tile.Inventory.Set() → Changed → Terrain.UpdateTileResources()
-    └─► InventoryPanel.ShowForTile() ← desde HandleLeftClick()
+    ├─► (Connection.Players.cs) PlayerManager.GetOrCreate() → Player.Init() / SetTilePos() / SetLevel()
+    ├─► (Connection.Eggs.cs)    EggManager.CreateEgg() / Remove()
+    ├─► (Connection.System.cs)  Terrain.InitializeMap() → genera mesh + shader sync
+    ├─► (Connection.System.cs)  Tile.Inventory.Set() → Changed → Terrain.UpdateTileResources()
+    └─► InventoryPanel.ShowForTile() ← desde SelectionController.HandleLeftClick()
 
 Camera._UnhandledInput()
     │ click izquierdo
@@ -253,7 +268,7 @@ Camera._UnhandledInput()
 Camera.OnLeftClick signal
     │
     ▼
-Connection.HandleLeftClick()
+SelectionController.HandleLeftClick()
     ├─► Player.Highlight() + ShowInventory()
     └─► Terrain.GetTileFromPosition() + Tile.Highlight() + ShowInventory()
 ```
