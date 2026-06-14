@@ -68,7 +68,11 @@ Para cada tarjeta seleccionada:
    ```
    No hacer `push`. Mensaje de commit: `<CÓDIGO>: <resumen breve>` siguiendo el estilo de los
    commits existentes (p. ej. `B5: Disparar animaciones de recoger/soltar recursos (pgt/pdr)`).
-6. **Mover la tarjeta a "Test"**: `trello move-card --card <idCard> --list 6a27310e546b0e82ee1d092b`.
+6. **Cerrar el worktree** (la rama y el commit quedan intactos, solo se elimina el directorio
+   de trabajo):
+   Hacerlo **siempre** tras el commit y **antes** de mover la tarjeta a "Test" — no dejar
+   worktrees activos al terminar una tarjeta.
+7. **Mover la tarjeta a "Test"**: `trello move-card --card <idCard> --list 6a27310e546b0e82ee1d092b`.
    Si el "Qué hacer" lo justifica, actualizar la descripción (`update-card --desc`) con notas de
    implementación, pero sin reescribir el formato existente.
 
