@@ -34,8 +34,8 @@ script = ExtResource("1_ga5x6")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=116663308]
 transform = Transform3D(-0.522498, 0.167072, -0.836111, 0, 0.980615, 0.195946, 0.85264, 0.102382, -0.51237, 0, 1.505, 0)
-light_color = Color(0.99478, 0.97828, 0.838042, 1)
-light_energy = 5.312
+light_color = Color(0.37437338, 0.33239552, 0.02792753, 1)
+light_energy = 3.087
 shadow_enabled = true
 
 [node name="Connection" parent="." unique_id=609704325 node_paths=PackedStringArray("inventoryPanel") instance=ExtResource("2_hexf3")]
@@ -173,5 +173,5 @@ environment = SubResource("Environment_k485n")
 
 [node name="Terrain" parent="." unique_id=1894563482 instance=ExtResource("6_bqi2m")]
 
-[node name="ScreenshotService" type="Node" parent="."]
+[node name="ScreenshotService" type="Node" parent="." unique_id=1068522956]
 script = ExtResource("7_scrn1")

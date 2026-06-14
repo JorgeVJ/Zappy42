@@ -29,6 +29,12 @@ public partial class Resource : Node3D
 	public override void _Ready()
 	{
 		mesh = GetNode<MeshInstance3D>("Mesh");
+
+		// Durante el replay instantáneo de la barra de tiempo el recurso debe
+		// aparecer directamente en su posición/escala final, sin animación.
+		if (Connection.ReplayInstant)
+			return;
+
 		PlaySpawnAnimation();
 	}
 

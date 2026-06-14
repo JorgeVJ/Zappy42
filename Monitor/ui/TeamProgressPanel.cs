@@ -22,6 +22,7 @@ public partial class TeamProgressPanel : CollapsiblePanel
 
     private VBoxContainer _teamsContainer;
     private bool          _dirty = false;
+    private CanvasLayer   _winnerCanvas;
 
     // ── Lifecycle ─────────────────────────────────────────────────────────
 
@@ -107,6 +108,8 @@ public partial class TeamProgressPanel : CollapsiblePanel
 
     public void ShowWinner(string teamName)
     {
+        HideWinner();
+
         var canvas = new CanvasLayer();
         canvas.Layer = 10;
         GetTree().CurrentScene.AddChild(canvas);
@@ -123,6 +126,28 @@ public partial class TeamProgressPanel : CollapsiblePanel
         lbl.AddThemeFontSizeOverride("font_size", 48);
         lbl.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         canvas.AddChild(lbl);
+
+        _winnerCanvas = canvas;
+    }
+
+    // Quita el overlay de "equipo ganador" (si está visible).
+    public void HideWinner()
+    {
+        if (_winnerCanvas != null)
+        {
+            _winnerCanvas.QueueFree();
+            _winnerCanvas = null;
+        }
+    }
+
+    // Vuelve el panel a su estado inicial (sin equipos/jugadores), usado por
+    // TimelineController al resetear el mundo para reproducir el log desde 0.
+    public void Reset()
+    {
+        _teams.Clear();
+        _playerTeam.Clear();
+        HideWinner();
+        _dirty = true;
     }
 
     // ── Reconstrucción de la UI ────────────────────────────────────────────

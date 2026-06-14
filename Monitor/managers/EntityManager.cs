@@ -47,4 +47,12 @@ public partial class EntityManager<T> : Node where T : Node3D
         entity.QueueFree();
         entities.Remove(id);
     }
+
+    /// <summary>Elimina todas las entidades activas (usado por TimelineController.ResetWorldState).</summary>
+    public void Clear()
+    {
+        foreach (var entity in entities.Values)
+            entity.QueueFree();
+        entities.Clear();
+    }
 }

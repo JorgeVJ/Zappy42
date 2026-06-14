@@ -30,3 +30,7 @@ enabled=PackedStringArray("res://addons/meshy-godot-plugin/plugin.cfg")
 [rendering]
 
 environment/glow/upscale_mode=0
+
+[xr]
+
+shaders/enabled=true

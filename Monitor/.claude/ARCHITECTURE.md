@@ -32,49 +32,63 @@ Monitor/
 ├── .claude/
 │   ├── CLAUDE.md           # Instrucciones para Claude Code (este archivo vive aquí)
 │   ├── ARCHITECTURE.md     # Este archivo
-│   └── commands/           # Skills: terrain, equipment, meshy-assets, trello-board, work-on-trello, screenshot
-├── core/                   # Interfaces y clases base genéricas, portables entre proyectos
-│   ├── IInventory.cs / ISelectable.cs / Inventory.cs
-│   ├── SelectableInventoryNode3D.cs # Clase base: Node3D seleccionable con inventario
-│   ├── EquipmentSlot.cs / EquipmentChild.cs / Offsets.cs
-│   ├── OrbitingPivot.cs / OrbSpec.cs / GlowOrb.cs / GlowEffect.cs
-│   └── Log.cs              # Logging centralizado con niveles Debug/Info/Warn/Error
-├── managers/
-│   ├── EntityManager.cs    # Base genérica EntityManager<T> (Node3D): Dictionary<int,T> + TryGet()/Remove()
-│   ├── PlayerManager.cs / EggManager.cs # : EntityManager<Player> / EntityManager<Egg>
-│   └── EquipmentManager.cs # BoneAttachment3D, caché de escenas, ApplyLoadout(), AttachOrbitingGroup()
-├── network/
-│   ├── Connection.cs           # Hub central: cablea transporte/dispatcher/managers/UI
-│   ├── Connection.Players.cs   # Handlers pnw/ppo/plv/pin/pex/pbc/pic/pie/pfk/pdr/pgt/pdi
-│   ├── Connection.Eggs.cs      # Handlers enw/eht/ebo/edi
-│   ├── Connection.System.cs    # Handshake, msz/bct/tna, sgt, smg/seg/suc/sbp
-│   ├── MessageDispatcher.cs    # Router string→Action<string[]> del protocolo
-│   ├── SelectionController.cs  # Selección por click (raycast) + InventoryPanel
-│   ├── ServerTransport.cs      # Transporte TCP real o MockServer
-│   ├── MockServer.cs           # Servidor simulado para tests sin red
-│   └── connection.tscn
-├── entities/
-│   ├── camera/             Camera.cs (libre WASD + raycast), CameraFollowBehavior.cs (lock/orbit/zoom)
-│   ├── player/
-│   │   ├── Player.cs, ShamanAnimationController.cs, ShamanEquipmentConfig.cs, player.tscn
-│   │   └── models/
-│   │       ├── Shaman.glb          # Modelo principal del jugador (esqueleto + AnimationPlayer)
-│   │       └── equipments/         # Accesorios por nivel (generados con Meshy AI)
-│   │           ├── Staff.glb           # Lvl 2+ (bastón base; gema hija reemplazable)
-│   │           ├── skull_mask.glb      # Lvl 4+
-│   │           ├── Staff_Gem_Lvl1.glb  # Lvl 3-4 (hija de Staff.glb)
-│   │           ├── Staff_Gem_Lvl2.glb  # Lvl 5-6 (hija de Staff.glb, reemplaza Lvl1)
-│   │           ├── Staff_Gem_Lvl3.glb  # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
-│   │           └── staff_basic.glb     # legacy, sin usar (offsets de referencia en ShamanEquipmentConfig.cs)
-│   ├── egg/                 Egg.cs, egg.tscn
-│   ├── resources/           Resource.cs, resource.tscn, models/*.glb (7 tipos de recurso)
-│   ├── terrain/
-│   │   ├── Terrain.cs, Tile.cs, GrassSystem.cs, DecorationSystem.cs
-│   │   ├── terrain.tscn, terrain.gdshader, grass.gdshader
-│   │   └── models/          # Props GLB para DecorationSystem: <Tipo>_<Letra>_<Ancho>x<Largo>.glb (Tree_*, Rock_*, Bush_*, Grass_*)
-│   └── shared/               CrowdSystem.cs, ScreenshotService.cs, SoundWave.cs, TerrainSnap.cs
-├── ui/                        CollapsiblePanel.cs, InventoryPanel.cs, MessageLogPanel.cs, TeamProgressPanel.cs, SpeedControlPanel.cs(+.tscn), ResizeBehavior.cs
-└── game.tscn
+│   └── commands/
+│       ├── terrain.md      # Skill: contexto completo del sistema de terreno
+│       ├── meshy-assets.md # Skill: assets 3D (Meshy AI) — rutas, nombres y estado
+│       └── trello-board.md # Skill: tablero Trello del proyecto (IDs, listas, etiquetas)
+├── Camera.cs               # Cámara libre WASD + raycast
+├── CameraFollowBehavior.cs # Lock de cámara sobre un jugador (TeamProgressPanel): orbita (WASD) y zoom (rueda) alrededor del objetivo sin romper el lock; clic derecho lo desactiva
+├── Connection.cs           # Hub central: cablea transporte/dispatcher/managers/UI (lógica de protocolo repartida en Connection.Players.cs / Connection.Eggs.cs / Connection.System.cs)
+├── ServerTransport.cs      # Transporte TCP real o MockServer; emite LineReceived(line), expone SendMessage()/SetMockSpeed()
+├── MessageDispatcher.cs    # Router string→Action<string[]> del protocolo (sustituye al switch de HandleServerMessage)
+├── EventLog.cs             # Historial de líneas crudas del servidor agrupadas en TimeBand (franjas de tiempo) por proximidad de llegada
+├── TimelineController.cs   # Backend de la barra de tiempo: cursor de franja, IsLive, JumpTo()/GoLive() (reset + replay instantáneo)
+├── Connection.Timeline.cs  # (clase parcial) ReplayInstant flag + ResetWorldState(): vacía PlayerManager/EggManager/Terrain/TeamProgressPanel para el replay
+├── SelectionController.cs  # Selección por click (raycast) + InventoryPanel: HandleLeftClick/ShowInventory/PlayerClicked
+├── EntityManager.cs        # Base genérica EntityManager<T> (Node3D): Dictionary<int,T> + contenedor + TryGet()/Remove(); heredada por PlayerManager y EggManager
+├── Egg.cs / EggManager.cs  # Entidad huevo + gestión (EggManager : EntityManager<Egg>)
+├── EquipmentManager.cs     # Gestor genérico de equipamiento: BoneAttachment3D, caché de escenas, ApplyLoadout(), hijos de equipo (gemas), AttachOrbitingGroup() (orbes en órbita)
+├── EquipmentSlot.cs        # Struct genérico: (BoneName, ScenePath, Offsets?, Children?) — portable entre proyectos
+├── EquipmentChild.cs       # Struct genérico: (ScenePath, Offsets?, GlowEffect?) — modelo hijo anidado dentro de una pieza de equipo (ej. gema en bastón)
+├── OrbitingPivot.cs        # Node3D genérico: rota sobre su eje Y a velocidad constante (orbes en órbita sobre la cabeza)
+├── OrbSpec.cs              # Struct genérico: (Offsets, Color, GlowEffect) — define una orbe procedural alrededor de un OrbitingPivot
+├── GlowOrb.cs              # MeshInstance3D genérico: esfera procedural translúcida + rim + GlowEffect (orbe brillante, sin GLB)
+├── GlowEffect.cs           # Struct genérico: (Color, EnergyMultiplier) — aplica emisión a los materiales de un Node3D
+├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman, incl. grupo de orbes brillantes en órbita
+├── ShamanAnimationController.cs # Controlador de animaciones del Shaman: PlayWalk/Idle/Run/Spell/etc., loop automático
+├── IInventory.cs           # Interfaz: objeto con inventario
+├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
+├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
+├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ y botón de restauración
+├── InventoryPanel.cs       # UI: panel de inventario seleccionado
+├── MessageLogPanel.cs      # UI: log de mensajes (hereda CollapsiblePanel)
+├── TeamProgressPanel.cs    # UI: progreso por equipo (hereda CollapsiblePanel)
+├── MockServer.cs           # Servidor simulado para tests sin red
+├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
+├── Player.cs               # Entidad jugador (IK, animación, nivel, orientación)
+├── PlayerManager.cs        # Gestión centralizada de jugadores (PlayerManager : EntityManager<Player>)
+├── Resource.cs             # Entidad recurso: carga GLB o esfera coloreada; animación de aparición (caída + pop) al instanciarse
+├── ScreenshotService.cs    # Herramienta dev: vuelca el framebuffer a .captures/*.png (auto periódico + F12)
+├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
+├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
+├── Tile.cs                 # Datos de una casilla (coord + inventario)
+├── models/
+│   ├── Shaman/
+│   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
+│   ├── equipment/           # Accesorios por nivel (generados con Meshy AI)
+│   │   ├── Staff.glb        # Lvl 2+ (bastón base; gema hija reemplazable)
+│   │   ├── skull_mask.glb   # Lvl 3
+│   │   ├── Staff_Gem_Lvl1.glb # Lvl 3-4 (hija de Staff.glb)
+│   │   ├── Staff_Gem_Lvl2.glb # Lvl 5-6 (hija de Staff.glb, reemplaza Lvl1)
+│   │   └── Staff_Gem_Lvl3.glb # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
+│   └── meshy_models/        # Recursos del mundo (linemate, deraumere, etc.)
+├── game.tscn
+├── player.tscn
+├── terrain.tscn
+├── connection.tscn
+├── egg.tscn
+├── resource.tscn
+└── terrain.gdshader
 ```
 
 ---
@@ -118,7 +132,8 @@ El corazón del monitor, ahora repartido en varios archivos para mantenerlo delg
 - **`Connection.Players.cs`** (clase parcial): handlers de jugadores (`pnw/ppo/plv/pin/pex/pbc/pic/pie/pfk/pdr/pgt/pdi`) + estado/efectos asociados (`_incantations`, `ShowPlayerMessage`, `ShowSoundWave`, `ShowIncantationResult`, `FadeOutTile`). Registra sus handlers en `RegisterPlayerHandlers()`.
 - **`Connection.Eggs.cs`** (clase parcial): handlers de huevos (`enw/eht/ebo/edi`), registrados en `RegisterEggHandlers()`.
 - **`Connection.System.cs`** (clase parcial): handshake (`WELCOME`→`OnWelcome()`), mapa/equipos (`msz/bct/tna`), velocidad (`sgt`, `OnSpeedChanged`, `ApplySpeedFactor`, `_currentSpeedFactor`, `teams`) y mensajería genérica (`smg/seg/suc/sbp`), registrados en `RegisterSystemHandlers()`.
-- **`ServerTransport.cs`** (`Node`, hijo de `Connection`, creado en código): encapsula el socket TCP real **o** `MockServer` de forma transparente. Decide el modo en `ParseConnectionArgs()` (flags `-h`/`-p`/`--mock`) y expone `UseMockServer` (que `Connection` copia para su propio log/estado). En `_Process()` acumula el stream TCP en `_recvBuffer`, procesa solo líneas completas (`\n`) y emite `LineReceived(line)` — o, en modo mock, reenvía cada mensaje de `MockServer.GetNextCommand()`. Ante fin de stream o error de socket (`IOException`/`ObjectDisposedException`), cierra `stream`/`client` y emite `Disconnected(reason)` (que `Connection` loguea en `MessageLogPanel`). `SendMessage(string)` escribe al socket real (no-op en mock); `SetMockSpeed(t)` reenvía a `MockServer.SetSpeed()` (usado por `OnSpeedChanged`).
+- **`Connection.Timeline.cs`** (clase parcial): backend de la barra de tiempo (ver sección dedicada más abajo). Define `static bool ReplayInstant` y `ResetWorldState()`; instancia `TimelineController` en `_Ready()`.
+- **`ServerTransport.cs`** (`Node`, hijo de `Connection`, creado en código): encapsula el socket TCP real **o** `MockServer` de forma transparente. Decide el modo en `ParseConnectionArgs()` (flags `-h`/`-p`/`--mock`) y expone `UseMockServer` (que `Connection` copia para su propio log/estado). En `_Process()` acumula el stream TCP en `_recvBuffer`, procesa solo líneas completas (`\n`) y emite `LineReceived(line)` — o, en modo mock, reenvía cada mensaje de `MockServer.GetNextCommand()`. Ante fin de stream o error de socket (`IOException`/`ObjectDisposedException`), cierra `stream`/`client` y emite `Disconnected(reason)` (que `Connection` loguea en `MessageLogPanel`). `SendMessage(string)` escribe al socket real (no-op en mock, y también no-op durante `ReplayInstant`); `SetMockSpeed(t)` reenvía a `MockServer.SetSpeed()` (usado por `OnSpeedChanged`).
 - **`MessageDispatcher.cs`**: router `Dictionary<string, Action<string[]>>` que sustituye al switch monolítico de `HandleServerMessage`. Cada clase parcial de `Connection` registra sus comandos vía `Register(cmd, handler)`; `Dispatch(line)` parsea y enruta (o loguea "Mensaje desconocido").
 - **`SelectionController.cs`**: extrae `HandleLeftClick`/`ShowInventory`/`PlayerClicked` (selección por click vía raycast de `Camera` + `InventoryPanel`). Recibe `Terrain` e `InventoryPanel` por constructor; `Connection` lo instancia en `_Ready()` y suscribe `camera.OnLeftClick += _selectionController.HandleLeftClick`.
 
@@ -154,6 +169,56 @@ El corazón del monitor, ahora repartido en varios archivos para mantenerlo delg
 **Selección y UI:** `SelectionController.HandleLeftClick()` hace raycast desde la cámara. Si impacta un `Player` o `Tile`, llama a `ShowInventory()` que actualiza el `InventoryPanel`. Si impacta un `Resource`, resuelve la casilla bajo él (`GetTileFromPosition`) y muestra el inventario de esa casilla.
 
 **Lectura de red robusta:** `ServerTransport._Process()` acumula el stream TCP en `_recvBuffer` y procesa solo líneas completas (terminadas en `\n`), conservando los fragmentos parciales entre frames. Ante fin de stream (`bytesRead == 0`) o error de socket (`IOException`/`ObjectDisposedException`), cierra limpiamente `stream`/`client`, resetea `_recvBuffer` y emite `Disconnected(reason)`, que `Connection` registra en `MessageLogPanel`.
+
+---
+
+### Barra de tiempo (Timeline / Replay) — backend
+
+Permite "deshacer" hasta un momento anterior y reanudar después con los mensajes ya
+recibidos, al estilo de un streaming en vivo. Esta iteración cubre solo el backend; la UI
+(`TimelineBar`, slider) es la tarjeta Trello **D9** (pendiente).
+
+- **`EventLog.cs`**: guarda cada línea cruda recibida (`LogEntry(Raw, ReceivedAtMs)`) y las
+  agrupa en `TimeBand(StartIndex, EndIndex)` por proximidad de llegada (`BandGapMs = 100.0`).
+  El servidor notifica los resultados de las acciones uno a uno, pero los de un mismo tick
+  llegan en una ráfaga muy próxima en tiempo real; agruparlos por proximidad da una
+  granularidad de scrub con sentido ("qué pasó en este momento") sin depender de `sgt`
+  (el Monitor no recibe ticks explícitos del servidor).
+- **`TimelineController.cs`**: vive en `Connection._timeline`. Mantiene `Log: EventLog`,
+  `CursorBandIndex` (-1 = mundo vacío) e `IsLive`.
+  - `OnLineReceived(line)`: añade la línea al `Log`; si `IsLive`, la despacha normalmente
+    (animada) y avanza el cursor a la última franja.
+  - `JumpTo(bandIndex)`: pone `ReplayInstant = true`, llama a `Connection.ResetWorldState()`
+    y reproduce instantáneamente `Log.Messages[0..Bands[bandIndex].EndIndex]` vía
+    `MessageDispatcher.Dispatch()`. Al terminar, `ReplayInstant = false`,
+    `CursorBandIndex = bandIndex`, `IsLive = (bandIndex == Bands.Count - 1)`.
+  - `GoLive()`: `JumpTo(Bands.Count - 1)` + `IsLive = true`. Si llegaron mensajes nuevos
+    mientras `IsLive` era `false`, se aplican aquí.
+- **`Connection.Timeline.cs`**:
+  - `static bool ReplayInstant` — activo durante `JumpTo()`. Lo consultan los handlers con
+    efectos visuales para aplicar el resultado final sin animar:
+    - `Player.SetTilePos()` ([Player.cs](../entities/player/Player.cs)): si `ReplayInstant`,
+      además de fijar `TilePos` clava `GlobalPosition` al centro del tile
+      (`TerrainSnap.TileCenter`) y pone `Velocity = Vector3.Zero` (sin esto, `CrowdSystem`
+      tendría que recorrer la distancia frame a frame al volver a Live).
+    - `Resource._Ready()` ([Resource.cs](../entities/resources/Resource.cs)): si
+      `ReplayInstant`, no llama a `PlaySpawnAnimation()` (aparece directo en su posición/escala
+      final).
+    - `pbc`/`pie` ([Connection.Players.cs](../network/Connection.Players.cs)): si
+      `ReplayInstant`, omiten los efectos transitorios sin estado persistente
+      (`ShowPlayerMessage`/`ShowSoundWave`/`ShowIncantationResult`).
+    - `Connection.SendMessage()`: no-op durante `ReplayInstant` (no se reenvían `mct`/`sgt`/
+      `GRAPHIC`... al servidor real durante el replay).
+  - `ResetWorldState()` — vacía el mundo para que `JumpTo()` pueda reproducir desde el
+    principio: `PlayerManager.Clear()`, `EggManager.Clear()`, `Terrain.Reset()`,
+    `_incantations.Clear()`, `teams.Clear()`, `TeamProgressPanel.Reset()` (incluye
+    `HideWinner()`), `_currentSpeedFactor = 1f`, `GetTree().Paused = false`.
+  - `EntityManager<T>.Clear()` ([EntityManager.cs](../managers/EntityManager.cs)): `QueueFree()`
+    de todas las entidades + vacía el diccionario; heredado por `PlayerManager`/`EggManager`.
+  - `Terrain.Reset()` ([Terrain.cs](../entities/terrain/Terrain.cs)): libera los `Resource`
+    instanciados sobre el terreno y vacía `tileResources`, para que `InitializeMap()` (disparado
+    de nuevo por `msz` durante el replay) sea idempotente. `InitializeMap()` llama a `Reset()`
+    al empezar.
 
 ---
 
@@ -272,4 +337,6 @@ SelectionController.HandleLeftClick()
 ## Áreas de Mejora / Pendientes
 
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
-- **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs` (C4) — se corrige solo si se refactoriza la interfaz completa, según `CLAUDE.md`.
+- **Typo:** `UnHightlight()` debería ser `UnHighlight()` en `ISelectable.cs` y `SelectableInventoryNode3D.cs`.
+- **Altura de jugadores:** Y fija en `0.3f`; no sigue la altura real del terreno.
+- **Barra de tiempo (UI):** el backend (`EventLog`/`TimelineController`, ver sección dedicada) está implementado; falta `TimelineBar.cs`/`.tscn` (slider + "Live") — tarjeta Trello D9.

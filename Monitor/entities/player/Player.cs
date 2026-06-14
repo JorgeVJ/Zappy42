@@ -45,6 +45,16 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         // El destino lógico es el tile; el desplazamiento real (steering hacia el
         // centro del tile + separación de vecinos) lo conduce CrowdSystem (D3).
         TilePos = new Vector2I(x, y);
+
+        // Durante el replay instantáneo de la barra de tiempo no hay frames
+        // entre mensajes para que CrowdSystem haga el steering: clavar la
+        // posición real al centro del tile para evitar un "viaje" visible al
+        // volver a Live.
+        if (Connection.ReplayInstant && _terrain != null)
+        {
+            GlobalPosition = TerrainSnap.TileCenter(_terrain, x, y, 0f);
+            Velocity = Vector3.Zero;
+        }
         Log.Debug($"SetTilePos: player {Id} new tile ({x},{y})");
     }
 

@@ -81,9 +81,12 @@ public partial class Connection : Node
         RegisterSystemHandlers(_dispatcher);
         RegisterPlayerHandlers(_dispatcher);
         RegisterEggHandlers(_dispatcher);
+
+        _timeline = new TimelineController(this, _dispatcher);
     }
 
-    // Línea completa del protocolo (real o mock): loguear y enrutar por comando.
+    // Línea completa del protocolo (real o mock): loguear y entregar a la
+    // barra de tiempo, que decide si se despacha en vivo o solo se acumula.
     private void OnLineReceived(string line)
     {
         var parts = line.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
@@ -91,7 +94,7 @@ public partial class Connection : Node
             return;
 
         _logPanel.Log(parts[0], line);
-        _dispatcher.Dispatch(line);
+        _timeline.OnLineReceived(line);
     }
 
     private void OnTransportDisconnected(string reason)
@@ -101,6 +104,12 @@ public partial class Connection : Node
 
     public void SendMessage(string msg)
     {
+        // Durante el replay instantáneo de la barra de tiempo no se reenvían
+        // comandos al servidor (mct, sgt, GRAPHIC...): solo se reproduce el
+        // log ya recibido.
+        if (ReplayInstant)
+            return;
+
         _transport.SendMessage(msg);
     }
 

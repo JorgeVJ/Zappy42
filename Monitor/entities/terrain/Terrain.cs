@@ -52,12 +52,25 @@ public partial class Terrain : Node3D
 
 	public void InitializeMap(int width, int height)
 	{
+		Reset();
+
 		Width = width;
 		Height = height;
 
 		CreateTiles();
 		GenerateHeightMap();
 		GenerateTerrainMesh();
+	}
+
+	// Libera los recursos sobre el terreno y limpia tileResources para que
+	// InitializeMap() (msz) pueda volver a llamarse de forma segura: lo usa
+	// TimelineController al resetear el mundo para reproducir el log desde 0.
+	public void Reset()
+	{
+		foreach (var list in tileResources.Values)
+			foreach (var r in list)
+				r.QueueFree();
+		tileResources.Clear();
 	}
 
 	private void CreateTiles()

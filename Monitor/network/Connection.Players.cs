@@ -125,9 +125,12 @@ public partial class Connection
         }
 
         // Quitar el resaltado del tile y mostrar un pulso de color según el resultado
-        // (verde = éxito, rojo = fallo) reutilizando el efecto SoundWave.
+        // (verde = éxito, rojo = fallo) reutilizando el efecto SoundWave. El pulso es
+        // un efecto transitorio sin estado persistente: se omite durante el replay
+        // instantáneo de la barra de tiempo.
         terrainManager?.DeselectTile();
-        ShowIncantationResult(x, y, success);
+        if (!ReplayInstant)
+            ShowIncantationResult(x, y, success);
     }
 
     private void pic(string[] parts)
@@ -182,9 +185,12 @@ public partial class Connection
         label.Position = new Vector3(0, 1.5f, 0); // encima del jugador
         player.AddChild(label);
 
-        // desaparecer después de 2 segundos
+        // desaparecer después de 2 segundos (salvo que ResetWorldState ya haya
+        // liberado al jugador y, con él, esta etiqueta - p.ej. al saltar en la
+        // barra de tiempo mientras el mensaje seguía visible).
         await ToSignal(GetTree().CreateTimer(2.0f), "timeout");
-        label.QueueFree();
+        if (IsInstanceValid(label))
+            label.QueueFree();
     }
 
     private void pbc(string[] parts)
@@ -203,8 +209,14 @@ public partial class Connection
 
         Log.Debug($"[pbc] Player #{id} dice: {message}");
         _teamPanel?.SetLastAction(id, $"📢 {message}");
-        ShowPlayerMessage(player, message);
-        ShowSoundWave(player);
+
+        // Globo de texto y onda de sonido son efectos transitorios sin estado
+        // persistente: se omiten durante el replay instantáneo de la barra de tiempo.
+        if (!ReplayInstant)
+        {
+            ShowPlayerMessage(player, message);
+            ShowSoundWave(player);
+        }
     }
 
     // Expanding ground ring centered on the emitter's tile, visualizing the
