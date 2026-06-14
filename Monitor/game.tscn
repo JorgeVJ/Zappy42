@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://bdr2n48at6was" path="res://managers/EggManager.cs" id="4_wn21u"]
 [ext_resource type="Script" uid="uid://dcfs6fcpowxpg" path="res://ui/InventoryPanel.cs" id="5_mwang"]
 [ext_resource type="PackedScene" uid="uid://c8qjyl3lsv5k1" path="res://ui/SpeedControlPanel.tscn" id="6_13bbc"]
+[ext_resource type="PackedScene" path="res://ui/timeline_bar.tscn" id="8_tlbar"]
 [ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://entities/terrain/terrain.tscn" id="6_bqi2m"]
 [ext_resource type="Script" uid="uid://cs8rn2vqkp4w" path="res://entities/shared/ScreenshotService.cs" id="7_scrn1"]
 
@@ -167,6 +168,8 @@ layout_mode = 2
 text = "X"
 
 [node name="SpeedControlPanel" parent="Connection" unique_id=873815514 instance=ExtResource("6_13bbc")]
+
+[node name="TimelineBar" parent="Connection" instance=ExtResource("8_tlbar")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1744335789]
 environment = SubResource("Environment_k485n")

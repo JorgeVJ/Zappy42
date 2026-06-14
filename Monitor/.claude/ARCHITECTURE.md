@@ -153,8 +153,8 @@ El corazón del monitor, ahora repartido en varios archivos para mantenerlo delg
 | `pic X Y L #N...` | → `Player.PlaySpell()` + `Terrain.SelectTile()` | Inicio de incantación: hechizo + resaltado de tile |
 | `pie X Y R` | → `Player.StopSpell()` + `SoundWave` | Fin de incantación: pulso verde/rojo según resultado |
 | `pfk #N` | — | Jugador pone huevo |
-| `pdr #N ITEM` | — | Jugador suelta recurso |
-| `pgt #N ITEM` | — | Jugador recoge recurso |
+| `pdr #N ITEM` | → `Player.PlayPickUp()` | Jugador suelta recurso: gesto one-shot, vuelve a Idle solo |
+| `pgt #N ITEM` | → `Player.PlayCollect()` | Jugador recoge recurso: gesto one-shot, vuelve a Idle solo |
 | `pdi #N` | → `PlayerManager.Remove()` | Jugador muere |
 | `enw #E #N X Y` | → `EggManager.CreateEgg()` | Huevo puesto |
 | `eht #E` | → `Egg.Hatch()` | Eclosión: transición visual (no elimina el huevo) |
@@ -251,6 +251,8 @@ Encapsula toda la lógica de animación del Shaman siguiendo el mismo patrón qu
 
 - Clase interna privada `Clip` centraliza los nombres de animación del GLB: `idle`, `walking`, `running`, `spell_cast`, `collect_object`, `pick_up_pocket`.
 - `EnableLoopOnAll()` en el constructor activa `LoopModeEnum.Linear` en todas las clips al inicializar.
+- `SpellDuration`/`CollectDuration`/`PickUpDuration` exponen la longitud real (segundos) de `spell_cast`/`collect_object`/`pick_up_pocket` leída del propio `AnimationPlayer`; `IsPlayingCollect`/`IsPlayingPickUp` indican si esos clips son el `CurrentAnimation` actual.
+- `Player.PlayCollect()`/`PlayPickUp()` (llamados desde `pgt`/`pdr`) son gestos "one-shot": reproducen el clip y, tras su duración real, vuelven a `PlayIdle()` solos vía `Player.PlayOneShot()` (no hay mensaje de "fin" del servidor para estos, a diferencia de `pic`/`pie` con `PlaySpell`/`StopSpell`). `PlayOneShot` solo fuerza Idle si el clip one-shot sigue siendo el actual (no interrumpe una incantación u otra animación que haya empezado mientras tanto).
 
 ### `EquipmentManager.cs` + `EquipmentSlot.cs` — Sistema de Equipamiento
 Patrón portable entre proyectos. `EquipmentManager`, `EquipmentSlot`, `EquipmentChild`, `OrbitingPivot`, `OrbSpec`, `GlowOrb` y `GlowEffect` son genéricos (sin datos de proyecto). `ShamanEquipmentConfig` es el único archivo específico: mapea nivel → lista de `EquipmentSlot(boneName, glbPath)`.

@@ -82,6 +82,47 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         _shamanAnim?.PlayIdle();
     }
 
+    // Animaciones "one-shot" disparadas por pgt/pdr (recoger/dejar recurso): se
+    // reproducen una vez y, transcurrida su duración real, vuelven a Idle solas
+    // (a diferencia de PlaySpell/StopSpell, el servidor no envía un mensaje de
+    // "fin" para estos gestos).
+    public void PlayCollect()
+    {
+        if (_shamanAnim == null)
+            return;
+
+        PlayOneShot(() => _shamanAnim.PlayCollect(), _shamanAnim.CollectDuration,
+            () => _shamanAnim.IsPlayingCollect);
+    }
+
+    public void PlayPickUp()
+    {
+        if (_shamanAnim == null)
+            return;
+
+        PlayOneShot(() => _shamanAnim.PlayPickUp(), _shamanAnim.PickUpDuration,
+            () => _shamanAnim.IsPlayingPickUp);
+    }
+
+    private async void PlayOneShot(Action play, float duration, Func<bool> stillPlaying)
+    {
+        if (play == null)
+            return;
+
+        play();
+
+        if (duration <= 0f)
+            return;
+
+        await ToSignal(GetTree().CreateTimer(duration), "timeout");
+
+        // Solo volver a Idle si el jugador sigue vivo y la animación one-shot
+        // sigue siendo la actual (si mientras tanto empezó otra, p.ej. una
+        // incantación o un movimiento, no la interrumpimos).
+        if (IsInstanceValid(this) && (stillPlaying?.Invoke() ?? false))
+            _shamanAnim?.PlayIdle();
+    }
+
     public override void _Ready()
     {
         base._Ready();

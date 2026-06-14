@@ -20,6 +20,7 @@ public partial class Connection : Node
     private MessageLogPanel _logPanel;
     private TeamProgressPanel _teamPanel;
     private SpeedControlPanel _speedPanel;
+    private TimelineBar _timelineBar;
 
     private Camera camera;
 
@@ -67,6 +68,8 @@ public partial class Connection : Node
         _speedPanel = GetNode<SpeedControlPanel>("SpeedControlPanel");
         _speedPanel.SpeedChanged += OnSpeedChanged;
 
+        _timelineBar = GetNode<TimelineBar>("TimelineBar");
+
         // Transporte: decide internamente mock vs. socket real (ParseConnectionArgs)
         // y nos avisa con UseMockServer cuál fue el resultado (p. ej. para el log inicial).
         _transport = new ServerTransport();
@@ -83,6 +86,7 @@ public partial class Connection : Node
         RegisterEggHandlers(_dispatcher);
 
         _timeline = new TimelineController(this, _dispatcher);
+        _timelineBar.Setup(_timeline);
     }
 
     // Línea completa del protocolo (real o mock): loguear y entregar a la

@@ -62,6 +62,7 @@ public partial class Connection
         var tilePos = player.TilePos;
         terrainManager[tilePos.X, tilePos.Y]?.Inventory.Remove(type, 1);
         _teamPanel?.SetLastAction(id, $"+ {type}");
+        player.PlayCollect();
         Log.Debug($"[pgt] Player #{id} tomo {type}");
     }
 
@@ -82,6 +83,7 @@ public partial class Connection
         player.Inventory.Remove(type, 1);
 
         _teamPanel?.SetLastAction(id, $"- {type}");
+        player.PlayPickUp();
         Log.Debug($"[pdr] Player #{id} dejo {type}");
     }
 
