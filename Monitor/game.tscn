@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://ui/timeline_bar.tscn" id="8_tlbar"]
 [ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://entities/terrain/terrain.tscn" id="6_bqi2m"]
 [ext_resource type="Script" uid="uid://cs8rn2vqkp4w" path="res://entities/shared/ScreenshotService.cs" id="7_scrn1"]
+[ext_resource type="PackedScene" uid="uid://dqx1mus1cplr" path="res://audio/MusicPlayer.tscn" id="9_musicpl"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6sjpb"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -178,3 +179,6 @@ environment = SubResource("Environment_k485n")
 
 [node name="ScreenshotService" type="Node" parent="." unique_id=1068522956]
 script = ExtResource("7_scrn1")
+
+[node name="MusicPlayer" parent="." instance=ExtResource("9_musicpl")]
+process_mode = 3

@@ -22,6 +22,7 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Seguimiento de progreso por equipo | ✅ | TeamProgressPanel: jugadores, niveles y equipo líder |
 | Quién ganó (`seg`) | ✅ | Overlay pantalla completa con nombre del ganador |
 | Protocolo gráfico completo | ✅ | Todos los mensajes del servidor manejados |
+| Audio/música | ✅ | `MusicPlayer` (`audio/MusicPlayer.cs`): música de fondo en bucle, hijo directo de `Game` (sobrevive al replay/reset de la timeline), `ProcessMode.Always` (sigue sonando con `GetTree().Paused = true` tras `seg`), botón Mute/tecla M |
 
 ---
 
@@ -72,6 +73,10 @@ Monitor/
 ├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
 ├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
 ├── Tile.cs                 # Datos de una casilla (coord + inventario)
+├── audio/
+│   ├── music.mp3           # Pista de música de fondo (loop manual, ver MusicPlayer.cs)
+│   ├── MusicPlayer.cs       # Música de fondo en bucle (Finished->Play()); botón Mute + tecla M; ProcessMode.Always
+│   └── MusicPlayer.tscn     # UI: CheckButton Mute en esquina superior derecha + AudioStreamPlayer hijo
 ├── models/
 │   ├── Shaman/
 │   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
@@ -113,7 +118,8 @@ game.tscn
     │   ├── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
     │   ├── GrassSystem              [GrassSystem.cs] (césped procedural via MultiMeshInstance3D)
     │   └── DecorationSystem         [DecorationSystem.cs] (props FBX: árboles/rocas/arbustos/hierba)
-    └── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
+    ├── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
+    └── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (música de fondo en bucle, ProcessMode.Always; hijo directo de Game para no verse afectado por ResetWorldState; CheckButton Mute arriba-derecha + tecla M)
 
 player.tscn
 └── Node3D "Player"  [Player.cs]
