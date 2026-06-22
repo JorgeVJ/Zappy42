@@ -72,6 +72,16 @@ bool ZappySocket::IsWouldBlockError() noexcept
 #endif
 }
 
+bool ZappySocket::Send(std::string &data)
+{
+	return (send(this->Get(), data.c_str(), static_cast<int>(data.size()), 0) == static_cast<int>(data.size()));
+}
+
+bool ZappySocket::Send(const std::string_view &data)
+{
+	return (send(this->Get(), data.data(), static_cast<int>(data.size()), 0) == static_cast<int>(data.size()));
+}
+
 bool ZappySocket::SetNonBlocking(bool enabled) noexcept
 {
 #ifdef _WIN32
@@ -85,8 +95,11 @@ bool ZappySocket::SetNonBlocking(bool enabled) noexcept
     int flags = fcntl(socket, F_GETFL, 0);
 
     if (flags < 0)
+	{
+		printf("socket fd: %d\n", socket);
+		perror("fcntl error");
         return false;
-
+	}
     if (enabled)
         flags |= O_NONBLOCK;
     else

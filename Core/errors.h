@@ -1,6 +1,19 @@
 #pragma once
 #include <string_view>
 
+namespace Messages {
+	namespace Game  {
+		constexpr std::string_view Welcome = "BIENVENUE\n";
+		namespace Player {
+
+		}
+		namespace Monitor {
+		}
+	}
+	namespace Server {
+	}
+}
+
 namespace Errors {
 	constexpr std::string_view Unexpected   = "Unexpected error";
 

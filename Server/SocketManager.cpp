@@ -17,9 +17,9 @@ bool SocketManager::ConfigureSocketForReuse(ZappySocket &socket)
 
 bool SocketManager::InitializeServerSocket(const int portNumber, ZappySocket *ServerSocket)
 {
-	if (ServerSocket->Get() == SOCKET_ERROR)
+	if (ServerSocket->Get() != SOCKET_ERROR)
 		return (false);
-	*ServerSocket = ZappySocket(socket(AF_INET, SOCK_STREAM, 0));
+	*ServerSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (ServerSocket->Get() == INVALID_SOCKET)
 		return (false);
 	SocketManager::ConfigureSocketForReuse(*ServerSocket);
@@ -65,7 +65,7 @@ bool SocketManager::AcceptConnection(ZappySocket& serverSocket, ClientType type,
     {
         auto client = std::make_unique<ClientSocket>();
         client->type = type;
-        client->socket = ZappySocket(fd);
+        client->socket = fd;
         if (!client->socket.SetNonBlocking(true))
             return false;
         ClientSocket* ptr = client.get();
@@ -109,7 +109,8 @@ void SocketManager::HandleReadableClient(std::vector<std::unique_ptr<SocketEvent
 void SocketManager::HandleNewConnections(fd_set& readfds, std::vector<std::unique_ptr<SocketEvent>>& events)
 {
 	if (FD_ISSET(m_serverPlayerSocket.Get(), &readfds))
-		AcceptConnection(m_serverPlayerSocket, ClientType::Player, events);
+			AcceptConnection(m_serverPlayerSocket, ClientType::Player, events);
+
 	if (FD_ISSET(m_serverAdminSocket.Get(), &readfds))
 		AcceptConnection(m_serverAdminSocket, ClientType::Admin, events);
 }

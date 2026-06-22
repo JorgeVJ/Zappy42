@@ -136,7 +136,7 @@ void Server::HandleNewPlayerConnection(ZappySocket *client)
 	std::cout << "New player connection" << std::endl;
 
 	//Here Goes Player Manager
-	(void)client;
+	client->Send(Messages::Game::Welcome);
 }
 
 void Server::HandleNewAdminConnection(ZappySocket *client)

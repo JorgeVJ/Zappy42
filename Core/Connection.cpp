@@ -50,7 +50,7 @@ bool Connection::IsValid() const
 
 SOCKET Connection::Get() const
 {
-    return sock.sock;
+    return (sock.Get());
 }
 
 bool Connection::SendLine(const std::string& line)

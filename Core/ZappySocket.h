@@ -18,6 +18,7 @@
 #else
 # error "Unexpected OS"
 #endif
+#include "errors.h"
 
 class ZappySocket
 {
@@ -37,5 +38,7 @@ class ZappySocket
 	ZappySocket& operator=(const ZappySocket&) = default;
 	ZappySocket& operator=(ZappySocket& other) noexcept;
 	ZappySocket& operator=(SOCKET other) noexcept;
+	bool Send(std::string &data);
+	bool Send(const std::string_view &data);
 	SOCKET socket;
 };
