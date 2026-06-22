@@ -41,6 +41,9 @@ class SocketManager {
 	static bool ConfigureSocketForReuse(ZappySocket &socket);
 	static int GetAdminPortNumber(const int PortNumber) noexcept;
 	static bool InitializeServerSocket(const int portNumber, ZappySocket *socket);
+	const ClientSocket* FindClientByZappySocket(const ZappySocket& zs) const noexcept;
+	ClientSocket* FindClientByZappySocket(const ZappySocket& zs) noexcept;
+
   private:
     // Initialize a new socket for players/monitors
 	bool InitializePlayerSocket(Opt::Server::Args m_args);
@@ -48,8 +51,8 @@ class SocketManager {
 	bool InitializeAdminSocket(Opt::Server::Args m_args);
 	bool AcceptConnection(ZappySocket& serverSocket, ClientType type,
 						  std::vector<std::unique_ptr<SocketEvent>>& events) noexcept;
-
   private:
+
 	void HandleReadableClient(std::vector<std::unique_ptr<SocketEvent>>& events, ClientSocket& client);
 	void HandleNewConnections(fd_set& readfds, std::vector<std::unique_ptr<SocketEvent>>& events);
 	SOCKET BuildReadSet(fd_set& readfds);

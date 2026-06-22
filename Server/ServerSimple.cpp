@@ -162,7 +162,12 @@ void Server::HandleClientDisconnection(ZappySocket *client)
 
 void Server::HandleClientData(ZappySocket *client)
 {
-	(void)client;
+	ClientSocket *cs = m_socketManager.FindClientByZappySocket(*client);
+
+	if (cs == nullptr)
+		return ;
+	m_socketManager.ReadAvailableMessages(*cs);
+	std::cout << "Readed AvalableMessages" << std::endl;
 };
 
 void Server::HandleCommand(const std::string& cmd, Connection* client)

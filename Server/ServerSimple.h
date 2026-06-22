@@ -55,7 +55,6 @@ public:
 	// Accessors
 	const Opt::Server::Args& GetArgs() const { return m_args; }
 	Game* GetGame() const { return m_game; }
-	size_t GetClientCount() const { return m_clients.size(); }
 
 private:
 	// ========================================================================
@@ -95,7 +94,6 @@ private:
 
 	// Network
 	SocketManager m_socketManager;
-	std::vector<Connection*> m_clients;
 
 	// Game
 	Game* m_game = nullptr;
@@ -103,7 +101,4 @@ private:
 	// State
 	bool m_isRunning = false;
 
-	// Constants
-
-	//static constexpr int SOCKET_BACKLOG = SOMAXCONN;
 };

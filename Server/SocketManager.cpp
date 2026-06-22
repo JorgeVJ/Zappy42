@@ -109,7 +109,7 @@ void SocketManager::HandleReadableClient(std::vector<std::unique_ptr<SocketEvent
 void SocketManager::HandleNewConnections(fd_set& readfds, std::vector<std::unique_ptr<SocketEvent>>& events)
 {
 	if (FD_ISSET(m_serverPlayerSocket.Get(), &readfds))
-			AcceptConnection(m_serverPlayerSocket, ClientType::Player, events);
+		AcceptConnection(m_serverPlayerSocket, ClientType::Player, events);
 
 	if (FD_ISSET(m_serverAdminSocket.Get(), &readfds))
 		AcceptConnection(m_serverAdminSocket, ClientType::Admin, events);
@@ -205,6 +205,24 @@ bool SocketManager::DrainSocketData(ClientSocket& client, MessageReadResult& res
     }
     return (true);
 }
+ClientSocket* SocketManager::FindClientByZappySocket(const ZappySocket& zs) noexcept {
+    const SOCKET target = zs.Get();
+    for (auto& c : m_clients) {
+        if (c && c->socket.isValid() && c->socket.Get() == target)
+            return c.get();
+    }
+    return nullptr;
+}
+
+const ClientSocket* SocketManager::FindClientByZappySocket(const ZappySocket& zs) const noexcept {
+    const SOCKET target = zs.Get();
+    for (auto& c : m_clients) {
+        if (c && c->socket.isValid() && c->socket.Get() == target)
+            return c.get();
+    }
+    return nullptr;
+}
+
 
 void SocketManager::ExtractMessages(ClientSocket& client, MessageReadResult& result)
 {
