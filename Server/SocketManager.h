@@ -12,17 +12,18 @@
 #include "serveroptions.h"
 
 enum class ClientType {
-    Player,
-    Admin
+  Game, // Previous to detect if GRAPHIC or TEAMNAME.
+  Player,
+  Monitor,
+  Admin
 };
 
 struct ClientSocket {
     ClientType type;
 
     ZappySocket socket;
-
     std::string pendingMessage;
-	bool disconnecting = false;
+	  bool disconnecting = false;
 };
 
 struct MessageReadResult {

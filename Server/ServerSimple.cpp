@@ -136,6 +136,7 @@ void Server::HandleNewPlayerConnection(ZappySocket *client)
 	std::cout << "New player connection" << std::endl;
 
 	//Here Goes Player Manager
+  (void)client;
 	client->Send(Messages::Game::Welcome);
 }
 
@@ -162,13 +163,107 @@ void Server::HandleClientDisconnection(ZappySocket *client)
 
 void Server::HandleClientData(ZappySocket *client)
 {
-	ClientSocket *cs = m_socketManager.FindClientByZappySocket(*client);
+  ClientSocket *cs = m_socketManager.FindClientByZappySocket(*client);
 
 	if (cs == nullptr)
 		return ;
-	m_socketManager.ReadAvailableMessages(*cs);
-	std::cout << "Readed AvalableMessages" << std::endl;
+	MessageReadResult result = m_socketManager.ReadAvailableMessages(*cs);
+
+  if (result.overflow)
+    std::cout << "Too long Message" << std::endl;
+  else if (!result.messages.size())
+    std::cout << "Not a Complete Message" << std::endl;
+  else {
+    HandleCommand(*result.messages.begin(), cs);
+    std::cout << "Readed AvalableMessages" << std::endl;
+  }
 };
+//TODO mock
+void Server::HandleCommand(const std::string& cmd, ClientSocket *client)
+{
+	if (cmd.empty()) {
+		client->socket.Send("ko\n");
+		return;
+	}
+  if (client->type == ClientType::Game)
+    {
+      if (cmd == "GRAPHIC\n")
+        {
+        std::cout << "Monitor Connection" << std::endl;
+        client->type = ClientType::Monitor;
+        }
+      else if (std::find(this->m_args.teams.begin(), this->m_args.teams.end(), cmd.c_str()) != this->m_args.teams.end()) {
+        std::cout << "Team Recoignaince" << std::endl;
+        client->type = ClientType::Player;
+        client->socket.Send("1\n");
+        client->socket.Send(std::to_string(this->m_args.width) + " " + std::to_string(this->m_args.height) + "\n");
+      }
+      else
+        std::cout << "Team Unknown " << cmd << std::endl;
+    }
+  else if (client->type == ClientType::Player) {
+    // Game commands
+    if (cmd == "inventaire\n") {
+      client->socket.Send("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}\n");
+    }
+	
+    else if (cmd == "voir\n") {
+      client->socket.Send("{nourriture linemate, sibur, phiras phiras,}\n");
+    }
+    else if (cmd == "avance" || cmd == "droite" || cmd == "gauche\n") {
+      client->socket.Send("ok\n");
+    }
+    else if (cmd.rfind("prend ", 0) == 0) {
+      client->socket.Send("ok\n");
+    }
+    else if (cmd.rfind("pose ", 0) == 0) {
+      client->socket.Send("ok\n");
+    }
+    else if (cmd == "expulse\n") {
+      client->socket.Send("ok\n");
+    }
+    else if (cmd.rfind("broadcast ", 0) == 0) {
+      client->socket.Send("ok\n");
+    }
+    else if (cmd == "incantation\n") {
+      client->socket.Send("elevation en cours\n");
+    }
+    else if (cmd == "fork\n") {
+      client->socket.Send("ok\n");
+    }
+    else if (cmd == "connect_nbr\n") {
+      client->socket.Send("10\n");
+    }
+  }
+  else if (client->type == ClientType::Monitor)
+  {
+    // Monitor commands
+    if (cmd == "msz\n") {
+      Map* map = m_game->WorldMap;
+      std::ostringstream ss;
+      ss << "msz " << map->Width << " " << map->Height;
+      client->socket.Send(ss.str());
+    }
+    else if (cmd == "mct\n") {
+      // TODO: Implement full map contents
+      client->socket.Send("mct\n");
+    }
+    else if (cmd == "sgt\n") {
+      std::ostringstream ss;
+      ss << "sgt " << m_args.time;
+      client->socket.Send(ss.str());
+    }
+    else if (cmd == "tna\n") {
+      // TODO: Send all team names
+      client->socket.Send("tna\n");
+    }
+  }
+  else if (client->type == ClientType::Admin)
+    {
+      if (cmd == "st\n") // SetTime
+        std::cout << "Set Time" << std::endl;
+    }
+}
 
 void Server::HandleCommand(const std::string& cmd, Connection* client)
 {
@@ -176,7 +271,6 @@ void Server::HandleCommand(const std::string& cmd, Connection* client)
 		client->SendLine("ko");
 		return;
 	}
-
 	// Game commands
 	if (cmd == "inventaire") {
 		client->SendLine("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}");

@@ -70,7 +70,7 @@ bool SocketManager::AcceptConnection(ZappySocket& serverSocket, ClientType type,
             return false;
         ClientSocket* ptr = client.get();
         m_clients.push_back(std::move(client));
-        events.push_back(std::make_unique<SocketEvent>(type == ClientType::Player
+        events.push_back(std::make_unique<SocketEvent>(type == ClientType::Game
 													   ? SocketEventType::NewPlayerConnection
 													   : SocketEventType::NewAdminConnection,
 													   &ptr->socket));
@@ -109,7 +109,7 @@ void SocketManager::HandleReadableClient(std::vector<std::unique_ptr<SocketEvent
 void SocketManager::HandleNewConnections(fd_set& readfds, std::vector<std::unique_ptr<SocketEvent>>& events)
 {
 	if (FD_ISSET(m_serverPlayerSocket.Get(), &readfds))
-		AcceptConnection(m_serverPlayerSocket, ClientType::Player, events);
+		AcceptConnection(m_serverPlayerSocket, ClientType::Game, events);
 
 	if (FD_ISSET(m_serverAdminSocket.Get(), &readfds))
 		AcceptConnection(m_serverAdminSocket, ClientType::Admin, events);
@@ -172,7 +172,7 @@ MessageReadResult SocketManager::ReadAvailableMessages(ClientSocket& client)
 {
     MessageReadResult result;
     if (DrainSocketData(client, result))
-		ExtractMessages(client, result);
+      ExtractMessages(client, result);
     return (result);
 }
 
@@ -205,6 +205,7 @@ bool SocketManager::DrainSocketData(ClientSocket& client, MessageReadResult& res
     }
     return (true);
 }
+
 ClientSocket* SocketManager::FindClientByZappySocket(const ZappySocket& zs) noexcept {
     const SOCKET target = zs.Get();
     for (auto& c : m_clients) {

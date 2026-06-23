@@ -55,7 +55,8 @@ public:
 	// Accessors
 	const Opt::Server::Args& GetArgs() const { return m_args; }
 	Game* GetGame() const { return m_game; }
-
+  
+  
 private:
 	// ========================================================================
 	// INITIALIZATION
@@ -69,7 +70,8 @@ private:
 	// COMMAND HANDLERS
 	// ========================================================================
 
-	void HandleCommand(const std::string& cmd, Connection* client);
+  void HandleCommand(const std::string& cmd, ClientSocket *client);
+  void HandleCommand(const std::string& cmd, Connection* client);
 	int HandlePlayerConnection(Connection* client, const std::string& teamName);
 
 	// ========================================================================
