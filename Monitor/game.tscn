@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://d21qejsj8oxem" path="res://entities/terrain/terrain.tscn" id="6_bqi2m"]
 [ext_resource type="Script" uid="uid://cs8rn2vqkp4w" path="res://entities/shared/ScreenshotService.cs" id="7_scrn1"]
 [ext_resource type="PackedScene" uid="uid://dqx1mus1cplr" path="res://audio/MusicPlayer.tscn" id="9_musicpl"]
+[ext_resource type="Script" path="res://entities/sky/DayNightCycle.cs" id="10_dnc"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6sjpb"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -34,11 +35,16 @@ glow_hdr_threshold = 0.8
 transform = Transform3D(-0.09932, 0.647556, -0.755517, 0, 0.759271, 0.650774, 0.995056, 0.0646348, -0.0754108, -2.255, 4.415, 5.235)
 script = ExtResource("1_ga5x6")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=116663308]
-transform = Transform3D(-0.522498, 0.167072, -0.836111, 0, 0.980615, 0.195946, 0.85264, 0.102382, -0.51237, 0, 1.505, 0)
-light_color = Color(0.37437338, 0.33239552, 0.02792753, 1)
-light_energy = 3.087
+[node name="DayNightCycle" type="Node3D" parent="." node_paths=PackedStringArray("WorldEnv")]
+script = ExtResource("10_dnc")
+WorldEnv = NodePath("../WorldEnvironment")
+
+[node name="Sun" type="DirectionalLight3D" parent="DayNightCycle"]
 shadow_enabled = true
+
+[node name="Moon" type="DirectionalLight3D" parent="DayNightCycle"]
+light_energy = 0.0
+shadow_enabled = false
 
 [node name="Connection" parent="." unique_id=609704325 node_paths=PackedStringArray("inventoryPanel") instance=ExtResource("2_hexf3")]
 inventoryPanel = NodePath("InventoryPanel")

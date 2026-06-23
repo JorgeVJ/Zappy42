@@ -73,6 +73,9 @@ Monitor/
 ├── SelectableInventoryNode3D.cs  # Clase base: Node3D seleccionable con inventario
 ├── Terrain.cs              # Terreno procedural (Perlin noise + mesh + colisión + recursos)
 ├── Tile.cs                 # Datos de una casilla (coord + inventario)
+├── entities/
+│   └── sky/
+│       └── DayNightCycle.cs # Ciclo día/noche: Sol+Luna direccionales + cielo/ambiente según TimeOfDay
 ├── audio/
 │   ├── music.mp3           # Pista de música de fondo (loop manual, ver MusicPlayer.cs)
 │   ├── MusicPlayer.cs       # Música de fondo en bucle (Finished->Play()); botón Mute + tecla M; ProcessMode.Always
@@ -105,7 +108,9 @@ game.tscn
 └── Node3D "Game"
     ├── Camera3D "Camera"          [Camera.cs]
     │   └── CameraFollowBehavior   [CameraFollowBehavior.cs] (Node, añadido en código por Connection._Ready(); lock/orbit/zoom sobre jugador seleccionado)
-    ├── DirectionalLight3D
+    ├── DayNightCycle               [DayNightCycle.cs] (Node3D; controla Sol/Luna + cielo según TimeOfDay)
+    │   ├── Sun                     (DirectionalLight3D; antigua luz estática, ahora dinámica)
+    │   └── Moon                    (DirectionalLight3D; nueva, luz nocturna azulada)
     ├── WorldEnvironment
     ├── Connection (connection.tscn) [Connection.cs]
     │   ├── PlayerManager            [PlayerManager.cs]
@@ -306,6 +311,19 @@ Nodo bajo `Game` que vuelca el framebuffer de la ventana principal a PNG en disc
 - **Auto-captura:** un `Timer` (`CaptureInterval`, def. 2 s, `[Export]`) sobrescribe `res://.captures/latest.png` — el archivo refleja siempre el estado actual. Vía pensada para inspección automatizada.
 - **Tecla F12:** guarda `latest.png` + una copia con timestamp `shot_yyyyMMdd_HHmmss.png` (uso manual).
 - `OutputDir` resuelto con `ProjectSettings.GlobalizePath`; sólo escribible corriendo sin empaquetar (editor o `--path`). El directorio `.captures/` está en `.gitignore`.
+
+---
+
+### `DayNightCycle.cs` — Ciclo día/noche
+Controlador `Node3D` (`entities/sky/DayNightCycle.cs`) que da vida a un ciclo día/noche dinámico. Sustituye a la antigua `DirectionalLight3D` estática del `game.tscn`: esa luz pasa a ser el hijo `Sun` del nodo `DayNightCycle`, y se añade un hijo nuevo `Moon` (luz nocturna azulada). El `WorldEnvironment` hermano se cablea por `NodePath` (`[Export] WorldEnv`) para acceder a su `ProceduralSkyMaterial`.
+
+- **Todo deriva de `TimeOfDay`** (`[Export(PropertyHint.Range, "0,1")]`, 0=medianoche, 0.25=amanecer, 0.5=mediodía, 0.75=atardecer). `Apply(t)` calcula la elevación del sol (`el = -cos(t·τ)`), orienta Sol y Luna en arcos opuestos, y deriva un `dayFactor` (`SmoothStep`) que controla:
+  - **Iluminación:** energía/color del Sol (de naranja en el horizonte a blanco cálido al mediodía) y de la Luna (energía inversa al sol, color azul fijo). Energías máximas tuneables (`MaxSunEnergy`, `MaxMoonEnergy`).
+  - **Cielo:** lerp de `SkyTopColor`/`SkyHorizonColor`/`GroundHorizonColor` entre paletas día/noche, con un tinte cálido (`HorizonDuskColor`) que aparece cerca del horizonte al amanecer/atardecer. El cielo nocturno se mantiene azul oscuro (nunca negro puro) para que el ambiente derivado del cielo conserve algo de visibilidad; la Luna aporta el relleno direccional nocturno.
+- **Ciclo automático en reloj de pared independiente:** con `AutoRun` (def. `true`), `_Process` avanza `TimeOfDay` según `DayDurationSeconds` (def. 120 s por ciclo completo). NO está ligado al tiempo del servidor ni a la timeline/replay. Usa el process mode por defecto, así que **se pausa junto con el juego** (p. ej. tras `seg`).
+- **Controles en runtime** (`_UnhandledInput`): **L** alterna `AutoRun` (pausa/reanuda el ciclo); **`[`** y **`]`** retroceden/avanzan la hora del día en pasos de 0.02 (scrub manual, aplicando al instante). Teclas libres: la cámara usa WASD/QE/ratón/rueda/clic-derecho y los toggles existentes son M, F2, F3, F12.
+- **Solo iluminación y cielo:** no hay mallas/discos de sol o luna visibles, solo luces direccionales + cambios de cielo/ambiente.
+- **Limitación conocida:** `grass.gdshader` es `unshaded`, por lo que el césped no se oscurece de noche (no responde a la iluminación de la escena).
 
 ---
 
