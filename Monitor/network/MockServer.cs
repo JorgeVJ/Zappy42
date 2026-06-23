@@ -161,6 +161,18 @@ public class MockServer
 
         // ── 20. Muerte de jugador #2 (recursos agotados) ──────────────────
         "pdi #2",
+
+        // ── 21. Incantación final de TEAM_A: #1 (nivel 5) y #3 (nivel 4) ──
+        // siguen en (10,10) tras el bloque 19. Realizan la última
+        // incantación necesaria para alcanzar el nivel máximo (8).
+        "pic 10 10 4 #1 #3",
+        "pie 10 10 1",
+        "plv #1 8",
+        "plv #3 8",
+
+        // ── 22. Fin de la partida: TEAM_A alcanza el nivel máximo ─────────
+        // Ambos supervivientes de TEAM_A llegaron a nivel 8 -> TEAM_A gana.
+        "seg TEAM_A",
     };
 
     public void SetSpeed(int t)
