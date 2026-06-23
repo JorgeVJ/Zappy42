@@ -70,6 +70,13 @@ public partial class Connection : Node
 
         _timelineBar = GetNode<TimelineBar>("TimelineBar");
 
+        // _logPanel y _teamPanel se añaden dinámicamente con AddChild() arriba,
+        // lo que los deja por delante de TimelineBar (declarada en game.tscn) en
+        // el orden de hermanos: en Godot, hermanos posteriores se dibujan y
+        // reciben input por encima de los anteriores. Forzamos a TimelineBar al
+        // final para que su slider no quede tapado por esos paneles.
+        MoveChild(_timelineBar, GetChildCount() - 1);
+
         // Transporte: decide internamente mock vs. socket real (ParseConnectionArgs)
         // y nos avisa con UseMockServer cuál fue el resultado (p. ej. para el log inicial).
         _transport = new ServerTransport();
