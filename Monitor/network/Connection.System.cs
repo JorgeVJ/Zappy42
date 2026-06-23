@@ -12,6 +12,10 @@ public partial class Connection
     private const float SpeedReference = 1f;
     private float _currentSpeedFactor = 1f;
 
+    // Factor de velocidad actual del servidor (derivado de sgt), usado por
+    // TimelineController para escalar el ritmo de reproducción del modo Play.
+    public float CurrentSpeedFactor => _currentSpeedFactor;
+
     private void RegisterSystemHandlers(MessageDispatcher dispatcher)
     {
         dispatcher.Register("WELCOME", _ => OnWelcome()); // handshake: el servidor saluda; respondemos GRAPHIC

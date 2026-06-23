@@ -43,7 +43,7 @@ Monitor/
 ├── ServerTransport.cs      # Transporte TCP real o MockServer; emite LineReceived(line), expone SendMessage()/SetMockSpeed()
 ├── MessageDispatcher.cs    # Router string→Action<string[]> del protocolo (sustituye al switch de HandleServerMessage)
 ├── EventLog.cs             # Historial de líneas crudas del servidor agrupadas en TimeBand (franjas de tiempo) por proximidad de llegada
-├── TimelineController.cs   # Backend de la barra de tiempo: cursor de franja, IsLive, JumpTo()/GoLive() (reset + replay instantáneo)
+├── TimelineController.cs   # Backend de la barra de tiempo: cursor de franja, IsLive, IsPlaying, JumpTo()/GoLive() (reset + replay instantáneo) y Play()/Pause()/Tick() (reproducción franja a franja)
 ├── Connection.Timeline.cs  # (clase parcial) ReplayInstant flag + ResetWorldState(): vacía PlayerManager/EggManager/Terrain/TeamProgressPanel para el replay
 ├── SelectionController.cs  # Selección por click (raycast) + InventoryPanel: HandleLeftClick/ShowInventory/PlayerClicked
 ├── EntityManager.cs        # Base genérica EntityManager<T> (Node3D): Dictionary<int,T> + contenedor + TryGet()/Remove(); heredada por PlayerManager y EggManager
@@ -183,11 +183,11 @@ El corazón del monitor, ahora repartido en varios archivos para mantenerlo delg
 
 ---
 
-### Barra de tiempo (Timeline / Replay) — backend
+### Barra de tiempo (Timeline / Replay)
 
 Permite "deshacer" hasta un momento anterior y reanudar después con los mensajes ya
-recibidos, al estilo de un streaming en vivo. Esta iteración cubre solo el backend; la UI
-(`TimelineBar`, slider) es la tarjeta Trello **D9** (pendiente).
+recibidos, al estilo de un streaming en vivo. UI: `ui/TimelineBar.cs` + `ui/timeline_bar.tscn`
+(slider + "Live" + "Play/Pause") — tarjetas Trello D9 (slider/Live) y B10 (Play/Pause).
 
 - **`EventLog.cs`**: guarda cada línea cruda recibida (`LogEntry(Raw, ReceivedAtMs)`) y las
   agrupa en `TimeBand(StartIndex, EndIndex)` por proximidad de llegada (`BandGapMs = 100.0`).
@@ -196,15 +196,21 @@ recibidos, al estilo de un streaming en vivo. Esta iteración cubre solo el back
   granularidad de scrub con sentido ("qué pasó en este momento") sin depender de `sgt`
   (el Monitor no recibe ticks explícitos del servidor).
 - **`TimelineController.cs`**: vive en `Connection._timeline`. Mantiene `Log: EventLog`,
-  `CursorBandIndex` (-1 = mundo vacío) e `IsLive`.
+  `CursorBandIndex` (-1 = mundo vacío), `IsLive` e `IsPlaying`.
   - `OnLineReceived(line)`: añade la línea al `Log`; si `IsLive`, la despacha normalmente
     (animada) y avanza el cursor a la última franja.
   - `JumpTo(bandIndex)`: pone `ReplayInstant = true`, llama a `Connection.ResetWorldState()`
     y reproduce instantáneamente `Log.Messages[0..Bands[bandIndex].EndIndex]` vía
     `MessageDispatcher.Dispatch()`. Al terminar, `ReplayInstant = false`,
     `CursorBandIndex = bandIndex`, `IsLive = (bandIndex == Bands.Count - 1)`.
-  - `GoLive()`: `JumpTo(Bands.Count - 1)` + `IsLive = true`. Si llegaron mensajes nuevos
-    mientras `IsLive` era `false`, se aplican aquí.
+  - `GoLive()`: `JumpTo(Bands.Count - 1)` + `IsLive = true` + `IsPlaying = false`. Si llegaron
+    mensajes nuevos mientras `IsLive` era `false`, se aplican aquí.
+  - **Modo Play (B10)**: `Play()` activa `IsPlaying` (no-op si `IsLive` o si el cursor ya está
+    en la última franja); `Pause()` lo desactiva sin mover el cursor. `Tick(delta)` —llamado
+    desde `TimelineBar._Process` en cada frame— acumula `delta` y, al superar
+    `BaseStepIntervalSeconds` (0.6s, escalado por `Connection.CurrentSpeedFactor` para ir más
+    rápido si `sgt` > 1), llama a `JumpTo(CursorBandIndex + 1)`. Al llegar a la última franja
+    conocida, `Tick` llama a `GoLive()` y termina el modo Play.
 - **`Connection.Timeline.cs`**:
   - `static bool ReplayInstant` — activo durante `JumpTo()`. Lo consultan los handlers con
     efectos visuales para aplicar el resultado final sin animar:
@@ -364,4 +370,5 @@ SelectionController.HandleLeftClick()
 
 - **Mundo toroidal:** El terreno se genera como plano; no hay wrap-around visual.
 - **Altura de jugadores:** Y fija en `0.3f`; no sigue la altura real del terreno.
-- **Barra de tiempo (UI):** el backend (`EventLog`/`TimelineController`, ver sección dedicada) está implementado; falta `TimelineBar.cs`/`.tscn` (slider + "Live") — tarjeta Trello D9.
+- **Barra de tiempo (UI):** `EventLog`/`TimelineController`/`TimelineBar` (slider + "Live" +
+  "Play/Pause", ver sección dedicada) implementados — tarjetas Trello D9 y B10 resueltas.

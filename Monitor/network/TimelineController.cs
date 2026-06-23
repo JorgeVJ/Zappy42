@@ -10,6 +10,13 @@
 // vuelva a Live (GoLive).
 public class TimelineController
 {
+    // Intervalo base (segundos reales) entre el avance de una franja y la
+    // siguiente en modo Play. 0.6s da una cadencia "normal" perceptible sin
+    // resultar lenta; se escala por el factor de velocidad del servidor
+    // (Connection.CurrentSpeedFactor) para que Play vaya más rápido si la
+    // partida está acelerada (sgt > 1).
+    private const double BaseStepIntervalSeconds = 0.6;
+
     private readonly Connection _connection;
     private readonly MessageDispatcher _dispatcher;
 
@@ -18,6 +25,11 @@ public class TimelineController
     // -1 = mundo vacío (antes de la primera franja).
     public int CursorBandIndex { get; private set; } = -1;
     public bool IsLive { get; private set; } = true;
+
+    // True mientras el modo "Play" está avanzando franja a franja con el tiempo.
+    public bool IsPlaying { get; private set; } = false;
+
+    private double _playElapsedSeconds = 0.0;
 
     public TimelineController(Connection connection, MessageDispatcher dispatcher)
     {
@@ -71,5 +83,59 @@ public class TimelineController
     {
         JumpTo(Log.Bands.Count - 1);
         IsLive = true;
+        IsPlaying = false;
+    }
+
+    // Inicia el modo "Play": avanza franja a franja con el tiempo real
+    // (ver Tick). No tiene efecto si ya estamos en Live (no hay nada que
+    // reproducir hacia delante) o si no quedan franjas por delante del cursor.
+    public void Play()
+    {
+        if (IsLive || CursorBandIndex >= Log.Bands.Count - 1)
+            return;
+
+        IsPlaying = true;
+        _playElapsedSeconds = 0.0;
+    }
+
+    // Detiene el modo Play, dejando el cursor donde esté.
+    public void Pause()
+    {
+        IsPlaying = false;
+        _playElapsedSeconds = 0.0;
+    }
+
+    // Llamado desde TimelineBar._Process con el delta de frame. Si IsPlaying,
+    // acumula tiempo real y, al superar el intervalo por franja (escalado por
+    // el factor de velocidad del servidor), avanza una franja con JumpTo.
+    // Al alcanzar la última franja conocida, pasa a Live y detiene Play.
+    public void Tick(double delta)
+    {
+        if (!IsPlaying)
+            return;
+
+        float speedFactor = _connection?.CurrentSpeedFactor ?? 1f;
+        if (speedFactor <= 0f)
+            speedFactor = 1f;
+
+        double interval = BaseStepIntervalSeconds / speedFactor;
+
+        _playElapsedSeconds += delta;
+        if (_playElapsedSeconds < interval)
+            return;
+
+        _playElapsedSeconds = 0.0;
+
+        if (CursorBandIndex >= Log.Bands.Count - 1)
+        {
+            // Ya no hay franjas por delante: pasar a Live y terminar Play.
+            GoLive();
+            return;
+        }
+
+        JumpTo(CursorBandIndex + 1);
+
+        if (IsLive)
+            IsPlaying = false;
     }
 }
