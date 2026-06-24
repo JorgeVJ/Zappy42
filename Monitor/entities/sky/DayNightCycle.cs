@@ -18,7 +18,7 @@ public partial class DayNightCycle : Node3D
 	// --- Sol ---
 	[Export] public Color SunDayColor = new Color(1.0f, 0.96f, 0.84f);     // blanco cálido
 	[Export] public Color SunHorizonColor = new Color(1.0f, 0.45f, 0.18f); // naranja/rojo
-	[Export] public float MaxSunEnergy = 3.0f;
+	[Export] public float MaxSunEnergy = 1.4f;
 
 	// --- Luna ---
 	[Export] public Color MoonColor = new Color(0.5f, 0.62f, 0.9f);        // azul suave

@@ -33,7 +33,7 @@ public partial class TeamProgressPanel : CollapsiblePanel
         // Panel esquina superior derecha: 320x420, margen 10px
         Setup("Equipos",
             new Rect2(vp.X - 330, 10, 320, 420),
-            Control.LayoutPreset.TopRight);
+            Control.LayoutPreset.TopLeft);
 
         var scroll = new ScrollContainer();
         scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;

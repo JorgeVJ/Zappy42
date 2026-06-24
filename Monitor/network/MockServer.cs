@@ -172,7 +172,7 @@ public class MockServer
 
         // ── 22. Fin de la partida: TEAM_A alcanza el nivel máximo ─────────
         // Ambos supervivientes de TEAM_A llegaron a nivel 8 -> TEAM_A gana.
-        "seg TEAM_A",
+        // "seg TEAM_A",
     };
 
     public void SetSpeed(int t)

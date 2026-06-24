@@ -12,8 +12,8 @@ public partial class MessageLogPanel : CollapsiblePanel
 
         // Panel esquina inferior izquierda: 400x300, margen 10px
         Setup("Mensajes del servidor",
-            new Rect2(10, vp.Y - 310, 400, 300),
-            Control.LayoutPreset.BottomLeft);
+            new Rect2(10, vp.Y - 350, 400, 300),
+            Control.LayoutPreset.TopLeft);
 
         // RichTextLabel ocupa todo el espacio disponible
         _richText = new RichTextLabel();
