@@ -17,6 +17,10 @@ public partial class TimelineBar : Control
     // Mientras el usuario arrastra el slider, _Process no debe pisar su valor.
     private bool _dragging = false;
 
+    // Iconos del botón Play/Pause, cacheados para no recargarlos por frame.
+    private Texture2D _playIcon;
+    private Texture2D _pauseIcon;
+
     public void Setup(TimelineController timeline)
     {
         _timeline = timeline;
@@ -28,6 +32,14 @@ public partial class TimelineBar : Control
         _slider.DragEnded += OnDragEnded;
         _liveButton.Pressed += () => _timeline?.GoLive();
         _playPauseButton.Pressed += OnPlayPausePressed;
+
+        // Estilo uniforme de icono (ver ui/IconButton.cs).
+        IconButton.Apply(_liveButton, "live", "Live");
+        IconButton.Style(_playPauseButton);
+        _playPauseButton.TooltipText = "Play/Pause";
+        _playIcon  = IconButton.Load("play");
+        _pauseIcon = IconButton.Load("pause");
+        _playPauseButton.Icon = _playIcon;
     }
 
     public override void _Process(double delta)
@@ -45,10 +57,9 @@ public partial class TimelineBar : Control
             _slider.Value = _timeline.IsLive ? maxBand : _timeline.CursorBandIndex;
 
         _statusLabel.Text = maxBand < 0 ? "Sin datos" : $"Franja {(int)_slider.Value} / {maxBand}";
-        _liveButton.Text = "● LIVE";
         _liveButton.Disabled = _timeline.IsLive;
 
-        _playPauseButton.Text = _timeline.IsPlaying ? "⏸" : "▶";
+        _playPauseButton.Icon = _timeline.IsPlaying ? _pauseIcon : _playIcon;
         _playPauseButton.Disabled = _timeline.IsLive || _timeline.CursorBandIndex >= maxBand;
     }
 

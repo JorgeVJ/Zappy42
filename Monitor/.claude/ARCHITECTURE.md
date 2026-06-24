@@ -22,7 +22,7 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Seguimiento de progreso por equipo | ✅ | TeamProgressPanel: jugadores, niveles y equipo líder |
 | Quién ganó (`seg`) | ✅ | Overlay pantalla completa con nombre del ganador |
 | Protocolo gráfico completo | ✅ | Todos los mensajes del servidor manejados |
-| Audio/música | ✅ | `MusicPlayer` (`audio/MusicPlayer.cs`): música de fondo en bucle, hijo directo de `Game` (sobrevive al replay/reset de la timeline), `ProcessMode.Always` (sigue sonando con `GetTree().Paused = true` tras `seg`), botón Mute/tecla M |
+| Audio/música | ✅ | `MusicPlayer` (`audio/MusicPlayer.cs`): música de fondo en bucle, hijo directo de `Game` (sobrevive al replay/reset de la timeline), `ProcessMode.Always` (sigue sonando con `GetTree().Paused = true` tras `seg`), botón Mute de icono (toggle, estilo `ui/IconButton.cs`)/tecla M |
 
 ---
 
@@ -60,7 +60,8 @@ Monitor/
 ├── IInventory.cs           # Interfaz: objeto con inventario
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
-├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ y botón de restauración
+├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ (icono) y botón de restauración
+├── IconButton.cs           # UI: helper estático de estilo para botones de icono (iconos en ui/icons/*.svg, tamaño/estilo uniforme)
 ├── InventoryPanel.cs       # UI: panel de inventario seleccionado
 ├── MessageLogPanel.cs      # UI: log de mensajes (hereda CollapsiblePanel)
 ├── TeamProgressPanel.cs    # UI: progreso por equipo (hereda CollapsiblePanel)
@@ -78,8 +79,8 @@ Monitor/
 │       └── DayNightCycle.cs # Ciclo día/noche: Sol+Luna direccionales + cielo/ambiente según TimeOfDay
 ├── audio/
 │   ├── music.mp3           # Pista de música de fondo (loop manual, ver MusicPlayer.cs)
-│   ├── MusicPlayer.cs       # Música de fondo en bucle (Finished->Play()); botón Mute + tecla M; ProcessMode.Always
-│   └── MusicPlayer.tscn     # UI: CheckButton Mute en esquina superior derecha + AudioStreamPlayer hijo
+│   ├── MusicPlayer.cs       # Música de fondo en bucle (Finished->Play()); botón Mute de icono (toggle) + tecla M; ProcessMode.Always
+│   └── MusicPlayer.tscn     # UI: Button (toggle) Mute con icono altavoz/tachado en esquina superior derecha + AudioStreamPlayer hijo
 ├── models/
 │   ├── Shaman/
 │   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
@@ -124,7 +125,7 @@ game.tscn
     │   ├── GrassSystem              [GrassSystem.cs] (césped procedural via MultiMeshInstance3D)
     │   └── DecorationSystem         [DecorationSystem.cs] (props FBX: árboles/rocas/arbustos/hierba)
     ├── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
-    └── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (música de fondo en bucle, ProcessMode.Always; hijo directo de Game para no verse afectado por ResetWorldState; CheckButton Mute arriba-derecha + tecla M)
+    └── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (música de fondo en bucle, ProcessMode.Always; hijo directo de Game para no verse afectado por ResetWorldState; Button toggle Mute con icono arriba-derecha + tecla M)
 
 player.tscn
 └── Node3D "Player"  [Player.cs]
@@ -187,7 +188,8 @@ El corazón del monitor, ahora repartido en varios archivos para mantenerlo delg
 
 Permite "deshacer" hasta un momento anterior y reanudar después con los mensajes ya
 recibidos, al estilo de un streaming en vivo. UI: `ui/TimelineBar.cs` + `ui/timeline_bar.tscn`
-(slider + "Live" + "Play/Pause") — tarjetas Trello D9 (slider/Live) y B10 (Play/Pause).
+(slider + botones de icono "Live" y "Play/Pause", estilo unificado `ui/IconButton.cs`) —
+tarjetas Trello D9 (slider/Live) y B10 (Play/Pause).
 
 - **`EventLog.cs`**: guarda cada línea cruda recibida (`LogEntry(Raw, ReceivedAtMs)`) y las
   agrupa en `TimeBand(StartIndex, EndIndex)` por proximidad de llegada (`BandGapMs = 100.0`).

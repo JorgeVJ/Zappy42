@@ -45,7 +45,6 @@ value = -1.0
 
 [node name="PlayPauseButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "▶"
 disabled = true
 
 [node name="StatusLabel" type="Label" parent="HBoxContainer"]
@@ -57,5 +56,4 @@ horizontal_alignment = 1
 
 [node name="LiveButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "● LIVE"
 disabled = true

@@ -26,7 +26,7 @@ public partial class MessageLogPanel : CollapsiblePanel
         var footer = new HBoxContainer();
         footer.Alignment = BoxContainer.AlignmentMode.End;
         var clearBtn = new Button();
-        clearBtn.Text     = "Limpiar";
+        IconButton.Apply(clearBtn, "clear", "Limpiar");
         clearBtn.Pressed += () => { _richText.Clear(); _entryCount = 0; };
         footer.AddChild(clearBtn);
         Content.AddChild(footer);

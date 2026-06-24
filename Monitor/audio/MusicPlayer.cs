@@ -11,7 +11,8 @@ using Godot;
 // se toca). Se reproduce en bucle manualmente reconectando Play() al terminar
 // (señal Finished), lo que funciona sin depender del tipo de AudioStream.
 //
-// Mute: botón "Mute"/"Unmute" en la esquina superior derecha (CheckButton) y
+// Mute: botón de icono (altavoz / altavoz tachado) en la esquina superior
+// derecha (Button en modo toggle, estilo unificado de ui/IconButton.cs) y
 // tecla M (_UnhandledInput), ambos alternan entre VolumeDb normal y silencio.
 public partial class MusicPlayer : Control
 {
@@ -20,7 +21,7 @@ public partial class MusicPlayer : Control
     [Export] public float  MutedVolumeDb  = -80f;
 
     [Export] private AudioStreamPlayer _player;
-    [Export] private CheckButton _muteButton;
+    [Export] private Button _muteButton;
 
     private bool _muted;
 
@@ -43,9 +44,11 @@ public partial class MusicPlayer : Control
 
         if (_muteButton != null)
         {
+            _muteButton.ToggleMode = true;
+            IconButton.Style(_muteButton);
             _muteButton.Toggled += OnMuteToggled;
             _muteButton.ButtonPressed = _muted;
-            UpdateMuteButtonText();
+            UpdateMuteButtonIcon();
         }
     }
 
@@ -78,12 +81,13 @@ public partial class MusicPlayer : Control
         if (_muteButton != null)
         {
             _muteButton.SetPressedNoSignal(_muted);
-            UpdateMuteButtonText();
+            UpdateMuteButtonIcon();
         }
     }
 
-    private void UpdateMuteButtonText()
+    private void UpdateMuteButtonIcon()
     {
-        _muteButton.Text = _muted ? "Unmute" : "Mute";
+        _muteButton.Icon = IconButton.Load(_muted ? "mute" : "sound");
+        _muteButton.TooltipText = _muted ? "Unmute" : "Mute";
     }
 }

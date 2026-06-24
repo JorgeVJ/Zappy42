@@ -55,7 +55,7 @@ public partial class CollapsiblePanel : Control
         header.AddChild(titleLbl);
 
         var closeBtn = new Button();
-        closeBtn.Text     = "✕";
+        IconButton.Apply(closeBtn, "close", "Cerrar");
         closeBtn.Pressed += Collapse;
         header.AddChild(closeBtn);
 
