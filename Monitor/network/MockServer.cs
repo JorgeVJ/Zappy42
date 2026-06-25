@@ -3,9 +3,15 @@ using System.Collections.Generic;
 
 public class MockServer
 {
+    // Tamaño del mapa simulado (coincide con el "msz 25 25" enviado al inicio).
+    private const int MapWidth = 25;
+    private const int MapHeight = 25;
+    private const int ResourceTypeCount = 7; // Resource.ResourceType: 0..6
+
     private float _timer = 0f;
     private float _delay = 1f; // Segundos entre cada mensaje simulado
     private int _currentIndex = 0;
+    private readonly RandomNumberGenerator _rng = new RandomNumberGenerator();
 
     // Secuencia de mensajes simulados para probar funcionalidades
     private readonly List<string> _messages = new List<string>
@@ -183,11 +189,29 @@ public class MockServer
     public string GetNextCommand(double delta)
     {
         _timer += (float)delta;
-        if (_timer >= _delay && _currentIndex < _messages.Count)
-        {
-            _timer = 0f;
+        if (_timer < _delay)
+            return null;
+
+        _timer = 0f;
+
+        if (_currentIndex < _messages.Count)
             return _messages[_currentIndex++];
-        }
-        return null;
+
+        // Una vez agotada la secuencia de mensajes, seguimos simulando actividad
+        // del servidor: cada tick reportamos la aparición de recursos en una
+        // casilla aleatoria del mapa mediante "bct X Y q0 q1 q2 q3 q4 q5 q6".
+        return RandomResourceCommand();
+    }
+
+    private string RandomResourceCommand()
+    {
+        int x = _rng.RandiRange(0, MapWidth - 1);
+        int y = _rng.RandiRange(0, MapHeight - 1);
+
+        var quantities = new int[ResourceTypeCount];
+        for (int i = 0; i < ResourceTypeCount; i++)
+            quantities[i] = _rng.RandiRange(0, 3);
+
+        return $"bct {x} {y} {string.Join(" ", quantities)}";
     }
 }
