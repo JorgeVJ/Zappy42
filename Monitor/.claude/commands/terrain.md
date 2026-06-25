@@ -91,6 +91,57 @@ float h = (heightMap[x + 1, y] + heightMap[x, y + 1]) / 2f;
 
 ---
 
+## Margen de borde — falloff de isla (oculta el borde flotante sobre el agua)
+
+La malla **no se limita a las casillas jugables**: se genera sobre un grid extendido
+`±BorderMargin` anillos alrededor de `[0..Width, 0..Height]`, para que la tierra **descienda
+bajo el nivel del mar en los bordes** y no se vea la cara inferior de la malla flotando sobre
+el plano de agua (`WaterSystem`).
+
+```csharp
+[Export] public int BorderMargin = 4;   // anillos de casillas extra alrededor del grid jugable
+[Export] public float SkirtDepth  = 5f;  // cuánto baja el borde exterior bajo el mínimo jugable
+```
+
+- **`heightMap` sigue siendo SOLO jugable** `[Width+1, Height+1]` → `GetTileHeight`,
+  `UpdateTileResources`, hierba, decoración y `WaterSystem` (nivel del mar) **no cambian**.
+- El bucle de `GenerateTerrainMesh()` va de `-BorderMargin` a `Width+BorderMargin` (idem Y) y
+  toma las 4 esquinas vía `CornerHeight(cx, cy)`:
+
+```csharp
+private float CornerHeight(int cx, int cy)
+{
+    // Esquina jugable → valor exacto del heightMap (costura SIN grietas, alturas de juego intactas)
+    if (cx >= 0 && cx <= Width && cy >= 0 && cy <= Height)
+        return heightMap[cx, cy];
+
+    // Esquina del margen → desciende hacia outerY según smoothstep de cuán fuera del grid está
+    int outX = Mathf.Max(Mathf.Max(-cx, cx - Width), 0);
+    int outY = Mathf.Max(Mathf.Max(-cy, cy - Height), 0);
+    float t = Mathf.Clamp((float)Mathf.Max(outX, outY) / BorderMargin, 0f, 1f);
+    float natural = _noise.GetNoise2D(cx, cy) * HeightScale;
+    float outerY = _minHeight - SkirtDepth;   // < nivel del mar (= lerp(min,max,0.35) ≥ min)
+    return Mathf.Lerp(natural, outerY, Mathf.SmoothStep(0f, 1f, t));
+}
+```
+
+- **Costura sin grietas:** en `t=0` (esquina justo en el límite jugable) devuelve la altura
+  natural = el mismo valor jugable, por lo que el margen empalma con el terreno jugable sin saltos.
+- **Las casillas del margen NO son seleccionables:** sus coordenadas caen fuera de
+  `[0..Width-1]` → `GetTileFromPosition` → `GetTile` devuelve `null`. La hierba/decoración no
+  se generan ahí (solo cubren `Width/Height`), así que el margen queda como orilla/plataforma
+  sumergida desnuda — justo el efecto buscado.
+- `_noise` y `_minHeight` son campos poblados por `GenerateHeightMap()` (mismo `Perlin`/`Frequency`
+  y mismo `min` que usa `WaterSystem`).
+
+### Checklist al tocar el margen de borde
+- [ ] `BorderMargin`/`SkirtDepth` son `[Export]` → tuneables desde el inspector Godot
+- [ ] No tocar `heightMap` (debe seguir siendo jugable `[W+1,H+1]`) para no afectar entidades/recursos
+- [ ] Si cambia la fórmula de `CornerHeight`, mantener `t=0 ⇒ altura natural` (costura sin grietas)
+- [ ] `outerY` debe quedar por debajo del nivel del mar de `WaterSystem` (`_minHeight - SkirtDepth`)
+
+---
+
 ## UpdateTileResources — Recursos sobre el mapa
 
 Se llama desde el evento `Tile.Inventory.Changed`, que dispara cada vez que `Connection.cs` procesa un mensaje `bct`.

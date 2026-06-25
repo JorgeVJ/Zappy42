@@ -8,6 +8,17 @@ public partial class Terrain : Node3D
 
 	[Export] public float HeightScale = 6f;
 	[Export] public float NoiseScale = 0.08f;
+
+	// Anillos de casillas extra generados alrededor del grid jugable. No son seleccionables
+	// (coordenadas fuera de rango → GetTile devuelve null) y descienden bajo el nivel del mar
+	// (falloff de isla) para ocultar el borde flotante de la malla sobre el agua.
+	[Export] public int BorderMargin = 4;
+
+	// Cuánto baja el borde exterior del margen por debajo del mínimo del terreno jugable.
+	// Como el nivel del mar = lerp(min, max, 0.35) ≥ min, restar SkirtDepth garantiza que el
+	// borde exterior quede sumergido.
+	[Export] public float SkirtDepth = 5f;
+
 	private float _lineWidth = 0.01f;
 	[Export] public float LineWidth
 	{
@@ -23,6 +34,12 @@ public partial class Terrain : Node3D
 	public const float TILE_SIZE = 2.0f;
 
     private float[,] heightMap;
+
+	// Ruido reutilizado por GenerateHeightMap y CornerHeight (esquinas del margen).
+	private FastNoiseLite _noise;
+
+	// Mínimo del heightMap jugable (mismo min que usa WaterSystem para el nivel del mar).
+	private float _minHeight;
 
 	private Tile[,] tiles;
 
@@ -169,18 +186,41 @@ public partial class Terrain : Node3D
 	{
 		heightMap = new float[Width + 1, Height + 1];
 
-		var noise = new FastNoiseLite();
-		noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Perlin;
-		noise.Frequency = NoiseScale;
+		_noise = new FastNoiseLite();
+		_noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Perlin;
+		_noise.Frequency = NoiseScale;
+
+		_minHeight = float.MaxValue;
 
 		for (int x = 0; x <= Width; x++)
 		{
 			for (int y = 0; y <= Height; y++)
 			{
-				float n = noise.GetNoise2D(x, y);
-				heightMap[x, y] = n * HeightScale;
+				float n = _noise.GetNoise2D(x, y);
+				float h = n * HeightScale;
+				heightMap[x, y] = h;
+				if (h < _minHeight) _minHeight = h;
 			}
 		}
+	}
+
+	// Altura de la esquina (cx, cy) del grid extendido. Para esquinas dentro de la región
+	// jugable [0..Width, 0..Height] devuelve el valor exacto de heightMap (costura sin grietas
+	// y alturas de juego intactas). Para esquinas del margen mezcla la altura natural de ruido
+	// hacia outerY (bajo el nivel del mar) según un smoothstep de cuán fuera están del grid
+	// jugable → falloff de isla que esconde el borde flotante bajo el agua.
+	private float CornerHeight(int cx, int cy)
+	{
+		if (cx >= 0 && cx <= Width && cy >= 0 && cy <= Height)
+			return heightMap[cx, cy];
+
+		int outX = Mathf.Max(Mathf.Max(-cx, cx - Width), 0);
+		int outY = Mathf.Max(Mathf.Max(-cy, cy - Height), 0);
+		float t = Mathf.Clamp((float)Mathf.Max(outX, outY) / BorderMargin, 0f, 1f);
+
+		float natural = _noise.GetNoise2D(cx, cy) * HeightScale;
+		float outerY = _minHeight - SkirtDepth;
+		return Mathf.Lerp(natural, outerY, Mathf.SmoothStep(0f, 1f, t));
 	}
 
 	private void GenerateTerrainMesh()
@@ -189,14 +229,17 @@ public partial class Terrain : Node3D
 		var indices = new List<int>();
 		var normals = new List<Vector3>();
 
-		for (int x = 0; x < Width; x++)
+		// El grid se extiende ±BorderMargin alrededor de la región jugable. Las casillas del
+		// margen no son seleccionables (coordenadas fuera de rango) y CornerHeight las hace
+		// descender bajo el agua para ocultar el borde flotante de la malla.
+		for (int x = -BorderMargin; x < Width + BorderMargin; x++)
 		{
-			for (int y = 0; y < Height; y++)
+			for (int y = -BorderMargin; y < Height + BorderMargin; y++)
 			{
-				Vector3 v0 = new Vector3(x * TILE_SIZE, heightMap[x, y], y * TILE_SIZE);
-				Vector3 v1 = new Vector3((x + 1) * TILE_SIZE, heightMap[x + 1, y], y * TILE_SIZE);
-				Vector3 v2 = new Vector3(x * TILE_SIZE, heightMap[x, y + 1], (y + 1) * TILE_SIZE);
-				Vector3 v3 = new Vector3((x + 1) * TILE_SIZE, heightMap[x + 1, y + 1], (y + 1) * TILE_SIZE);
+				Vector3 v0 = new Vector3(x * TILE_SIZE, CornerHeight(x, y), y * TILE_SIZE);
+				Vector3 v1 = new Vector3((x + 1) * TILE_SIZE, CornerHeight(x + 1, y), y * TILE_SIZE);
+				Vector3 v2 = new Vector3(x * TILE_SIZE, CornerHeight(x, y + 1), (y + 1) * TILE_SIZE);
+				Vector3 v3 = new Vector3((x + 1) * TILE_SIZE, CornerHeight(x + 1, y + 1), (y + 1) * TILE_SIZE);
 
 				int baseIndex = vertices.Count;
 
