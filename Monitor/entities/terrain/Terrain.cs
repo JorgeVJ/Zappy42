@@ -102,11 +102,13 @@ public partial class Terrain : Node3D
 		float h = (heightMap[x + 1, y] + heightMap[x, y + 1]) / 2f;
 		Vector3 center = new Vector3(x * TILE_SIZE + TILE_SIZE / 2f, h, y * TILE_SIZE + TILE_SIZE / 2f);
 
+		var obstacles = GetNearbyDecorationObstacles(x, y);
+
 		foreach (var kvp in tiles[x, y].Inventory.AllOrdered)
 		{
 			if (kvp.Value <= 0) continue;
 
-			var offset = GetResourceOffset(x, y, kvp.Key);
+			var offset = GetResourceOffset(x, y, kvp.Key, center, obstacles);
 			var resource = resourceScene.Instantiate<Resource>();
 			resource.Position = center + new Vector3(offset.X, ResourceGroundOffset, offset.Y);
 			AddChild(resource);
@@ -115,18 +117,52 @@ public partial class Terrain : Node3D
 		}
 	}
 
+	// Radio aproximado (en unidades de mundo) ocupado por un recurso, usado para evitar
+	// que su offset dentro del tile lo deje embebido en una decoración cercana (C12).
+	private const float ResourceRadius = 0.25f;
+
+	// Distancia (en unidades de mundo) hasta la que una decoración se considera "cercana"
+	// a un tile y por tanto relevante como obstáculo al posicionar sus recursos. Cubre el
+	// propio tile más un margen para decoraciones de tiles vecinos cuyo footprint invada
+	// el tile actual.
+	private const float DecorationProximityRange = TILE_SIZE * 1.5f;
+
+	// Filtra, de entre todos los obstáculos expuestos por DecorationSystem, los que caen
+	// en o cerca del tile (x, y) — es decir, relevantes para el offset de sus recursos.
+	private List<PlacementFinder.Obstacle> GetNearbyDecorationObstacles(int x, int y)
+	{
+		var result = new List<PlacementFinder.Obstacle>();
+
+		var allObstacles = _decorationSystem?.Obstacles;
+		if (allObstacles == null || allObstacles.Count == 0)
+			return result;
+
+		var tileCenter = new Vector2(x * TILE_SIZE + TILE_SIZE / 2f, y * TILE_SIZE + TILE_SIZE / 2f);
+
+		foreach (var obstacle in allObstacles)
+		{
+			float maxDist = DecorationProximityRange + obstacle.Radius;
+			if (tileCenter.DistanceSquaredTo(obstacle.PositionXZ) <= maxDist * maxDist)
+				result.Add(obstacle);
+		}
+
+		return result;
+	}
+
 	// Posición pseudoaleatoria dentro del tile, sembrada por (x, y, tipo) para que sea
 	// determinista: no cambia entre actualizaciones de inventario (sin parpadeos), pero
 	// varía entre tiles y tipos en lugar de repetir siempre el mismo patrón (C9).
-	private static Vector2 GetResourceOffset(int x, int y, Resource.ResourceType type)
+	// Evita además colisionar con decoraciones (árboles/rocas/arbustos) cercanas (C12),
+	// usando PlacementFinder con el mismo RNG sembrado para mantener el determinismo.
+	private static Vector2 GetResourceOffset(int x, int y, Resource.ResourceType type, Vector3 center,
+		List<PlacementFinder.Obstacle> obstacles)
 	{
 		uint seed = (uint)(x * 73856093) ^ (uint)(y * 19349663) ^ (uint)((int)type * 83492791);
 		var rng = new RandomNumberGenerator();
 		rng.Seed = seed;
-		return new Vector2(
-			rng.RandfRange(-ResourcePlacementRange, ResourcePlacementRange),
-			rng.RandfRange(-ResourcePlacementRange, ResourcePlacementRange)
-		);
+
+		var centerXZ = new Vector2(center.X, center.Z);
+		return PlacementFinder.FindFreeOffset(centerXZ, ResourcePlacementRange, obstacles, ResourceRadius, rng);
 	}
 
 	void GenerateHeightMap()

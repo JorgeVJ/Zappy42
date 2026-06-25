@@ -16,10 +16,20 @@ public partial class DecorationSystem : Node3D
 
 	private readonly record struct DecorationModel(PackedScene Scene, int FootprintW, int FootprintL);
 
+	// Obstáculos colocados durante Generate(), expuestos para que Terrain pueda evitar
+	// embeber recursos (bct) dentro de árboles/rocas/arbustos cercanos (C12). Cada
+	// entrada es la posición world XZ del centro de la decoración y un radio de exclusión
+	// derivado de su footprint (en tiles).
+	private readonly List<PlacementFinder.Obstacle> _obstacles = new();
+
+	public IReadOnlyList<PlacementFinder.Obstacle> Obstacles => _obstacles;
+
 	public void Generate(float[,] heightMap, int width, int height)
 	{
 		foreach (Node child in GetChildren())
 			child.QueueFree();
+
+		_obstacles.Clear();
 
 		var modelsByType = DiscoverModels();
 		var occupied = new bool[width, height];
@@ -91,6 +101,12 @@ public partial class DecorationSystem : Node3D
 		instance.Position = new Vector3(worldX, worldY, worldZ);
 		instance.RotateY(rng.RandfRange(0f, Mathf.Tau));
 		AddChild(instance);
+
+		// Radio de exclusión aproximado: la mitad de la diagonal del footprint (en
+		// unidades de mundo), para que un recurso (C12) no aparezca embebido dentro
+		// de esta decoración independientemente de su orientación.
+		float footprintRadius = new Vector2(w * Terrain.TILE_SIZE, l * Terrain.TILE_SIZE).Length() / 2f;
+		_obstacles.Add(new PlacementFinder.Obstacle(new Vector2(worldX, worldZ), footprintRadius));
 	}
 
 	private static Dictionary<string, List<DecorationModel>> DiscoverModels()
