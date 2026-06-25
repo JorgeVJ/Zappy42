@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://d21qejsj8oxem"]
+[gd_scene load_steps=8 format=3 uid="uid://d21qejsj8oxem"]
 
 [ext_resource type="Script" path="res://entities/terrain/Terrain.cs" id="1_1ewcx"]
 [ext_resource type="Script" path="res://entities/terrain/GrassSystem.cs" id="2_grass"]
 [ext_resource type="Shader" path="res://entities/terrain/terrain.gdshader" id="3_lh2em"]
 [ext_resource type="Script" path="res://entities/terrain/DecorationSystem.cs" id="4_decoration"]
+[ext_resource type="Script" path="res://entities/terrain/WaterSystem.cs" id="5_water"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_pb4ps"]
 render_priority = 0
@@ -32,6 +33,9 @@ script = ExtResource("2_grass")
 
 [node name="DecorationSystem" type="Node3D" parent="."]
 script = ExtResource("4_decoration")
+
+[node name="WaterSystem" type="Node3D" parent="."]
+script = ExtResource("5_water")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 

@@ -29,6 +29,7 @@ public partial class Terrain : Node3D
 	private MeshInstance3D terrainMesh;
 	private GrassSystem _grassSystem;
 	private DecorationSystem _decorationSystem;
+	private WaterSystem _waterSystem;
 
 	private static readonly PackedScene resourceScene = ResourceLoader.Load<PackedScene>("res://entities/resources/resource.tscn");
 	private readonly Dictionary<(int, int), List<Resource>> tileResources = new();
@@ -48,6 +49,7 @@ public partial class Terrain : Node3D
 		terrainMesh = GetNode<MeshInstance3D>("MeshInstance3D");
 		_grassSystem = GetNodeOrNull<GrassSystem>("GrassSystem");
 		_decorationSystem = GetNodeOrNull<DecorationSystem>("DecorationSystem");
+		_waterSystem = GetNodeOrNull<WaterSystem>("WaterSystem");
 	}
 
 	public void InitializeMap(int width, int height)
@@ -211,6 +213,7 @@ public partial class Terrain : Node3D
 
 		_grassSystem?.Generate(heightMap, Width, Height);
 		_decorationSystem?.Generate(heightMap, Width, Height);
+		_waterSystem?.Generate(heightMap, Width, Height);
     }
 
 	public void SelectTile(int x, int y)

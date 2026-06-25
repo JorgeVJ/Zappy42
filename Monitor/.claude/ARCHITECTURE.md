@@ -123,7 +123,8 @@ game.tscn
     ├── Terrain (terrain.tscn)       [Terrain.cs]
     │   ├── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
     │   ├── GrassSystem              [GrassSystem.cs] (césped procedural via MultiMeshInstance3D)
-    │   └── DecorationSystem         [DecorationSystem.cs] (props FBX: árboles/rocas/arbustos/hierba)
+    │   ├── DecorationSystem         [DecorationSystem.cs] (props FBX: árboles/rocas/arbustos/hierba)
+    │   └── WaterSystem              [WaterSystem.cs] (mar procedural infinito via water.gdshader; sigue a la cámara)
     ├── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
     └── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (música de fondo en bucle, ProcessMode.Always; hijo directo de Game para no verse afectado por ResetWorldState; Button toggle Mute con icono arriba-derecha + tecla M)
 
@@ -250,6 +251,7 @@ Ver skill `/terrain` para contexto completo. Resumen:
 - `GetTileFromPosition()` divide por `TILE_SIZE` antes de hacer `FloorToInt`
 - Tras generar el mesh, `DecorationSystem.Generate()` esparce props GLB (árboles/rocas/arbustos/hierba) sobre el heightmap, descubriendo modelos por convención de nombre `<Tipo>_<Letra>_<Ancho>x<Largo>.glb` en `entities/terrain/models/` (sin listas hardcodeadas)
 - `GrassSystem` y `DecorationSystem` son complementarios, no redundantes (C11): `GrassSystem` cubre todo el mapa con una "alfombra" densa de billboards animados por shader (viento); `DecorationSystem` reparte props grandes y estáticos de forma dispersa vía occupancy grid — las matas `Grass_*_1x1.glb` son solo uno de sus cuatro tipos de prop, a modo de variedad puntual junto a árboles/rocas/arbustos, no un sustituto del césped base
+- `WaterSystem` ([WaterSystem.cs](../entities/terrain/WaterSystem.cs), D10) rodea el terreno de un **mar procedural infinito**: un único plano grande (sin colisión, así que la selección de tile sigue impactando el terreno bajo el agua) que `_Process` **recentra sobre la cámara** cada frame; como el shader es world-space, deslizar el plano no desplaza el patrón → el agua llega siempre al horizonte sin bordes. `Generate()` lo coloca a un nivel del mar relativo al heightMap (`SeaLevelFraction`, def. 0.35) → **archipiélago**: los valles quedan sumergidos y los picos sobresalen como islotes, en cualquier tamaño de mapa. `water.gdshader` (transparente, `depth_draw_never`) anima **caústicas** (capas de voronoi scrolleando), perturba la normal para specular en movimiento, añade fresnel hacia el horizonte y usa `DEPTH_TEXTURE` para la **costa**: aclara el color, sube la transparencia y dibuja una banda de **espuma** animada donde el agua toca el terreno. No modifica el `WorldEnvironment`.
 
 ---
 
