@@ -37,11 +37,11 @@ class TileDataRegistry
         std::vector<T*> GetAll()
         {
             std::vector<T*> result;
-            result.reserve(data.size());
+            result.reserve(data.size());//May throw
 
             for (auto& pair : data)
             {
-                result.push_back(&pair.second);
+                result.push_back(&pair.second); //May throw
             }
 
             return result;

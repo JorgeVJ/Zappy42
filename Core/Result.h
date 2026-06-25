@@ -6,7 +6,7 @@ template<typename T>
 struct Result
 {
 	bool Ok;
-	std::string Message;
+	std::string_view Message;
 	T Value;
 
 	static Result<T> Success(const T& v)

@@ -1,6 +1,19 @@
 #pragma once
 #include <string_view>
 
+namespace Messages {
+	namespace Game  {
+		constexpr std::string_view Welcome = "BIENVENUE\n";
+		namespace Player {
+
+		}
+		namespace Monitor {
+		}
+	}
+	namespace Server {
+	}
+}
+
 namespace Errors {
 	constexpr std::string_view Unexpected   = "Unexpected error";
 
@@ -28,15 +41,13 @@ namespace Errors {
 		constexpr std::string_view InvalidInteger       = "Invalid integer";
 		constexpr std::string_view InvalidIntegerFormat = "Invalid integer format";
 		constexpr std::string_view InvalidPort          = "Invalid port number";
+    constexpr std::string_view InvalidTeamLen     = "Invalid Team Len";
 		namespace Server {
 			constexpr std::string_view InvalidHeightorWidth = "Invalid Height or Width number";
 			constexpr std::string_view DuplicateTeamName    = "Invalid Duplicate Team Name";
 			constexpr std::string_view Time          = "Invalid Time Nbr";
 			constexpr std::string_view Clients     = "Invalid Client Nbr";
 			constexpr std::string_view InvalidTeamNbr     = "Invalid Team Nbr";
-			constexpr std::string_view InvalidTeamLen     = "Invalid Team Len";
-
-
 		}
 	}
 }

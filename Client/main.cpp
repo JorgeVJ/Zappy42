@@ -178,7 +178,7 @@ int main()
 
 	std::vector<IAgent*> agents;
 	CreateAgents(agents);
-	int i = 0;
+	//int i = 0;
 
 	while (true)
 	{
@@ -216,7 +216,7 @@ int main()
 		//	objectParam = "nourriture";
 		//	std::cout << "[Client] CMD => prend nourriture (iteration " << i << ")\n";
 		//}
-	
+
 		//board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
 		//i++;
 
@@ -232,7 +232,7 @@ int main()
 		{
 			if (!conn->RecvLine(response))
 				break;
-			
+
 			std::cout << "[Server] RESP <= " << response << "\n";
 			responseCode = handleServerResponse(board, response);
 			if (responseCode == 0)

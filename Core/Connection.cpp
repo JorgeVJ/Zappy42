@@ -3,17 +3,11 @@
 
 Connection::Connection() : player(nullptr), sock(INVALID_SOCKET) { }
 
+Connection::Connection(ZappySocket &s) : player(nullptr), sock(s) { }
 Connection::Connection(SOCKET s) : player(nullptr), sock(s) { }
 
 Connection::~Connection()
 {
-    if (sock != INVALID_SOCKET)
-#ifdef _WIN32
-      closesocket(sock);
-#elif defined(__linux__)
-      close(sock);
-#endif
-
     if (player)
     {
         delete player;
@@ -32,13 +26,7 @@ Connection& Connection::operator=(Connection&& other) noexcept
 {
     if (this != &other)
     {
-        if (sock != INVALID_SOCKET)
-#ifdef _WIN32
-          closesocket(sock);
-#elif defined(__linux__)
-          close(sock);
-#endif
-        sock = other.sock;
+        this->sock = other.sock;
         other.sock = INVALID_SOCKET;
     }
     return *this;
@@ -56,19 +44,19 @@ bool Connection::IsMonitor() const
 
 bool Connection::IsValid() const
 {
-    return sock != INVALID_SOCKET;
+    return (sock.isValid());
 }
 
 
 SOCKET Connection::Get() const
 {
-    return sock;
+    return (sock.Get());
 }
 
 bool Connection::SendLine(const std::string& line)
 {
     std::string data = line + "\n";
-    return send(sock, data.c_str(), int(data.size()), 0) > 0;
+    return send(this->Get(), data.c_str(), int(data.size()), 0) > 0;
 }
 
 bool Connection::RecvLine(std::string& outLine)
@@ -78,7 +66,7 @@ bool Connection::RecvLine(std::string& outLine)
 
     while (true)
     {
-        int r = recv(sock, &ch, 1, 0);
+        int r = recv(this->Get(), &ch, 1, 0);
         if (r <= 0)
             return false;
 

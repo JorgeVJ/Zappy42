@@ -4,7 +4,7 @@
 
 std::string GetTileBCT(int x, int y)
 {
-    Game* game = Game::GetInstance();
+  Game* game = Game::GetInstance();
 
     Tile* tile = game->WorldMap->GetTile(x, y);
     if (!tile) return "";
