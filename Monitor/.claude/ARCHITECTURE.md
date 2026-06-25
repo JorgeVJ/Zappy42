@@ -61,7 +61,7 @@ Monitor/
 ├── IInventory.cs           # Interfaz: objeto con inventario
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
-├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ (icono) y botón de restauración (icono por panel vía Setup(minimizedIcon))
+├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ (icono) y botón de restauración (icono por panel vía Setup(minimizedIcon)); los botones colapsados se agrupan en una bandeja HBox compartida (esquina sup. izq.) para no solaparse
 ├── IconButton.cs           # UI: helper estático de estilo para botones de icono (iconos en ui/icons/*.svg, tamaño/estilo uniforme)
 ├── InventoryPanel.cs       # UI: panel de inventario seleccionado
 ├── MessageLogPanel.cs      # UI: log de mensajes (hereda CollapsiblePanel)
