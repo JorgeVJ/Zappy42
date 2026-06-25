@@ -236,3 +236,27 @@ void SocketManager::ExtractMessages(ClientSocket& client, MessageReadResult& res
         client.pendingMessage.erase(0, newlinePos + 1);
     }
 }
+size_t SocketManager::GetAmmountMonitors(bool disconnecting) const {
+	return CountByType(ClientType::Monitor, disconnecting);
+}
+
+size_t SocketManager::GetAmmountPlayers(bool disconnecting) const {
+	return CountByType(ClientType::Player, disconnecting);
+}
+
+size_t SocketManager::GetAmmountAdmins(bool disconnecting) const {
+	return CountByType(ClientType::Admin, disconnecting);
+}
+
+size_t SocketManager::CountByType(ClientType wanted, bool disconnecting) const {
+	size_t count = 0;
+	for (const auto& c : m_clients) {
+		if (!c)
+			continue;
+		if (!disconnecting && c->disconnecting)
+			continue;   // optional; remove if you want to count them
+		if (c->type == wanted)
+			++count;
+    }
+    return count;
+}

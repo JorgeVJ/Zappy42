@@ -76,10 +76,10 @@ namespace ArgValidation {
                                           Opt::Server::Args& outArgs,
                                           std::vector<std::string_view>* errors)
 	{
-		auto clients = Validators::Server::clients(values, errors);
-		if (!clients.Ok)
-      return Result<bool>::Fail(clients.Message);
-    outArgs.clients = static_cast<int>(clients.Value);
+		auto Players = Validators::Server::players(values, errors);
+		if (!Players.Ok)
+      return Result<bool>::Fail(Players.Message);
+    outArgs.players = static_cast<int>(Players.Value);
     return Result<bool>::Success(true);
 
 	}
@@ -89,16 +89,16 @@ namespace ArgValidation {
 	// ========================================================================
 
 	Result<bool> TeamsValidator::Validate(const std::vector<std::string_view>& values,
-										 Opt::Server::Args& outArgs,
-										 std::vector<std::string_view>* errors)
+										  Opt::Server::Args& outArgs,
+										  std::vector<std::string_view>* errors)
 	{
 		// Note: We need to validate against client count, which should already be filled
-    auto teams = Validators::Server::teams(values, static_cast<size_t>(outArgs.clients), errors);
+		auto teams = Validators::Server::teams(values, static_cast<size_t>(outArgs.players), errors);
 		if (!teams.Ok)
-      return (teams);
+			return (teams);
 
-    outArgs.teams = values;
-    return Result<bool>::Success(true);
+		outArgs.teams = values;
+		return Result<bool>::Success(true);
 	}
 
 	// ========================================================================

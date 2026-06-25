@@ -40,7 +40,7 @@ namespace Opt {
 			int width;
 			int height;
 			int time;
-			int clients;
+			int players;
 			std::vector<std::string_view> teams;
 		};
 	}

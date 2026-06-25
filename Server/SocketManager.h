@@ -23,7 +23,7 @@ struct ClientSocket {
 
     ZappySocket socket;
     std::string pendingMessage;
-	  bool disconnecting = false;
+	bool disconnecting = false;
 };
 
 struct MessageReadResult {
@@ -35,6 +35,9 @@ class SocketManager {
   public:
     SocketManager();
     ~SocketManager();
+	size_t GetAmmountMonitors(bool disconnecting) const;
+	size_t GetAmmountPlayers(bool disconnecting) const;
+	size_t GetAmmountAdmins(bool disconnecting) const;
 
 	bool Initialize(Opt::Server::Args m_args);
 	std::vector<std::unique_ptr<SocketEvent>> Poll();
@@ -44,7 +47,9 @@ class SocketManager {
 	static bool InitializeServerSocket(const int portNumber, ZappySocket *socket);
 	const ClientSocket* FindClientByZappySocket(const ZappySocket& zs) const noexcept;
 	ClientSocket* FindClientByZappySocket(const ZappySocket& zs) noexcept;
-
+	size_t GetAmmountMonitors() const;
+	size_t GetAmmountPlayers() const;
+	size_t GetAmmountAdmins() const;
   private:
     // Initialize a new socket for players/monitors
 	bool InitializePlayerSocket(Opt::Server::Args m_args);
@@ -52,6 +57,7 @@ class SocketManager {
 	bool InitializeAdminSocket(Opt::Server::Args m_args);
 	bool AcceptConnection(ZappySocket& serverSocket, ClientType type,
 						  std::vector<std::unique_ptr<SocketEvent>>& events) noexcept;
+	size_t CountByType(ClientType wanted, bool disconnecting) const;
   private:
 
 	void HandleReadableClient(std::vector<std::unique_ptr<SocketEvent>>& events, ClientSocket& client);

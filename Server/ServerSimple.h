@@ -55,8 +55,8 @@ public:
 	// Accessors
 	const Opt::Server::Args& GetArgs() const { return m_args; }
 	Game* GetGame() const { return m_game; }
-  
-  
+
+
 private:
 	// ========================================================================
 	// INITIALIZATION

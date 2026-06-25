@@ -143,8 +143,11 @@ void Server::HandleNewPlayerConnection(ZappySocket *client)
 void Server::HandleNewAdminConnection(ZappySocket *client)
 {
 	std::cout << "New admin connection" << std::endl;
-
-	// Here Goes Admin
+	if (this->m_socketManager.GetAmmountAdmins(false) >= Validators::Server::Admins::Max) {
+		std::cerr << "Max Players Reached" << std::endl;
+		return;
+	}
+	// here Goes Admin
 	(void)client;
 }
 
@@ -185,83 +188,93 @@ void Server::HandleCommand(const std::string& cmd, ClientSocket *client)
 		client->socket.Send("ko\n");
 		return;
 	}
-  if (client->type == ClientType::Game)
+	if (client->type == ClientType::Game)
     {
-      if (cmd == "GRAPHIC\n")
-        {
-        std::cout << "Monitor Connection" << std::endl;
-        client->type = ClientType::Monitor;
-        }
-      else if (std::find(this->m_args.teams.begin(), this->m_args.teams.end(), cmd.c_str()) != this->m_args.teams.end()) {
-        std::cout << "Team Recoignaince" << std::endl;
-        client->type = ClientType::Player;
-        client->socket.Send("1\n");
-        client->socket.Send(std::to_string(this->m_args.width) + " " + std::to_string(this->m_args.height) + "\n");
-      }
-      else
-        std::cout << "Team Unknown " << cmd << std::endl;
+		if (cmd == "GRAPHIC\n")
+		{
+			std::cout << "Monitor Connection" << std::endl;
+			if (this->m_socketManager.GetAmmountMonitors(false) >= Validators::Server::Monitors::Max)
+			{
+				std::cerr << "Max Monitor Reached" << std::endl;
+				return;
+			}
+			client->type = ClientType::Monitor;
+		}
+		else if (std::find(this->m_args.teams.begin(), this->m_args.teams.end(), cmd.c_str()) != this->m_args.teams.end()) {
+			std::cout << "Team Recoignaince" << std::endl;
+			if (this->m_socketManager.GetAmmountPlayers(false) >= Validators::Server::Players::Max)
+			{
+				std::cerr << "Max Players Reached" << std::endl;
+				return;
+			}
+			client->type = ClientType::Player;
+			client->socket.Send("1\n");
+			client->socket.Send(std::to_string(this->m_args.width) + " " + std::to_string(this->m_args.height) + "\n");
+		}
+		else
+			std::cout << "Team Unknown " << cmd << std::endl;
     }
-  else if (client->type == ClientType::Player) {
-    // Game commands
-    if (cmd == "inventaire\n") {
-      client->socket.Send("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}\n");
-    }
-	
-    else if (cmd == "voir\n") {
-      client->socket.Send("{nourriture linemate, sibur, phiras phiras,}\n");
-    }
-    else if (cmd == "avance" || cmd == "droite" || cmd == "gauche\n") {
-      client->socket.Send("ok\n");
-    }
-    else if (cmd.rfind("prend ", 0) == 0) {
-      client->socket.Send("ok\n");
-    }
-    else if (cmd.rfind("pose ", 0) == 0) {
-      client->socket.Send("ok\n");
-    }
-    else if (cmd == "expulse\n") {
-      client->socket.Send("ok\n");
-    }
-    else if (cmd.rfind("broadcast ", 0) == 0) {
-      client->socket.Send("ok\n");
-    }
-    else if (cmd == "incantation\n") {
-      client->socket.Send("elevation en cours\n");
-    }
-    else if (cmd == "fork\n") {
-      client->socket.Send("ok\n");
-    }
-    else if (cmd == "connect_nbr\n") {
-      client->socket.Send("10\n");
-    }
-  }
-  else if (client->type == ClientType::Monitor)
-  {
-    // Monitor commands
-    if (cmd == "msz\n") {
-      Map* map = m_game->WorldMap;
-      std::ostringstream ss;
-      ss << "msz " << map->Width << " " << map->Height;
-      client->socket.Send(ss.str());
-    }
-    else if (cmd == "mct\n") {
-      // TODO: Implement full map contents
-      client->socket.Send("mct\n");
-    }
-    else if (cmd == "sgt\n") {
-      std::ostringstream ss;
-      ss << "sgt " << m_args.time;
-      client->socket.Send(ss.str());
-    }
-    else if (cmd == "tna\n") {
-      // TODO: Send all team names
-      client->socket.Send("tna\n");
-    }
-  }
-  else if (client->type == ClientType::Admin)
+	else if (client->type == ClientType::Player) {
+		// Game commands
+		if (cmd == "inventaire\n") {
+			client->socket.Send("{nourriture 12, linemate 1, deraumere 0, sibur 2, mendiane 0, phiras 1, thystame 0}\n");
+		}
+
+		else if (cmd == "voir\n") {
+			client->socket.Send("{nourriture linemate, sibur, phiras phiras,}\n");
+		}
+		else if (cmd == "avance" || cmd == "droite" || cmd == "gauche\n") {
+			client->socket.Send("ok\n");
+		}
+		else if (cmd.rfind("prend ", 0) == 0) {
+			client->socket.Send("ok\n");
+		}
+		else if (cmd.rfind("pose ", 0) == 0) {
+			client->socket.Send("ok\n");
+		}
+		else if (cmd == "expulse\n") {
+			client->socket.Send("ok\n");
+		}
+		else if (cmd.rfind("broadcast ", 0) == 0) {
+			client->socket.Send("ok\n");
+		}
+		else if (cmd == "incantation\n") {
+			client->socket.Send("elevation en cours\n");
+		}
+		else if (cmd == "fork\n") {
+			client->socket.Send("ok\n");
+		}
+		else if (cmd == "connect_nbr\n") {
+			client->socket.Send("10\n");
+		}
+	}
+	else if (client->type == ClientType::Monitor)
+	{
+		// Monitor commands
+		if (cmd == "msz\n") {
+			Map* map = m_game->WorldMap;
+			std::ostringstream ss;
+			ss << "msz " << map->Width << " " << map->Height;
+			client->socket.Send(ss.str());
+		}
+		else if (cmd == "mct\n") {
+			// TODO: Implement full map contents
+			client->socket.Send("mct\n");
+		}
+		else if (cmd == "sgt\n") {
+			std::ostringstream ss;
+			ss << "sgt " << m_args.time;
+			client->socket.Send(ss.str());
+		}
+		else if (cmd == "tna\n") {
+			// TODO: Send all team names
+			client->socket.Send("tna\n");
+		}
+	}
+	else if (client->type == ClientType::Admin)
     {
-      if (cmd == "st\n") // SetTime
-        std::cout << "Set Time" << std::endl;
+		if (cmd == "st\n") // SetTime
+			std::cout << "Set Time" << std::endl;
     }
 }
 
@@ -337,7 +350,7 @@ void Server::PrintConfiguration() const
         << "  AdminPort:      " << SocketManager::GetAdminPortNumber(m_args.port) << std::endl
 		<< "  Map:       " << m_args.width << "x" << m_args.height << std::endl
 		<< "  Time:      " << m_args.time << std::endl
-		<< "  MaxClients: " << m_args.clients << std::endl
+		<< "  MaxClients: " << m_args.players << std::endl
 		<< "  Teams:     ";
 	for (size_t i = 0; i < m_args.teams.size(); ++i) {
 		if (i > 0) std::cout << ", ";

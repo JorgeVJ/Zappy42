@@ -54,7 +54,7 @@ namespace Validators {
 			return Result<size_t>::Success(static_cast<size_t>(r.Value));
 		}
 
-		Result<size_t> clients(const std::vector<std::string_view> &values,
+		Result<size_t> players(const std::vector<std::string_view> &values,
 							   std::vector<std::string_view> *errors)
 		{
 			if (values.empty())
@@ -70,8 +70,8 @@ namespace Validators {
 			}
 
 			if (!Utils::within_bounds(static_cast<size_t>(r.Value),
-									   Clients::Min,
-									   Clients::Max_Initial)) {
+									   Players::Min,
+									   Players::Max_Initial)) {
 				vector_string_view_add(errors, Errors::Validation::Server::Clients);
 				return (Result<size_t>::Fail(Errors::Validation::Server::Clients));
 			}
