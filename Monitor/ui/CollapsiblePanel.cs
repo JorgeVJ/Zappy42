@@ -17,10 +17,9 @@ public partial class CollapsiblePanel : Control
     /// </summary>
     /// <param name="title">Texto del título y del botón minimizado.</param>
     /// <param name="panelRect">Posición y tamaño del panel expandido.</param>
-    /// <param name="minimizedBtnPos">Posición del botón cuando el panel está colapsado.</param>
-    /// <param name="minimizedIcon">Icono (ui/icons/&lt;name&gt;.svg) del botón colapsado; si es null usa el título como texto.</param>
-    protected void Setup(string title, Rect2 panelRect, Control.LayoutPreset minimizedAnchor,
-                         string minimizedIcon = null)
+    /// <param name="minimizedIcon">Icono (ui/icons/&lt;name&gt;.svg) del botón colapsado; si es null usa el título como texto.
+    /// El botón colapsado se coloca en la bandeja compartida (esquina superior izquierda), no en este panel.</param>
+    protected void Setup(string title, Rect2 panelRect, string minimizedIcon = null)
     {
         // Este nodo llena toda la pantalla pero es transparente al ratón
         SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -69,6 +68,9 @@ public partial class CollapsiblePanel : Control
         mainVBox.AddChild(Content);
 
         // ── Botón minimizado ──────────────────────────────────────────────
+        // Vive en la bandeja compartida (HBoxContainer): el contenedor ignora a
+        // los hijos ocultos, así que solo los paneles colapsados muestran su
+        // botón y todos quedan pegados a la izquierda, sin solaparse.
         _minimizedBtn = new Button();
         if (minimizedIcon != null)
             IconButton.Apply(_minimizedBtn, minimizedIcon, title);
@@ -76,8 +78,31 @@ public partial class CollapsiblePanel : Control
             _minimizedBtn.Text = title;
         _minimizedBtn.Pressed += Expand;
         _minimizedBtn.Hide();
-        AddChild(_minimizedBtn);
-        _minimizedBtn.SetAnchorsAndOffsetsPreset(minimizedAnchor, Control.LayoutPresetMode.Minsize, 10);
+        GetTray().AddChild(_minimizedBtn);
+    }
+
+    // Bandeja compartida por todos los CollapsiblePanel para sus botones
+    // colapsados (esquina superior izquierda). Creada de forma perezosa la
+    // primera vez que un panel hace Setup().
+    private static HBoxContainer _minimizedTray;
+
+    private HBoxContainer GetTray()
+    {
+        if (_minimizedTray == null || !IsInstanceValid(_minimizedTray))
+        {
+            _minimizedTray = new HBoxContainer();
+            _minimizedTray.AddThemeConstantOverride("separation", 8);
+            _minimizedTray.SetAnchorsAndOffsetsPreset(
+                Control.LayoutPreset.TopLeft, Control.LayoutPresetMode.Minsize, 10);
+            // Se cuelga del root para renderizar por encima del 3D (igual que los
+            // paneles) y quedar por debajo del overlay de ganador (CanvasLayer 10).
+            // El AddChild se DIFIERE: GetTray() se llama desde Setup() en _Ready,
+            // momento en que el root está "ocupado montando hijos" y un AddChild
+            // directo falla silenciosamente (la bandeja no entraría al árbol y los
+            // botones colapsados no se verían). call_deferred lo añade ya libre.
+            GetTree().Root.CallDeferred(Node.MethodName.AddChild, _minimizedTray);
+        }
+        return _minimizedTray;
     }
 
     /// <summary>Alterna entre expandido y colapsado.</summary>
