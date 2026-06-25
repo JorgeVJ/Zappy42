@@ -18,7 +18,9 @@ public partial class CollapsiblePanel : Control
     /// <param name="title">Texto del título y del botón minimizado.</param>
     /// <param name="panelRect">Posición y tamaño del panel expandido.</param>
     /// <param name="minimizedBtnPos">Posición del botón cuando el panel está colapsado.</param>
-    protected void Setup(string title, Rect2 panelRect, Control.LayoutPreset minimizedAnchor)
+    /// <param name="minimizedIcon">Icono (ui/icons/&lt;name&gt;.svg) del botón colapsado; si es null usa el título como texto.</param>
+    protected void Setup(string title, Rect2 panelRect, Control.LayoutPreset minimizedAnchor,
+                         string minimizedIcon = null)
     {
         // Este nodo llena toda la pantalla pero es transparente al ratón
         SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -67,8 +69,11 @@ public partial class CollapsiblePanel : Control
         mainVBox.AddChild(Content);
 
         // ── Botón minimizado ──────────────────────────────────────────────
-        _minimizedBtn          = new Button();
-        _minimizedBtn.Text     = title;
+        _minimizedBtn = new Button();
+        if (minimizedIcon != null)
+            IconButton.Apply(_minimizedBtn, minimizedIcon, title);
+        else
+            _minimizedBtn.Text = title;
         _minimizedBtn.Pressed += Expand;
         _minimizedBtn.Hide();
         AddChild(_minimizedBtn);

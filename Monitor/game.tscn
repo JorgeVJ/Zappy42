@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://bkawsmediwsui"]
+[gd_scene format=3 uid="uid://bkawsmediwsui"]
 
 [ext_resource type="Script" path="res://entities/camera/Camera.cs" id="1_ga5x6"]
 [ext_resource type="PackedScene" uid="uid://jbsn3gabtt6h" path="res://network/connection.tscn" id="2_hexf3"]
