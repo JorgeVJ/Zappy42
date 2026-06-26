@@ -23,9 +23,12 @@ El sistema está organizado en **capas** (pensadas para crecer a animales terres
 | `entities/animals/IAnimalDomain.cs` | Dominio | Interfaz "**dónde puede moverse** un animal": `Contains`, `ClampToValid`, `SampleWanderTarget`. El eje del diseño. |
 | `entities/animals/AquaticDomain.cs` | Dominio | Implementación acuática: volumen de agua entre el fondo (+margen) y la superficie del mar (−margen), construido desde el heightmap. |
 | `entities/animals/AnimalLocomotion.cs` | Locomoción | Steering procedural genérico (estilo `CrowdSystem`): mueve un `Node3D` hacia un objetivo con aceleración/frenado suaves y giro gradual hacia el rumbo. |
-| `entities/animals/IAnimalBehavior.cs` | Comportamiento | Interfaz de comportamiento (`Enter`/`Tick`). **Costura** para el futuro Utility AI. |
-| `entities/animals/WanderBehavior.cs` | Comportamiento | Único comportamiento por ahora: elige destinos del dominio y pasea con pausas. |
-| `entities/animals/Animal.cs` | Entidad base | `Node3D` genérico que reúne dominio + locomoción + comportamiento y los ejecuta cada frame; hook `OnLocomotionUpdate(speed)` para animación. |
+| `entities/animals/IAnimalBehavior.cs` | Comportamiento | Interfaz de comportamiento (`Enter`/`Tick`/`Score`). `Score` es la utilidad para el cerebro. |
+| `entities/animals/WanderBehavior.cs` | Comportamiento | Pasear: elige destinos del dominio con pausas. `Score` = baseline constante (estado por defecto). |
+| `entities/animals/FleeBehavior.cs` | Comportamiento | Huir de la cámara: `Score` sube al acercarse la cámara; al activarse, acelera el nado y elige destinos alejándose. |
+| `entities/animals/ScoringUtils.cs` | Utility AI | Curvas de respuesta (`Normalize`, `Proximity`, `Falloff`) para construir scores. Espejo del proyecto de referencia. |
+| `entities/animals/UtilityBrain.cs` | Utility AI | `IAnimalBehavior` compuesto: puntúa los comportamientos candidatos y ejecuta el de mayor `Score`, reevaluando con histéresis. |
+| `entities/animals/Animal.cs` | Entidad base | `Node3D` genérico que reúne dominio + locomoción + comportamiento (el cerebro) y los ejecuta cada frame; hook `OnLocomotionUpdate(speed)` para animación. |
 | `entities/animals/Fish.cs` | Entidad | `Fish : Animal`. Carga el `.glb` (ruta como parámetro), anima los huesos `Body`/`Tail` por código y modula el aleteo con la velocidad. Sirve para cualquier especie con ese rig. |
 | `entities/animals/ClownFish.glb`, `entities/animals/SurgeonFish.glb` | Asset | Modelos con 2 huesos `Body`/`Tail`, sin animaciones. Mismo rig → intercambiables por la misma clase `Fish`. |
 
@@ -91,7 +94,9 @@ El eje del diseño es que **el animal sepa a dónde puede moverse**, vía la abs
 - `SpeedTailBoost` — cuánto acelera el aleteo con la velocidad de nado (0 = constante).
 - Cada instancia arranca con fase aleatoria para no nadar sincronizada.
 
-**Locomoción/comportamiento** (no son `[Export]`; defaults en código, configurables si se exponen): `AnimalLocomotion` (`MaxSpeed`, `Damping`, `ArrivalRadius`, `TurnSpeed`); `WanderBehavior` (`WanderRadius`, `PauseChance`, `PauseMin/Max`).
+- Tuning de huida (Utility AI): `FleeInner` / `FleeOuter` (distancias de cámara para huida máx/nula), `FleeSpeedScale` (aceleración al huir).
+
+**Locomoción/comportamiento** (no son `[Export]`; defaults en código, configurables si se exponen): `AnimalLocomotion` (`MaxSpeed`, `SpeedScale`, `Damping`, `ArrivalRadius`, `TurnSpeed`); `WanderBehavior` (`WanderRadius`, `WanderWeight`, `PauseChance`, `PauseMin/Max`); `FleeBehavior` (`FleeInner/Outer`, `FleeWeight`, `FleeSpeedScale`, `FleeStep`); `UtilityBrain` (`EvalInterval`, `SwitchMargin`).
 
 ## Animación procedural de huesos
 
@@ -108,6 +113,18 @@ La arquitectura ya está preparada para ello sin tocar locomoción ni comportami
 - **Nueva entidad**: subclase de `Animal` (p. ej. `Bird : Animal`) que cargue su modelo y anime su rig en `OnLocomotionUpdate`. La locomoción (`AnimalLocomotion`) y el paseo (`WanderBehavior`) se reutilizan tal cual.
 - **Colocación**: `AnimalSystem` puede generalizarse (p. ej. spawnear varias especies/medios) o crearse un sistema hermano; mantener el principio de no-dependencias.
 
-## Futuro Utility AI (dónde engancha)
+- **Comportamientos**: el cerebro (`UtilityBrain`) se reutiliza; el animal puede tener su propio conjunto de comportamientos según su medio (p. ej. un ave: `FlyBehavior`/`PerchBehavior`/`HuntBehavior`).
 
-`IAnimalBehavior` es la costura. Hoy `Animal` corre un único comportamiento (`WanderBehavior`). Para el sistema de decisiones: añadir más comportamientos (`JumpBehavior`, `FleeBehavior`, `EatBehavior`, `FlyBehavior`, `PerchBehavior`, `HuntBehavior`…), descomentar/añadir `float Score(Animal)` en `IAnimalBehavior`, y sustituir el comportamiento único de `Animal` por un `UtilityBrain` que cada cierto tiempo puntúe los comportamientos disponibles y active el de mayor `Score` (llamando a su `Enter`). El resto (dominio, locomoción, hook de animación) no cambia.
+## Utility AI (sistema de decisiones)
+
+Inspirado en el patrón de `C:\Users\desarrollo\Documents\SpringChallenge2026` (`TrollFarmBot/AI`): cada comportamiento expone un `Score`, y un "decider" elige el de mayor puntuación. Aquí el decider es `UtilityBrain`, que es a su vez un `IAnimalBehavior` compuesto, así que `Animal` sigue corriendo un único `Behavior` (el cerebro) sin cambios en su bucle.
+
+- **`IAnimalBehavior.Score(animal)`**: utilidad actual del comportamiento (mayor = más deseable). `ScoringUtils` (`Normalize`, `Proximity = 1/(1+dist·k)`, `Falloff`) ayuda a construir scores a partir de distancias/conteos.
+- **`UtilityBrain`**: cada `EvalInterval` (0,25 s) puntúa todos los candidatos y conmuta al mejor si supera al activo por `SwitchMargin` (histéresis anti-parpadeo); cada frame ejecuta el `Tick` del activo. Llama `Enter` al cambiar.
+- **Comportamientos actuales**: `WanderBehavior` (`Score` = `WanderWeight` constante, el suelo por defecto) y `FleeBehavior` (`Score` = `FleeWeight · Falloff(distCámara, FleeInner, FleeOuter)`; cerca de la cámara supera a pasear → el pez acelera (`Locomotion.SpeedScale = FleeSpeedScale`) y se aleja; lejos cae a 0 → vuelve a pasear).
+- **Aceleración del nado**: los comportamientos fijan `Locomotion.SpeedScale` cada frame (1 al pasear, >1 al huir). El aleteo de la cola se acelera solo porque `Fish.OnLocomotionUpdate` lo modula con la velocidad real.
+- **Cámara sin acoplar**: `FleeBehavior` la obtiene con `animal.GetViewport().GetCamera3D()` (API de Godot), no con un tipo del proyecto → portabilidad intacta.
+
+**Añadir un comportamiento nuevo** (p. ej. `JumpBehavior`, `EatBehavior`): crear la clase `IAnimalBehavior` con su `Score`/`Enter`/`Tick`, y añadirla al array que `AnimalSystem` pasa al `UtilityBrain`. Nada más cambia.
+
+**Al crecer**: con muchos comportamientos/features conviene externalizar los pesos en una tabla (como el `WeightTable`/`FeatureVector` del proyecto de referencia); hoy van como campos públicos de cada comportamiento.

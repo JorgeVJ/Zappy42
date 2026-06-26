@@ -18,7 +18,8 @@ public static class Log
 {
     // Activa/desactiva Log.Debug. Por defecto: true en builds de editor/debug,
     // false en builds exportados de release (Godot.OS.IsDebugBuild()).
-    public static bool DebugEnabled = OS.IsDebugBuild();
+    // public static bool DebugEnabled = OS.IsDebugBuild();
+    public static bool DebugEnabled = false;
 
     public static void Debug(params object[] what)
     {

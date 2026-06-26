@@ -11,6 +11,7 @@ public interface IAnimalBehavior
 	// Se llama cada frame mientras el comportamiento está activo.
 	void Tick(Animal animal, double delta);
 
-	// Futuro Utility AI: el cerebro elegirá el comportamiento de mayor Score.
-	// float Score(Animal animal);
+	// Utilidad actual de este comportamiento: el UtilityBrain elige el de mayor
+	// Score. Mayor = más deseable; ~0 = irrelevante ahora mismo.
+	float Score(Animal animal);
 }

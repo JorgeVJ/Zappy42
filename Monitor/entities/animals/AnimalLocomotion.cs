@@ -11,6 +11,10 @@ public class AnimalLocomotion
 	public float ArrivalRadius = 0.4f; // distancia a la que se considera "llegado"
 	public float TurnSpeed = 4.0f;     // rapidez del giro hacia el rumbo (slerp de orientación)
 
+	// Multiplicador transitorio de velocidad que fija el comportamiento activo cada
+	// frame (1 = crucero normal; >1 al huir). Permite acelerar el nado sin mutar MaxSpeed.
+	public float SpeedScale = 1f;
+
 	public Vector3 Velocity { get; private set; }
 	public Vector3 Target { get; private set; }
 	public bool HasTarget { get; private set; }
@@ -46,7 +50,7 @@ public class AnimalLocomotion
 		{
 			// Velocidad deseada hacia el objetivo, con frenado de llegada cuando se acerca.
 			float arrival = Mathf.Min(1f, dist / (ArrivalRadius * 4f));
-			Vector3 desiredVel = toTarget.Normalized() * MaxSpeed * arrival;
+			Vector3 desiredVel = toTarget.Normalized() * MaxSpeed * SpeedScale * arrival;
 			Velocity = Velocity.Lerp(desiredVel, Mathf.Clamp(Damping * dt, 0f, 1f));
 		}
 

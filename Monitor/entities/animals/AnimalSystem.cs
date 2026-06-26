@@ -24,6 +24,11 @@ public partial class AnimalSystem : Node3D
 	[Export] public float MaxSpeed = 1.6f;
 	[Export] public float WanderRadius = 6f;
 
+	// Tuning de la huida de la cámara (Utility AI).
+	[Export] public float FleeInner = 2f;        // distancia de cámara para huida máxima
+	[Export] public float FleeOuter = 6f;       // distancia a la que deja de huir
+	[Export] public float FleeSpeedScale = 4.2f; // cuánto acelera el nado al huir
+
 	// Especies disponibles: cada spawn elige una ruta al azar de este array. Para
 	// añadir más especies basta con incluir un .glb con huesos "Body"/"Tail" y
 	// añadir su ruta aquí (configurable desde el inspector).
@@ -83,7 +88,12 @@ public partial class AnimalSystem : Node3D
 			Fish fish = Fish.Create(pos, modelPath);
 			fish.Domain = domain;
 			fish.Locomotion.MaxSpeed = MaxSpeed;
-			fish.Behavior = new WanderBehavior { WanderRadius = WanderRadius };
+			// Cerebro de Utility: elige entre pasear y huir de la cámara según el score.
+			fish.Behavior = new UtilityBrain(new IAnimalBehavior[]
+			{
+				new WanderBehavior { WanderRadius = WanderRadius },
+				new FleeBehavior { FleeInner = FleeInner, FleeOuter = FleeOuter, FleeSpeedScale = FleeSpeedScale },
+			});
 			_container.AddChild(fish);
 		}
 	}

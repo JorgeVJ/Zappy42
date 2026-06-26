@@ -11,7 +11,14 @@ public class WanderBehavior : IAnimalBehavior
 	public float PauseMin = 1.0f;
 	public float PauseMax = 3.5f;
 
+	// Puntuación base: es el "estado por defecto". Cualquier otro comportamiento
+	// (huir, etc.) gana cuando su Score supera este baseline.
+	public float WanderWeight = 1.0f;
+
 	private float _pauseTimer;
+
+	// Pasear siempre es viable: utilidad constante baja que sirve de suelo.
+	public float Score(Animal animal) => WanderWeight;
 
 	public void Enter(Animal animal)
 	{
@@ -21,6 +28,9 @@ public class WanderBehavior : IAnimalBehavior
 
 	public void Tick(Animal animal, double delta)
 	{
+		// Velocidad de crucero normal mientras pasea.
+		animal.Locomotion.SpeedScale = 1f;
+
 		if (_pauseTimer > 0f)
 		{
 			_pauseTimer -= (float)delta;
