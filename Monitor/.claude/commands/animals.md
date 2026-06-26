@@ -8,18 +8,26 @@ Skill de referencia para el sistema de fauna decorativa del Zappy Monitor (actua
 
 Este sistema se diseñó deliberadamente **independiente del resto del proyecto**, para poder copiarlo/pegarlo a otro proyecto Godot con heightmap, o eliminarlo por completo sin dejar rastro. Reglas que mantienen esa independencia:
 
-- `AnimalSystem.cs` y `Fish.cs` **no referencian** `Terrain`, `Connection`, `TerrainSnap`, `EntityManager` ni ningún otro tipo del proyecto. Solo usan tipos de Godot (`Node3D`, `Skeleton3D`, etc.) y primitivas (`float[,] heightMap, int width, int height`).
+- **Ningún** archivo del sistema (`AnimalSystem.cs`, `Animal.cs`, `Fish.cs`, dominios, locomoción, comportamientos) referencia `Terrain`, `Connection`, `TerrainSnap`, `CrowdSystem`, `EntityManager` ni ningún otro tipo del proyecto. Solo usan tipos de Godot (`Node3D`, `Skeleton3D`, etc.) y primitivas (`float[,] heightMap, int width, int height`).
 - Todo vive dentro de `entities/animals/` — script de la entidad, script del sistema de colocación y el modelo `.glb`. No hay lógica repartida en `entities/terrain/` ni en `managers/`.
 - No usa `PlacementFinder` (evita solapes entre decoraciones en tierra; no aplica a peces en agua) ni `EntityManager<T>` (eso es para entidades con ID de servidor — altas/bajas dinámicas; los peces se generan una sola vez junto con el terreno y no tienen ID).
 - No depende de `Connection.ReplayInstant` ni de ningún global estático del proyecto.
 
 ## Archivos
 
-| Archivo | Rol |
-|---|---|
-| `entities/animals/Fish.cs` | Entidad decorativa individual y **genérica**: recibe la ruta del `.glb` como parámetro, busca los huesos `Body`/`Tail` y los anima por código cada frame (sin `AnimationPlayer`, los modelos no traen clips). Sirve para cualquier especie con ese mismo rig. |
-| `entities/animals/AnimalSystem.cs` | Sistema de colocación. Recibe el heightmap del terreno, calcula qué tiles quedan bajo el "nivel del mar" y reparte `FishCount` peces ahí al azar, eligiendo para cada uno un modelo al azar de `FishModels`. |
-| `entities/animals/ClownFish.glb`, `entities/animals/SurgeonFish.glb` | Modelos con 2 huesos: `Body` y `Tail`. Sin animaciones propias. Mismo rig → intercambiables por la misma clase `Fish`. |
+El sistema está organizado en **capas** (pensadas para crecer a animales terrestres/aéreos y a un futuro Utility AI):
+
+| Archivo | Capa | Rol |
+|---|---|---|
+| `entities/animals/AnimalSystem.cs` | Colocación | Recibe el heightmap, calcula tiles de agua, construye el **dominio** y reparte `FishCount` peces al azar (modelo al azar de `FishModels`), inyectándoles dominio + tuning. |
+| `entities/animals/IAnimalDomain.cs` | Dominio | Interfaz "**dónde puede moverse** un animal": `Contains`, `ClampToValid`, `SampleWanderTarget`. El eje del diseño. |
+| `entities/animals/AquaticDomain.cs` | Dominio | Implementación acuática: volumen de agua entre el fondo (+margen) y la superficie del mar (−margen), construido desde el heightmap. |
+| `entities/animals/AnimalLocomotion.cs` | Locomoción | Steering procedural genérico (estilo `CrowdSystem`): mueve un `Node3D` hacia un objetivo con aceleración/frenado suaves y giro gradual hacia el rumbo. |
+| `entities/animals/IAnimalBehavior.cs` | Comportamiento | Interfaz de comportamiento (`Enter`/`Tick`). **Costura** para el futuro Utility AI. |
+| `entities/animals/WanderBehavior.cs` | Comportamiento | Único comportamiento por ahora: elige destinos del dominio y pasea con pausas. |
+| `entities/animals/Animal.cs` | Entidad base | `Node3D` genérico que reúne dominio + locomoción + comportamiento y los ejecuta cada frame; hook `OnLocomotionUpdate(speed)` para animación. |
+| `entities/animals/Fish.cs` | Entidad | `Fish : Animal`. Carga el `.glb` (ruta como parámetro), anima los huesos `Body`/`Tail` por código y modula el aleteo con la velocidad. Sirve para cualquier especie con ese rig. |
+| `entities/animals/ClownFish.glb`, `entities/animals/SurgeonFish.glb` | Asset | Modelos con 2 huesos `Body`/`Tail`, sin animaciones. Mismo rig → intercambiables por la misma clase `Fish`. |
 
 ## Único punto de integración externo
 
@@ -53,34 +61,53 @@ script = ExtResource("...AnimalSystem.cs")
 Pasos del algoritmo:
 1. Calcula `seaY` con el heightmap.
 2. Recorre todos los tiles `(x, y)` y se queda con los que tienen altura de tile (promedio de las 2 esquinas diagonales, misma fórmula que `Terrain.GetTileHeight`) por debajo de `seaY`.
-3. Elige `FishCount` tiles al azar de esa lista (con repetición permitida si `FishCount` > nº de tiles de agua, se limita al tamaño de la lista) y coloca un `Fish.Create(pos, modelPath)` en el centro de cada tile elegido, a `seaY - SpawnYOffset` (un poco bajo la superficie). El `modelPath` se elige al azar de `FishModels` por cada pez → mezcla de especies.
-4. Si no hay tiles de agua, no genera nada — no hay fallback.
+3. Construye un `AquaticDomain` compartido (el volumen navegable) desde el heightmap + `seaY` + márgenes.
+4. Elige `FishCount` tiles al azar de esa lista y coloca un `Fish.Create(pos, modelPath)` en el centro de cada tile, a media columna y ajustado al volumen con `domain.ClampToValid`. A cada pez le inyecta `Domain`, `Locomotion.MaxSpeed` y un `WanderBehavior { WanderRadius }`. El `modelPath` se elige al azar de `FishModels` → mezcla de especies.
+5. Si no hay tiles de agua, no genera nada — no hay fallback.
+
+## Movimiento / paseo (capas dominio · locomoción · comportamiento)
+
+El eje del diseño es que **el animal sepa a dónde puede moverse**, vía la abstracción `IAnimalDomain`. Cada frame, `Animal._Process` ejecuta: `Behavior.Tick` (decide destino) → `Locomotion.Tick` (avanza/gira hacia él, sin salir del dominio) → `OnLocomotionUpdate(speed)` (la especie ajusta su animación).
+
+- **Dominio (`IAnimalDomain` / `AquaticDomain`)**: responde `Contains(pos)`, `ClampToValid(pos)` y `SampleWanderTarget(from, radius, rng)`. El acuático define un **volumen 3D**: columnas de agua entre `fondo+FloorMargin` y `seaY−SurfaceMargin`. Replica el muestreo bilineal de altura internamente (sin `TerrainSnap`) para no acoplar.
+- **Locomoción (`AnimalLocomotion`)**: clase simple (no nodo) que imita el steering de `CrowdSystem` — `Velocity.Lerp(desiredVel, Damping*dt)`, frenado de llegada, `ClampToValid` cada paso, y giro suave (slerp de orientación, con pitch para subir/bajar; **no** snapping a 90° como `Player`).
+- **Comportamiento (`IAnimalBehavior` / `WanderBehavior`)**: pasea eligiendo destinos cercanos del dominio con pausas ocasionales. Es la **costura del futuro Utility AI**: hoy cada animal corre un único comportamiento; mañana un `UtilityBrain` elegirá entre varios por `Score` (ver comentario en `IAnimalBehavior`).
+
+**No-objetivos actuales:** sin pathfinding (los saltos cortos validados por `Contains` bastan para un paseo decorativo; en aguas no convexas un tramo recto puede rozar tierra brevemente), sin Utility AI todavía (solo el interfaz + `WanderBehavior`), sin separación entre individuos.
 
 ## Parámetros `[Export]`
 
 **`AnimalSystem`**
 - `FishCount` (3–6 recomendado, por defecto 6, rango 0–20 en el inspector) — cantidad de peces a generar.
 - `FishModels` — array de rutas `.glb` entre las que se elige al azar por cada pez. Para añadir una especie nueva: meter un `.glb` con huesos `Body`/`Tail` en `entities/animals/` y añadir su ruta a este array (no requiere tocar código). Si queda vacío, no se genera nada.
-- `SpawnYOffset` — cuánto hunde cada pez bajo la superficie del agua.
 - `SeaLevelFraction` / `SeaLevelOffset` — deben coincidir con los de `WaterSystem` si se quiere que los peces queden visualmente bajo el agua real.
+- `FloorMargin` / `SurfaceMargin` — holgura que el pez deja respecto al fondo y a la superficie (define la altura del volumen navegable).
+- `MaxSpeed` — velocidad de nado máxima (se inyecta en `Locomotion`).
+- `WanderRadius` — radio de los saltos de paseo (se inyecta en `WanderBehavior`).
 - `TileSize` — debe coincidir con `Terrain.TILE_SIZE` (por defecto 2.0); no se referencia la constante del proyecto a propósito (ver "Diseño").
 
 **`Fish`**
-- `TailFrequency` / `TailAmplitudeDegrees` — velocidad y amplitud del aleteo de la cola (rotación en Y).
-- `BodyFrequency` / `BodyAmplitudeDegrees` — balanceo del cuerpo, en contrafase respecto a la cola, amplitud menor.
-- Cada instancia arranca con una fase aleatoria (`GD.Randf() * Mathf.Tau`) para que no naden sincronizados entre sí.
+- `TailFrequency` / `TailAmplitudeDegrees`, `BodyFrequency` / `BodyAmplitudeDegrees` — frecuencia/amplitud base del aleteo de cola y balanceo del cuerpo (en contrafase).
+- `SpeedTailBoost` — cuánto acelera el aleteo con la velocidad de nado (0 = constante).
+- Cada instancia arranca con fase aleatoria para no nadar sincronizada.
+
+**Locomoción/comportamiento** (no son `[Export]`; defaults en código, configurables si se exponen): `AnimalLocomotion` (`MaxSpeed`, `Damping`, `ArrivalRadius`, `TurnSpeed`); `WanderBehavior` (`WanderRadius`, `PauseChance`, `PauseMin/Max`).
 
 ## Animación procedural de huesos
 
-Los modelos no traen `AnimationPlayer`. `Fish._Ready()` busca el `Skeleton3D` recursivamente dentro del modelo instanciado, resuelve `FindBone("Body")` / `FindBone("Tail")` y guarda la pose de reposo (`GetBoneRest`). En `_Process`, cada frame compone una rotación sinusoidal sobre esa pose de reposo y la aplica con `SetBonePoseRotation`. Si un `.glb` cambia de nombres de hueso, actualizar los strings `"Body"`/`"Tail"` en `Fish.cs` — si `FindBone` devuelve `-1` el hueso simplemente no se anima (sin warnings, sin crash).
+Los modelos no traen `AnimationPlayer`. `Fish._Ready()` busca el `Skeleton3D` recursivamente dentro del modelo instanciado, resuelve `FindBone("Body")` / `FindBone("Tail")` y guarda la pose de reposo (`GetBoneRest`). La animación se aplica en `OnLocomotionUpdate(speed)` (llamado cada frame desde `Animal._Process`): compone una rotación sinusoidal sobre la pose de reposo y la aplica con `SetBonePoseRotation`, **modulando frecuencia y amplitud según la velocidad** de nado (aleteo suave en reposo, más vivo al crucero). Si un `.glb` cambia de nombres de hueso, actualizar los strings `"Body"`/`"Tail"` en `Fish.cs` — si `FindBone` devuelve `-1` el hueso simplemente no se anima (sin warnings, sin crash).
 
 ## Añadir una especie de pez nueva
 
 Mientras el modelo comparta el rig de 2 huesos `Body`/`Tail`, **no hace falta tocar código**: meter el `.glb` en `entities/animals/` y añadir su ruta al array `FishModels` de `AnimalSystem` (en el inspector o en el valor por defecto del `[Export]`). La misma clase `Fish` lo anima. Las especies se mezclan al azar por posición.
 
-## Convenciones para otros animales (no peces)
+## Añadir animales terrestres / aéreos (capas listas)
 
-Si se añade fauna con otro rig o comportamiento (no un pez con huesos `Body`/`Tail`):
-- Seguir el mismo patrón: `Node3D` simple, sin `ISelectable`/`IInventory`, factory estático `Create(...)`.
-- Mantener el principio de no-dependencias: el nuevo script tampoco debe referenciar `Terrain`/`Connection`/etc.
-- Si necesita un sistema de colocación distinto (p. ej. en tierra en vez de en agua), crear un sistema hermano de `AnimalSystem` en la misma carpeta, o generalizar `AnimalSystem` con un `[Export] enum Habitat` — preguntar al usuario antes de generalizar si no está claro qué conviene.
+La arquitectura ya está preparada para ello sin tocar locomoción ni comportamiento:
+- **Nuevo dominio**: crear `TerrestrialDomain` (superficie: `Y` pegado a la altura del terreno, X/Z en tiles de tierra) o `AerialDomain` (volumen de aire sobre el terreno hasta un techo) implementando `IAnimalDomain`. Es la única pieza específica del medio.
+- **Nueva entidad**: subclase de `Animal` (p. ej. `Bird : Animal`) que cargue su modelo y anime su rig en `OnLocomotionUpdate`. La locomoción (`AnimalLocomotion`) y el paseo (`WanderBehavior`) se reutilizan tal cual.
+- **Colocación**: `AnimalSystem` puede generalizarse (p. ej. spawnear varias especies/medios) o crearse un sistema hermano; mantener el principio de no-dependencias.
+
+## Futuro Utility AI (dónde engancha)
+
+`IAnimalBehavior` es la costura. Hoy `Animal` corre un único comportamiento (`WanderBehavior`). Para el sistema de decisiones: añadir más comportamientos (`JumpBehavior`, `FleeBehavior`, `EatBehavior`, `FlyBehavior`, `PerchBehavior`, `HuntBehavior`…), descomentar/añadir `float Score(Animal)` en `IAnimalBehavior`, y sustituir el comportamiento único de `Animal` por un `UtilityBrain` que cada cierto tiempo puntúe los comportamientos disponibles y active el de mayor `Score` (llamando a su `Enter`). El resto (dominio, locomoción, hook de animación) no cambia.

@@ -14,8 +14,15 @@ public partial class AnimalSystem : Node3D
 	[Export] public float SeaLevelOffset = 0f;
 
 	[Export(PropertyHint.Range, "0,20,1")] public int FishCount = 6;
-	[Export] public float SpawnYOffset = 0.3f;
 	[Export] public float TileSize = 2.0f;
+
+	// Volumen navegable: márgenes que el pez deja respecto al fondo y a la superficie.
+	[Export] public float FloorMargin = 0.4f;
+	[Export] public float SurfaceMargin = 0.4f;
+
+	// Tuning del paseo (se inyecta en la locomoción/comportamiento de cada pez).
+	[Export] public float MaxSpeed = 1.6f;
+	[Export] public float WanderRadius = 6f;
 
 	// Especies disponibles: cada spawn elige una ruta al azar de este array. Para
 	// añadir más especies basta con incluir un .glb con huesos "Body"/"Tail" y
@@ -57,18 +64,27 @@ public partial class AnimalSystem : Node3D
 		if (waterTiles.Count == 0)
 			return;
 
+		// Dominio navegable acuático compartido por todos los peces: define en qué
+		// volumen pueden moverse (columnas de agua entre fondo+margen y superficie−margen).
+		var domain = new AquaticDomain(heightMap, width, height, TileSize, seaY, FloorMargin, SurfaceMargin);
+
 		int count = Mathf.Min(FishCount, waterTiles.Count);
 		for (int i = 0; i < count; i++)
 		{
 			Vector2I tile = waterTiles[GD.RandRange(0, waterTiles.Count - 1)];
-			Vector3 pos = new Vector3(
+			// Punto de spawn en el centro del tile, a media columna, ajustado al volumen.
+			Vector3 pos = domain.ClampToValid(new Vector3(
 				tile.X * TileSize + TileSize / 2f,
-				seaY - SpawnYOffset,
+				(seaY + GetTileHeight(heightMap, tile.X, tile.Y)) / 2f,
 				tile.Y * TileSize + TileSize / 2f
-			);
+			));
 
 			string modelPath = FishModels[GD.RandRange(0, FishModels.Length - 1)];
-			_container.AddChild(Fish.Create(pos, modelPath));
+			Fish fish = Fish.Create(pos, modelPath);
+			fish.Domain = domain;
+			fish.Locomotion.MaxSpeed = MaxSpeed;
+			fish.Behavior = new WanderBehavior { WanderRadius = WanderRadius };
+			_container.AddChild(fish);
 		}
 	}
 
