@@ -58,6 +58,7 @@ Antes de modificar áreas específicas del proyecto, invocar la skill correspond
 | `/work-on-trello` | `.claude/commands/work-on-trello.md` | Para ejecutar tarjetas del backlog de Trello de forma autónoma: selección sin conflictos con En curso/Test, rama nueva por tarjeta desde `Player-Models&Animations`, commit local y movimiento de tarjetas |
 | `/trello-board` | `.claude/commands/trello-board.md` | Antes de crear/editar/mover tarjetas en Trello para este proyecto: IDs del tablero "Zappy Monitor", listas, etiquetas, formato de descripción y flujo de movimiento de tarjetas |
 | `/screenshot` | `.claude/commands/screenshot.md` | Para ver el monitor renderizado (verificar equipamiento, orbes, glows, terreno, UI): cómo lanzar el proyecto y leer las capturas que genera `ScreenshotService` (`.captures/latest.png`) |
+| `/animals` | `.claude/commands/animals.md` | Cualquier cambio en el sistema de fauna decorativa (peces): colocación en agua (`AnimalSystem`), animación procedural de huesos (`Fish`, genérica multi-especie), añadir especies nuevas, o para portar/eliminar el sistema completo a otro proyecto |
 
 ### Creación de nuevas skills
 
