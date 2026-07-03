@@ -1,27 +1,37 @@
 using Godot;
 
-// Música de fondo del monitor. Vive como hijo directo de "Game" (sibling de
-// "Connection"/"Terrain"), NO dentro de Connection: así Connection.ResetWorldState()
-// (replay/reset de la barra de tiempo) no la toca ni la reinicia.
-//
-// ProcessMode = Always para que siga sonando aunque GetTree().Paused = true
-// (fin de partida, handler "seg" en Connection.System.cs).
-//
-// Loop: el asset audio/music.mp3 tiene loop=false en su .import (generado, no
-// se toca). Se reproduce en bucle manualmente reconectando Play() al terminar
-// (señal Finished), lo que funciona sin depender del tipo de AudioStream.
-//
-// Mute: botón de icono (altavoz / altavoz tachado) en la esquina superior
-// derecha (Button en modo toggle, estilo unificado de ui/IconButton.cs) y
-// tecla M (_UnhandledInput), ambos alternan entre VolumeDb normal y silencio.
+/// <summary>
+/// Música de fondo del monitor.
+/// </summary>
+/// <remarks>
+/// Vive como hijo directo de "Game" (sibling de "Connection"/"Terrain"), NO dentro
+/// de Connection: así Connection.ResetWorldState() (replay/reset de la barra de
+/// tiempo) no la toca ni la reinicia.
+/// ProcessMode = Always para que siga sonando aunque GetTree().Paused = true
+/// (fin de partida, handler "seg" en Connection.System.cs).
+/// Loop: el asset audio/music.mp3 tiene loop=false en su .import (generado, no
+/// se toca). Se reproduce en bucle manualmente reconectando Play() al terminar
+/// (señal Finished), lo que funciona sin depender del tipo de AudioStream.
+/// Mute: botón de icono (altavoz / altavoz tachado) en la esquina superior
+/// derecha (Button en modo toggle, estilo unificado de ui/IconButton.cs) y
+/// tecla M (_UnhandledInput), ambos alternan entre VolumeDb normal y silencio.
+/// </remarks>
 public partial class MusicPlayer : Control
 {
-    [Export] public string MusicPath = "res://audio/music.mp3";
-    [Export] public float  NormalVolumeDb = -10f;
-    [Export] public float  MutedVolumeDb  = -80f;
+    [Export]
+    public string MusicPath = "res://audio/music.mp3";
 
-    [Export] private AudioStreamPlayer _player;
-    [Export] private Button _muteButton;
+    [Export]
+    public float NormalVolumeDb = -10f;
+
+    [Export]
+    public float MutedVolumeDb = -80f;
+
+    [Export]
+    private AudioStreamPlayer _player;
+
+    [Export]
+    private Button _muteButton;
 
     private bool _muted;
 
@@ -29,7 +39,7 @@ public partial class MusicPlayer : Control
     {
         ProcessMode = ProcessModeEnum.Always;
 
-        var stream = GD.Load<AudioStream>(MusicPath);
+        AudioStream stream = GD.Load<AudioStream>(MusicPath);
         if (stream != null)
         {
             _player.Stream = stream;
@@ -52,7 +62,7 @@ public partial class MusicPlayer : Control
         }
     }
 
-    // Reinicia la pista al terminar -> bucle manual (el .import tiene loop=false).
+    /// <summary>Reinicia la pista al terminar -&gt; bucle manual (el .import tiene loop=false).</summary>
     private void OnFinished()
     {
         _player.Play();

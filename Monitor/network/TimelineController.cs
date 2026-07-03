@@ -1,20 +1,25 @@
-// Orquesta la "barra de tiempo": acumula los mensajes recibidos del servidor en
-// un EventLog (agrupados en TimeBand) y permite saltar a una franja concreta
-// reseteando el mundo (Connection.ResetWorldState) y reproduciendo de forma
-// instantánea (Connection.ReplayInstant = true) los mensajes [0..franja].
-//
-// Mientras IsLive es true, los mensajes que llegan se despachan normalmente
-// (animados) y el cursor sigue siempre la última franja. Al saltar a una
-// franja anterior (JumpTo), IsLive pasa a false: los mensajes que sigan
-// llegando del servidor se acumulan en el log pero no se aplican hasta que se
-// vuelva a Live (GoLive).
+/// <summary>
+/// Orquesta la "barra de tiempo": acumula los mensajes recibidos del servidor en
+/// un EventLog (agrupados en TimeBand) y permite saltar a una franja concreta
+/// reseteando el mundo (Connection.ResetWorldState) y reproduciendo de forma
+/// instantánea (Connection.ReplayInstant = true) los mensajes [0..franja].
+/// </summary>
+/// <remarks>
+/// Mientras IsLive es true, los mensajes que llegan se despachan normalmente
+/// (animados) y el cursor sigue siempre la última franja. Al saltar a una
+/// franja anterior (JumpTo), IsLive pasa a false: los mensajes que sigan
+/// llegando del servidor se acumulan en el log pero no se aplican hasta que se
+/// vuelva a Live (GoLive).
+/// </remarks>
 public class TimelineController
 {
-    // Intervalo base (segundos reales) entre el avance de una franja y la
-    // siguiente en modo Play. 0.6s da una cadencia "normal" perceptible sin
-    // resultar lenta; se escala por el factor de velocidad del servidor
-    // (Connection.CurrentSpeedFactor) para que Play vaya más rápido si la
-    // partida está acelerada (sgt > 1).
+    /// <summary>
+    /// Intervalo base (segundos reales) entre el avance de una franja y la
+    /// siguiente en modo Play. 0.6s da una cadencia "normal" perceptible sin
+    /// resultar lenta; se escala por el factor de velocidad del servidor
+    /// (Connection.CurrentSpeedFactor) para que Play vaya más rápido si la
+    /// partida está acelerada (sgt &gt; 1).
+    /// </summary>
     private const double BaseStepIntervalSeconds = 0.6;
 
     private readonly Connection _connection;
@@ -22,11 +27,15 @@ public class TimelineController
 
     public readonly EventLog Log = new();
 
-    // -1 = mundo vacío (antes de la primera franja).
+    /// <summary>
+    /// -1 = mundo vacío (antes de la primera franja).
+    /// </summary>
     public int CursorBandIndex { get; private set; } = -1;
     public bool IsLive { get; private set; } = true;
 
-    // True mientras el modo "Play" está avanzando franja a franja con el tiempo.
+    /// <summary>
+    /// True mientras el modo "Play" está avanzando franja a franja con el tiempo.
+    /// </summary>
     public bool IsPlaying { get; private set; } = false;
 
     private double _playElapsedSeconds = 0.0;
@@ -37,7 +46,9 @@ public class TimelineController
         _dispatcher = dispatcher;
     }
 
-    // Llamado por Connection por cada línea recibida del transporte (real o mock).
+    /// <summary>
+    /// Llamado por Connection por cada línea recibida del transporte (real o mock).
+    /// </summary>
     public void OnLineReceived(string line)
     {
         Log.Append(line);
@@ -49,9 +60,11 @@ public class TimelineController
         }
     }
 
-    // Resetea el mundo y reproduce instantáneamente el log hasta el final de
-    // la franja indicada (-1 = mundo vacío). Deja IsLive activo solo si la
-    // franja destino es la última conocida.
+    /// <summary>
+    /// Resetea el mundo y reproduce instantáneamente el log hasta el final de
+    /// la franja indicada (-1 = mundo vacío). Deja IsLive activo solo si la
+    /// franja destino es la última conocida.
+    /// </summary>
     public void JumpTo(int bandIndex)
     {
         if (bandIndex < -1 || bandIndex >= Log.Bands.Count)
@@ -78,7 +91,9 @@ public class TimelineController
         IsLive = bandIndex == Log.Bands.Count - 1;
     }
 
-    // Vuelve a la última franja conocida y reanuda el seguimiento en vivo.
+    /// <summary>
+    /// Vuelve a la última franja conocida y reanuda el seguimiento en vivo.
+    /// </summary>
     public void GoLive()
     {
         JumpTo(Log.Bands.Count - 1);
@@ -86,9 +101,11 @@ public class TimelineController
         IsPlaying = false;
     }
 
-    // Inicia el modo "Play": avanza franja a franja con el tiempo real
-    // (ver Tick). No tiene efecto si ya estamos en Live (no hay nada que
-    // reproducir hacia delante) o si no quedan franjas por delante del cursor.
+    /// <summary>
+    /// Inicia el modo "Play": avanza franja a franja con el tiempo real
+    /// (ver Tick). No tiene efecto si ya estamos en Live (no hay nada que
+    /// reproducir hacia delante) o si no quedan franjas por delante del cursor.
+    /// </summary>
     public void Play()
     {
         if (IsLive || CursorBandIndex >= Log.Bands.Count - 1)
@@ -98,17 +115,21 @@ public class TimelineController
         _playElapsedSeconds = 0.0;
     }
 
-    // Detiene el modo Play, dejando el cursor donde esté.
+    /// <summary>
+    /// Detiene el modo Play, dejando el cursor donde esté.
+    /// </summary>
     public void Pause()
     {
         IsPlaying = false;
         _playElapsedSeconds = 0.0;
     }
 
-    // Llamado desde TimelineBar._Process con el delta de frame. Si IsPlaying,
-    // acumula tiempo real y, al superar el intervalo por franja (escalado por
-    // el factor de velocidad del servidor), avanza una franja con JumpTo.
-    // Al alcanzar la última franja conocida, pasa a Live y detiene Play.
+    /// <summary>
+    /// Llamado desde TimelineBar._Process con el delta de frame. Si IsPlaying,
+    /// acumula tiempo real y, al superar el intervalo por franja (escalado por
+    /// el factor de velocidad del servidor), avanza una franja con JumpTo.
+    /// Al alcanzar la última franja conocida, pasa a Live y detiene Play.
+    /// </summary>
     public void Tick(double delta)
     {
         if (!IsPlaying)
@@ -128,7 +149,6 @@ public class TimelineController
 
         if (CursorBandIndex >= Log.Bands.Count - 1)
         {
-            // Ya no hay franjas por delante: pasar a Live y terminar Play.
             GoLive();
             return;
         }

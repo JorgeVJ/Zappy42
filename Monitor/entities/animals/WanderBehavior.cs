@@ -1,23 +1,30 @@
 using Godot;
 
-// Comportamiento de paseo: elige destinos cercanos dentro del dominio navegable y
-// deja que la locomoción lleve al animal hasta ellos, con pausas ocasionales para
-// que el movimiento sea orgánico. Único comportamiento por ahora; en el futuro será
-// uno más entre los que elija el UtilityBrain.
+/// <summary>
+/// Comportamiento de paseo: elige destinos cercanos dentro del dominio navegable y
+/// deja que la locomoción lleve al animal hasta ellos, con pausas ocasionales para
+/// que el movimiento sea orgánico. Es el comportamiento por defecto entre los que
+/// elige el UtilityBrain.
+/// </summary>
 public class WanderBehavior : IAnimalBehavior
 {
 	public float WanderRadius = 6f;
-	public float PauseChance = 0.35f;   // probabilidad de pausar al llegar a un destino
+
+	/// <summary>Probabilidad de pausar al llegar a un destino.</summary>
+	public float PauseChance = 0.35f;
+
 	public float PauseMin = 1.0f;
 	public float PauseMax = 3.5f;
 
-	// Puntuación base: es el "estado por defecto". Cualquier otro comportamiento
-	// (huir, etc.) gana cuando su Score supera este baseline.
+	/// <summary>
+	/// Puntuación base: es el "estado por defecto". Cualquier otro comportamiento
+	/// (huir, etc.) gana cuando su Score supera este baseline.
+	/// </summary>
 	public float WanderWeight = 1.0f;
 
 	private float _pauseTimer;
 
-	// Pasear siempre es viable: utilidad constante baja que sirve de suelo.
+	/// <summary>Pasear siempre es viable: utilidad constante baja que sirve de suelo.</summary>
 	public float Score(Animal animal) => WanderWeight;
 
 	public void Enter(Animal animal)
@@ -28,7 +35,6 @@ public class WanderBehavior : IAnimalBehavior
 
 	public void Tick(Animal animal, double delta)
 	{
-		// Velocidad de crucero normal mientras pasea.
 		animal.Locomotion.SpeedScale = 1f;
 
 		if (_pauseTimer > 0f)
@@ -37,7 +43,6 @@ public class WanderBehavior : IAnimalBehavior
 			return;
 		}
 
-		// Al llegar (o si por algún motivo no hay objetivo), decidir: pausar o seguir.
 		if (animal.Locomotion.Arrived || !animal.Locomotion.HasTarget)
 		{
 			if (animal.Rng.Randf() < PauseChance)

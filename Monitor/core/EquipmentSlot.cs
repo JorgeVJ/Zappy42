@@ -2,7 +2,6 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Defines a single equipment piece to attach to a specific bone.
-/// Generic and reusable across projects — no project-specific data here.
 /// </summary>
 public readonly struct EquipmentSlot
 {

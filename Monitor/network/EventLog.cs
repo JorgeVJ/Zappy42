@@ -1,8 +1,10 @@
 using Godot;
 using System.Collections.Generic;
 
-// Línea cruda recibida del servidor junto con el instante de recepción
-// (Time.GetTicksMsec()), usado por EventLog para agrupar mensajes en franjas.
+/// <summary>
+/// Línea cruda recibida del servidor junto con el instante de recepción
+/// (Time.GetTicksMsec()), usado por EventLog para agrupar mensajes en franjas.
+/// </summary>
 public struct LogEntry
 {
     public string Raw;
@@ -15,8 +17,10 @@ public struct LogEntry
     }
 }
 
-// Rango inclusivo [StartIndex, EndIndex] sobre EventLog.Messages que agrupa
-// mensajes recibidos "juntos" (ver EventLog.BandGapMs).
+/// <summary>
+/// Rango inclusivo [StartIndex, EndIndex] sobre EventLog.Messages que agrupa
+/// mensajes recibidos "juntos" (ver EventLog.BandGapMs).
+/// </summary>
 public struct TimeBand
 {
     public int StartIndex;
@@ -29,12 +33,16 @@ public struct TimeBand
     }
 }
 
-// Historial de mensajes crudos del servidor, agrupados en "franjas de tiempo"
-// (TimeBand) por proximidad de llegada. El servidor notifica los resultados de
-// las acciones de los jugadores uno a uno, pero los de un mismo tick llegan en
-// una ráfaga muy próxima en tiempo real; agruparlos da una granularidad de
-// scrub con sentido ("qué pasó en este momento") sin depender del protocolo de
-// tiempo del servidor (sgt).
+/// <summary>
+/// Historial de mensajes crudos del servidor, agrupados en "franjas de tiempo"
+/// (TimeBand) por proximidad de llegada.
+/// </summary>
+/// <remarks>
+/// El servidor notifica los resultados de las acciones de los jugadores uno a
+/// uno, pero los de un mismo tick llegan en una ráfaga muy próxima en tiempo
+/// real; agruparlos da una granularidad de scrub con sentido ("qué pasó en
+/// este momento") sin depender del protocolo de tiempo del servidor (sgt).
+/// </remarks>
 public class EventLog
 {
     private const double BandGapMs = 100.0;
@@ -54,7 +62,7 @@ public class EventLog
         }
         else
         {
-            var last = Bands[^1];
+            TimeBand last = Bands[^1];
             last.EndIndex = idx;
             Bands[^1] = last;
         }

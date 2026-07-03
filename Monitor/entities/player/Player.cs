@@ -15,19 +15,24 @@ public partial class Player : SelectableInventoryNode3D, IInventory
     public int Id { get; private set; }
     public string TeamName { get; private set; } = "";
     public int Level { get; private set; } = 1;
-    public int Orientation { get; private set; } = 1; // 1..4 en Zappy
+
+    /// <summary>Orientación del jugador: 1=N, 2=E, 3=S, 4=W (convención Zappy).</summary>
+    public int Orientation { get; private set; } = 1;
     public Vector2I TilePos { get; private set; } = new Vector2I(0, 0);
 
-    // Factor de velocidad derivado del time unit del servidor (D1). 1 = normal.
+    /// <summary>Factor de velocidad derivado del time unit del servidor. 1 = normal.</summary>
     public float SpeedFactor { get; private set; } = 1f;
 
-    // Velocidad de steering, gestionada por CrowdSystem (D3).
+    /// <summary>Velocidad de steering, gestionada por CrowdSystem.</summary>
     public Vector3 Velocity;
 
-    private const float RunThreshold       = 3.0f;  // a partir de este factor se corre en vez de andar
-    private const float MinSpeedFactor     = 0.25f;
-    private const float MaxSpeedFactor     = 12.0f;
-    private const float IdleSpeedThreshold = 0.15f; // por debajo de esta velocidad horizontal -> idle
+    /// <summary>A partir de este factor de velocidad se corre en vez de andar.</summary>
+    private const float RunThreshold = 3.0f;
+    private const float MinSpeedFactor = 0.25f;
+    private const float MaxSpeedFactor = 12.0f;
+
+    /// <summary>Por debajo de esta velocidad horizontal, el jugador pasa a idle.</summary>
+    private const float IdleSpeedThreshold = 0.15f;
 
     [Signal]
     public delegate void PlayerClickedEventHandler(Player player);
@@ -40,16 +45,17 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         return instance;
     }
 
+    /// <remarks>
+    /// El destino lógico es el tile; el desplazamiento real (steering hacia el centro
+    /// del tile + separación de vecinos) lo conduce CrowdSystem. Durante el replay
+    /// instantáneo de la barra de tiempo no hay frames entre mensajes para que
+    /// CrowdSystem haga el steering, así que se clava la posición real al centro del
+    /// tile para evitar un "viaje" visible al volver a Live.
+    /// </remarks>
     public void SetTilePos(int x, int y)
     {
-        // El destino lógico es el tile; el desplazamiento real (steering hacia el
-        // centro del tile + separación de vecinos) lo conduce CrowdSystem (D3).
         TilePos = new Vector2I(x, y);
 
-        // Durante el replay instantáneo de la barra de tiempo no hay frames
-        // entre mensajes para que CrowdSystem haga el steering: clavar la
-        // posición real al centro del tile para evitar un "viaje" visible al
-        // volver a Live.
         if (Connection.ReplayInstant && _terrain != null)
         {
             GlobalPosition = TerrainSnap.TileCenter(_terrain, x, y, 0f);
@@ -58,8 +64,10 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         Log.Debug($"SetTilePos: player {Id} new tile ({x},{y})");
     }
 
-    // Llamado por CrowdSystem cada frame con la velocidad horizontal actual: elige
-    // idle / andar / correr (correr cuando el time unit del servidor es alto).
+    /// <summary>
+    /// Llamado por CrowdSystem cada frame con la velocidad horizontal actual: elige
+    /// idle / andar / correr (correr cuando el time unit del servidor es alto).
+    /// </summary>
     public void UpdateLocomotion(float speed)
     {
         if (speed < IdleSpeedThreshold)
@@ -70,8 +78,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
             _shamanAnim?.PlayWalk();
     }
 
-    // Animación de incantación (hechizo). Delegan en el controlador del Shaman,
-    // igual que SetTilePos usa PlayWalk/PlayIdle.
+    /// <summary>Animación de incantación (hechizo), delegada en el controlador del Shaman.</summary>
     public void PlaySpell()
     {
         _shamanAnim?.PlaySpell();
@@ -82,10 +89,11 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         _shamanAnim?.PlayIdle();
     }
 
-    // Animaciones "one-shot" disparadas por pgt/pdr (recoger/dejar recurso): se
-    // reproducen una vez y, transcurrida su duración real, vuelven a Idle solas
-    // (a diferencia de PlaySpell/StopSpell, el servidor no envía un mensaje de
-    // "fin" para estos gestos).
+    /// <remarks>
+    /// Animación "one-shot" disparada al recoger un recurso: se reproduce una vez y,
+    /// transcurrida su duración real, vuelve a Idle sola (a diferencia de
+    /// PlaySpell/StopSpell, el servidor no envía un mensaje de "fin" para este gesto).
+    /// </remarks>
     public void PlayCollect()
     {
         if (_shamanAnim == null)
@@ -104,6 +112,11 @@ public partial class Player : SelectableInventoryNode3D, IInventory
             () => _shamanAnim.IsPlayingPickUp);
     }
 
+    /// <remarks>
+    /// Al terminar la espera, solo vuelve a Idle si el jugador sigue vivo y la animación
+    /// one-shot sigue siendo la actual (si mientras tanto empezó otra, p. ej. una
+    /// incantación o un movimiento, no se interrumpe).
+    /// </remarks>
     private async void PlayOneShot(Action play, float duration, Func<bool> stillPlaying)
     {
         if (play == null)
@@ -119,9 +132,6 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
         await ToSignal(GetTree().CreateTimer(waitSeconds), "timeout");
 
-        // Solo volver a Idle si el jugador sigue vivo y la animación one-shot
-        // sigue siendo la actual (si mientras tanto empezó otra, p.ej. una
-        // incantación o un movimiento, no la interrumpimos).
         if (IsInstanceValid(this) && (stillPlaying?.Invoke() ?? false))
             _shamanAnim?.PlayIdle();
     }
@@ -137,7 +147,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         modelNode = GetNodeOrNull<Node3D>("Model");
         if (modelNode != null)
         {
-            var ap = FindAnimationPlayer(modelNode);
+            AnimationPlayer ap = FindAnimationPlayer(modelNode);
             if (ap != null)
                 _shamanAnim = new ShamanAnimationController(ap);
 
@@ -156,7 +166,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
 
         foreach (Node child in node.GetChildren())
         {
-            var found = FindAnimationPlayer(child);
+            AnimationPlayer found = FindAnimationPlayer(child);
             if (found != null)
                 return found;
         }
@@ -169,7 +179,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         _terrain = terrain;
     }
 
-    // Ajusta la velocidad de movimiento y de animación según el time unit del servidor.
+    /// <summary>Ajusta la velocidad de movimiento y de animación según el time unit del servidor.</summary>
     public void SetSpeedFactor(float factor)
     {
         SpeedFactor = Mathf.Clamp(factor, MinSpeedFactor, MaxSpeedFactor);
@@ -191,7 +201,7 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         ApplyEquipment();
     }
 
-    // Applies the level's equipment loadout plus the orbiting gem group above the head.
+    /// <summary>Applies the level's equipment loadout plus the orbiting gem group above the head.</summary>
     private void ApplyEquipment()
     {
         if (modelNode == null) 
@@ -200,18 +210,20 @@ public partial class Player : SelectableInventoryNode3D, IInventory
         equipmentManager.ApplyLoadout(modelNode, 
             ShamanEquipmentConfig.GetLoadout(Level));
 
-        equipmentManager.AttachOrbitingGroup(modelNode, 
-            "Head", 
-            ShamanEquipmentConfig.OrbitPivotOffsets, 
-            ShamanEquipmentConfig.OrbitRotationSpeedDeg, 
+        OrbitingSlot orbitingSlot = new(
+            "Head",
+            ShamanEquipmentConfig.OrbitPivotOffsets,
+            ShamanEquipmentConfig.OrbitRotationSpeedDeg,
             ShamanEquipmentConfig.GetOrbitingGems(Level));
+
+        equipmentManager.AttachOrbitingGroup(modelNode, orbitingSlot);
     }
 
+    /// <summary>Orientación Zappy: 1=N, 2=E, 3=S, 4=W.</summary>
     public void SetOrientation(int o)
     {
         Orientation = o;
 
-        // Zappy: 1=N, 2=E, 3=S, 4=W
         float yaw = o switch
         {
             1 => 0f,

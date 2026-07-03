@@ -45,8 +45,10 @@ namespace zappy
 
         public IReadOnlyDictionary<Resource.ResourceType, int> All => data;
 
-        // Vista de solo lectura en orden ESTABLE (el orden del enum ResourceType),
-        // para iteración determinista. El orden de un Dictionary no está garantizado.
+        /// <summary>
+        /// Vista de solo lectura en orden ESTABLE (el orden del enum ResourceType),
+        /// para iteración determinista. El orden de un Dictionary no está garantizado.
+        /// </summary>
         public IEnumerable<KeyValuePair<Resource.ResourceType, int>> AllOrdered =>
             Enum.GetValues(typeof(Resource.ResourceType))
                 .Cast<Resource.ResourceType>()

@@ -8,6 +8,9 @@ uniform vec4 ground_color_b : source_color = vec4(0.4, 0.8, 0.4, 1.0);
 uniform vec4 ground_color : source_color = vec4(0.28, 0.62, 0.22, 1.0);
 uniform float color_variation = 0.42;
 uniform float noise_scale = 0.25;
+uniform vec4 sand_color : source_color = vec4(0.851, 0.784, 0.451, 1.0); // arena cálida
+uniform float sand_height = 0.25;   // world-Y por debajo del cual el suelo es arena
+uniform float sand_blend  = 0.6;   // ancho de la transición pasto→arena (unidades de mundo)
 uniform vec4 highlight_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float pulse_speed = 3.0;
 uniform bool has_selection = false;
@@ -54,7 +57,11 @@ void fragment()
     // Compose: ground (with position-based variation) → grid lines → highlight pulse
     float n = value_noise(world_pos.xz * noise_scale) * color_variation;
     vec3 varied_ground = mix(ground_color.rgb, ground_color_b.rgb, n);
-    vec3 base = mix(varied_ground, line_color.rgb, line);
+
+    // Arena: 1.0 por debajo de sand_height, 0.0 por encima, con transición suave de ancho sand_blend
+    float sand_factor = 1.0 - smoothstep(sand_height - sand_blend, sand_height, world_pos.y);
+    vec3 ground_with_sand = mix(varied_ground, sand_color.rgb, sand_factor);
+    vec3 base = mix(ground_with_sand, line_color.rgb, line);
     ALBEDO = mix(base, highlight_color.rgb, pulse);
 }
 

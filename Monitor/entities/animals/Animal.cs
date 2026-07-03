@@ -1,14 +1,16 @@
 using Godot;
 
-// Base genérica de un animal decorativo móvil. Reúne las tres capas del sistema:
-//   - Domain:     dónde puede moverse (espacio navegable).
-//   - Locomotion: cómo se desplaza/gira hacia un objetivo (steering suave).
-//   - Behavior:   qué hace a lo largo del tiempo (hoy: pasear).
-// Cada frame ejecuta comportamiento → locomoción → hook de animación. Las
-// subclases (Fish, y en el futuro aves/terrestres) añaden su animación concreta
-// y reaccionan a la velocidad en OnLocomotionUpdate.
-//
-// Autocontenido: no referencia Terrain/Connection ni ningún tipo del proyecto.
+/// <summary>
+/// Base genérica de un animal decorativo móvil. Reúne las tres capas del sistema:
+/// Domain (dónde puede moverse, espacio navegable), Locomotion (cómo se desplaza/gira
+/// hacia un objetivo mediante steering suave) y Behavior (qué hace a lo largo del
+/// tiempo). Cada frame ejecuta comportamiento, luego locomoción y por último el hook
+/// de animación. Las subclases (p. ej. Fish) añaden su animación concreta y
+/// reaccionan a la velocidad en <see cref="OnLocomotionUpdate"/>.
+/// </summary>
+/// <remarks>
+/// Autocontenido: no referencia Terrain/Connection ni ningún tipo del proyecto.
+/// </remarks>
 public partial class Animal : Node3D
 {
 	public IAnimalDomain Domain { get; set; }
@@ -20,15 +22,12 @@ public partial class Animal : Node3D
 	{
 		Rng.Randomize();
 
-		// Comportamiento por defecto: pasear. En el futuro, un UtilityBrain
-		// sustituirá este comportamiento único por una selección entre varios.
 		Behavior ??= new WanderBehavior();
 		Behavior.Enter(this);
 	}
 
 	public override void _Process(double delta)
 	{
-		// Sin dominio no hay paseo posible; las subclases pueden seguir animando.
 		if (Domain != null)
 		{
 			Behavior?.Tick(this, delta);
@@ -38,6 +37,8 @@ public partial class Animal : Node3D
 		OnLocomotionUpdate(Locomotion?.CurrentSpeed ?? 0f);
 	}
 
-	// Hook para que cada especie ajuste su animación según la velocidad actual.
+	/// <summary>
+	/// Hook para que cada especie ajuste su animación según la velocidad actual.
+	/// </summary>
 	protected virtual void OnLocomotionUpdate(float speed) { }
 }

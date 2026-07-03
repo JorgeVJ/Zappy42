@@ -2,10 +2,13 @@ using Godot;
 
 public partial class SpeedControlPanel : Control
 {
-    [Signal] public delegate void SpeedChangedEventHandler(int t);
+    [Signal]
+    public delegate void SpeedChangedEventHandler(int t);
 
-    [Export] private HSlider _slider;
-    [Export] private Label _valueLabel;
+    [Export]
+    private HSlider _slider;
+    [Export]
+    private Label _valueLabel;
 
     public override void _Ready()
     {

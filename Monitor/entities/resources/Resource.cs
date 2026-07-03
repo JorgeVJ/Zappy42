@@ -26,32 +26,31 @@ public partial class Resource : Node3D
 		return tile;
 	}
 
+	/// <remarks>
+	/// Durante el replay instantáneo de la barra de tiempo el recurso debe aparecer
+	/// directamente en su posición/escala final, sin animación.
+	/// </remarks>
 	public override void _Ready()
 	{
 		mesh = GetNode<MeshInstance3D>("Mesh");
 
-		// Durante el replay instantáneo de la barra de tiempo el recurso debe
-		// aparecer directamente en su posición/escala final, sin animación.
 		if (Connection.ReplayInstant)
 			return;
 
 		PlaySpawnAnimation();
 	}
 
-	// Animación genérica de aparición: el recurso cae un poco y crece con un "pop".
-	// Framework reutilizable; los efectos temáticos por tipo (meteorito, volcán, rayo)
-	// se añadirán encima en una fase posterior (requieren assets/VFX).
+	/// <summary>Animación genérica de aparición: el recurso cae un poco y crece con un "pop".</summary>
 	private void PlaySpawnAnimation()
 	{
 		Vector3 finalPos   = Position;
 		Vector3 finalScale = Scale;
 		const float dropHeight = 0.4f;
 
-		// Estado inicial: encogido y un poco por encima de su posición final.
 		Position = finalPos + new Vector3(0f, dropHeight, 0f);
 		Scale    = finalScale * 0.01f;
 
-		var tween = CreateTween();
+		Tween tween = CreateTween();
 		tween.SetParallel(true);
 		tween.TweenProperty(this, "position", finalPos, 1.5f)
 			 .SetTrans(Tween.TransitionType.Bounce)
@@ -69,16 +68,26 @@ public partial class Resource : Node3D
 		string modelPath = $"res://entities/resources/models/{type}.glb";
 		if (ResourceLoader.Exists(modelPath))
 		{
-			mesh.Visible = false;
-			if (customModel == null)
-			{
-				customModel = ResourceLoader.Load<PackedScene>(modelPath).Instantiate<Node3D>();
-				customModel.Scale = Vector3.One * 0.15f;
-				AddChild(customModel);
-			}
+			UseCustomModel(modelPath);
 			return;
 		}
 
+		ApplyFallbackMaterial(type);
+	}
+
+	private void UseCustomModel(string modelPath)
+	{
+		mesh.Visible = false;
+		if (customModel == null)
+		{
+			customModel = ResourceLoader.Load<PackedScene>(modelPath).Instantiate<Node3D>();
+			customModel.Scale = Vector3.One * 0.15f;
+			AddChild(customModel);
+		}
+	}
+
+	private void ApplyFallbackMaterial(ResourceType type)
+	{
 		mesh.Visible = true;
 		if (customModel != null)
 		{
@@ -86,25 +95,31 @@ public partial class Resource : Node3D
 			customModel = null;
 		}
 
-		var color = type switch
-		{
-			ResourceType.Nourriture => new Color(0.2f, 1.0f, 0.2f, 0.65f),
-			ResourceType.Linemate   => new Color(0.8f, 0.8f, 0.8f, 0.65f),
-			ResourceType.Deraumere  => new Color(0.2f, 0.6f, 1.0f, 0.65f),
-			ResourceType.Sibur      => new Color(1.0f, 0.6f, 0.2f, 0.65f),
-			ResourceType.Mendiane   => new Color(1.0f, 0.2f, 1.0f, 0.65f),
-			ResourceType.Phiras     => new Color(1.0f, 1.0f, 0.2f, 0.65f),
-			ResourceType.Thystame   => new Color(1.0f, 0.2f, 0.2f, 0.65f),
-			_ => Colors.White
-		};
+		StandardMaterial3D mat = BuildResourceMaterial(ResourceColor(type));
+		mesh.SetSurfaceOverrideMaterial(0, mat);
+	}
 
-		var mat = new StandardMaterial3D();
+	private static Color ResourceColor(ResourceType type) => type switch
+	{
+		ResourceType.Nourriture => new Color(0.2f, 1.0f, 0.2f, 0.65f),
+		ResourceType.Linemate   => new Color(0.8f, 0.8f, 0.8f, 0.65f),
+		ResourceType.Deraumere  => new Color(0.2f, 0.6f, 1.0f, 0.65f),
+		ResourceType.Sibur      => new Color(1.0f, 0.6f, 0.2f, 0.65f),
+		ResourceType.Mendiane   => new Color(1.0f, 0.2f, 1.0f, 0.65f),
+		ResourceType.Phiras     => new Color(1.0f, 1.0f, 0.2f, 0.65f),
+		ResourceType.Thystame   => new Color(1.0f, 0.2f, 0.2f, 0.65f),
+		_ => Colors.White
+	};
+
+	private static StandardMaterial3D BuildResourceMaterial(Color color)
+	{
+		StandardMaterial3D mat = new StandardMaterial3D();
 		mat.AlbedoColor  = color;
 		mat.Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass;
 		mat.Roughness    = 0.05f;
 		mat.Metallic     = 0.0f;
 		mat.RimEnabled   = true;
 		mat.Rim          = 0.6f;
-		mesh.SetSurfaceOverrideMaterial(0, mat);
+		return mat;
 	}
 }

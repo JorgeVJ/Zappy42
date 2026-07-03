@@ -36,6 +36,15 @@ Al actualizar, modificar sólo las secciones relevantes; no reescribir el archiv
 - Los prefabs se referencian con `GD.Load<PackedScene>()` o `[Export]` en el inspector.
 - No usar `GDScript` — todo en C#.
 
+## Convenciones de Código C#
+
+- No usar `var`: se debe declarar siempre el tipo concreto de la variable.
+- No debe haber comentarios dentro del cuerpo de los métodos.
+- Los comentarios se escriben con triple barra (`///`, XML doc) para que los lea el intellisense de VS, nunca con `//` ni `/* */`.
+- Los comentarios no deben mencionar otros proyectos ni funcionalidades pendientes de desarrollar a futuro.
+- Cuando se use un atributo (p. ej. `[Export]`), debe ir en la línea anterior a la propiedad/campo, nunca en la misma línea.
+- Los métodos deben tener como máximo 25 líneas y 4 parámetros.
+
 ## Subject de Referencia
 
 El PDF del subject está en `C:\Users\desarrollo\Downloads\en.subject.pdf`.  

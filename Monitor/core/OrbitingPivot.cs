@@ -3,7 +3,6 @@ using Godot;
 /// <summary>
 /// Generic, reusable Node3D that continuously rotates itself around its local Y axis.
 /// Any children added to it (e.g. a group of orbiting gems) revolve together as a group.
-/// Generic and reusable across projects — no project-specific data here.
 /// </summary>
 public partial class OrbitingPivot : Node3D
 {

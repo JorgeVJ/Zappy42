@@ -16,12 +16,17 @@ using Godot;
 /// </summary>
 public partial class ResizeBehavior : Node
 {
-    [Export] public float MinWidth   { get; set; } = 150f;
-    [Export] public float MinHeight  { get; set; } = 80f;
-    [Export] public float HandleSize { get; set; } = 14f;
+    [Export]
+    public float MinWidth   { get; set; } = 150f;
+    [Export]
+    public float MinHeight  { get; set; } = 80f;
+    [Export]
+    public float HandleSize { get; set; } = 14f;
 
     private Control _target;
-    private Control _freeParent;   // padre del target — aquí vive el handle
+
+    /// <summary>Padre del target — aquí vive el handle.</summary>
+    private Control _freeParent;
     private Control _handle;
 
     private bool    _isResizing;
@@ -30,52 +35,73 @@ public partial class ResizeBehavior : Node
 
     public override void _Ready()
     {
-        _target = GetParent() as Control;
-        if (_target == null)
-        {
-            GD.PushError("ResizeBehavior: debe ser hijo de un Control.");
+        if (!TryResolveTargets())
             return;
-        }
-
-        _freeParent = _target.GetParent() as Control;
-        if (_freeParent == null)
-        {
-            GD.PushError("ResizeBehavior: el padre del target debe ser un Control libre (no Container).");
-            return;
-        }
 
         _target.CustomMinimumSize = new Vector2(MinWidth, MinHeight);
-
-        // El handle se añade como sibling del target (hijo del "abuelo" libre),
-        // no como hijo del target: si el target fuera un Container lo gestionaría.
-        var handle = new ColorRect();
-        handle.Color                   = new Color(0.7f, 0.7f, 0.7f, 0.4f);
-        handle.Size                    = new Vector2(HandleSize, HandleSize);
-        handle.MouseDefaultCursorShape = Control.CursorShape.Fdiagsize;
-        handle.GuiInput               += OnHandleInput;
-        _freeParent.AddChild(handle);
-        _handle = handle;
+        BuildHandle();
 
         _target.Resized           += SyncHandle;
-        _target.VisibilityChanged += OnTargetVisibilityChanged; // oculta el handle al colapsar
+        _target.VisibilityChanged += OnTargetVisibilityChanged;
         GetViewport().SizeChanged += ClampToViewport;
         SetProcessInput(true);
 
         SyncHandle();
     }
 
+    /// <summary>
+    /// Resuelve target y freeParent a partir de la jerarquía de nodos.
+    /// Devuelve false (con un GD.PushError) si la jerarquía no cumple el
+    /// requisito de la clase.
+    /// </summary>
+    private bool TryResolveTargets()
+    {
+        _target = GetParent() as Control;
+        if (_target == null)
+        {
+            GD.PushError("ResizeBehavior: debe ser hijo de un Control.");
+            return false;
+        }
+
+        _freeParent = _target.GetParent() as Control;
+        if (_freeParent == null)
+        {
+            GD.PushError("ResizeBehavior: el padre del target debe ser un Control libre (no Container).");
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Crea el handle de resize como sibling del target (hijo del "abuelo"
+    /// libre), no como hijo del target: si el target fuera un Container lo
+    /// gestionaría.
+    /// </summary>
+    private void BuildHandle()
+    {
+        ColorRect handle = new ColorRect();
+        handle.Color                   = new Color(0.7f, 0.7f, 0.7f, 0.4f);
+        handle.Size                    = new Vector2(HandleSize, HandleSize);
+        handle.MouseDefaultCursorShape = Control.CursorShape.Fdiagsize;
+        handle.GuiInput               += OnHandleInput;
+        _freeParent.AddChild(handle);
+        _handle = handle;
+    }
+
+    /// <summary>
+    /// El handle es hijo del abuelo, no del target, así que hay que
+    /// liberarlo manualmente.
+    /// </summary>
     public override void _ExitTree()
     {
-        // El handle es hijo del abuelo, no del target, así que hay que liberarlo manualmente.
         if (IsInstanceValid(_handle))
             _handle.QueueFree();
 
-        var vp = GetViewport();
+        Viewport vp = GetViewport();
         if (IsInstanceValid(vp))
             vp.SizeChanged -= ClampToViewport;
     }
-
-    // ── Resize ────────────────────────────────────────────────────────────
 
     private void OnHandleInput(InputEvent e)
     {
@@ -88,7 +114,7 @@ public partial class ResizeBehavior : Node
         }
     }
 
-    // _Input captura el movimiento aunque el ratón salga del handle durante el arrastre.
+    /// <summary>Captura el movimiento aunque el ratón salga del handle durante el arrastre.</summary>
     public override void _Input(InputEvent e)
     {
         if (!_isResizing) return;
@@ -100,8 +126,8 @@ public partial class ResizeBehavior : Node
         }
         else if (e is InputEventMouseMotion)
         {
-            var delta  = GetViewport().GetMousePosition() - _resizeStartMouse;
-            var vpSize = GetViewport().GetVisibleRect().Size;
+            Vector2 delta  = GetViewport().GetMousePosition() - _resizeStartMouse;
+            Vector2 vpSize = GetViewport().GetVisibleRect().Size;
             _target.Size = new Vector2(
                 Mathf.Clamp(_resizeStartSize.X + delta.X, MinWidth,  vpSize.X - _target.Position.X),
                 Mathf.Clamp(_resizeStartSize.Y + delta.Y, MinHeight, vpSize.Y - _target.Position.Y)
@@ -109,8 +135,6 @@ public partial class ResizeBehavior : Node
             GetViewport().SetInputAsHandled();
         }
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────
 
     private void SyncHandle()
     {
@@ -127,8 +151,8 @@ public partial class ResizeBehavior : Node
     private void ClampToViewport()
     {
         if (!IsInstanceValid(_target)) return;
-        var vpSize = GetViewport().GetVisibleRect().Size;
-        var pos    = _target.Position;
+        Vector2 vpSize = GetViewport().GetVisibleRect().Size;
+        Vector2 pos    = _target.Position;
         pos.X = Mathf.Clamp(pos.X, 0f, Mathf.Max(0f, vpSize.X - _target.Size.X));
         pos.Y = Mathf.Clamp(pos.Y, 0f, Mathf.Max(0f, vpSize.Y - _target.Size.Y));
         _target.Position = pos;

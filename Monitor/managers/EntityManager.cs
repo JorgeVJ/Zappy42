@@ -41,7 +41,7 @@ public partial class EntityManager<T> : Node where T : Node3D
 
     public void Remove(int id)
     {
-        if (!entities.TryGetValue(id, out var entity))
+        if (!entities.TryGetValue(id, out T entity))
             return;
 
         entity.QueueFree();
@@ -51,7 +51,7 @@ public partial class EntityManager<T> : Node where T : Node3D
     /// <summary>Elimina todas las entidades activas (usado por TimelineController.ResetWorldState).</summary>
     public void Clear()
     {
-        foreach (var entity in entities.Values)
+        foreach (T entity in entities.Values)
             entity.QueueFree();
         entities.Clear();
     }

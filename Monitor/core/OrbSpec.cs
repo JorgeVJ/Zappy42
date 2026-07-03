@@ -4,7 +4,6 @@ using Godot;
 /// Defines a single glowing orb placed around an <see cref="OrbitingPivot"/>.
 /// Unlike <see cref="EquipmentChild"/>, it has no GLB scene — the orb is a
 /// procedural sphere built by <see cref="GlowOrb"/>.
-/// Generic and reusable across projects — no project-specific data here.
 /// </summary>
 public readonly struct OrbSpec
 {

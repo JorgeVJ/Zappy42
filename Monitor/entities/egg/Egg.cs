@@ -7,7 +7,7 @@ public partial class Egg : Node3D
     private MeshInstance3D mesh;
     private bool _hatched;
 
-    // Hatch "pop" animation: scale up then settle back to normal size.
+    /// <summary>Hatch "pop" animation: scale up then settle back to normal size.</summary>
     private const float PopScaleFactor = 1.3f;
     private const float PopScaleUpDuration = 0.15f;
     private const float PopScaleDownDuration = 0.2f;
@@ -28,8 +28,10 @@ public partial class Egg : Node3D
         mesh = GetNode<MeshInstance3D>("Mesh");
     }
 
-    // Transición visual de eclosión: tinte cálido + pequeño "pop" de escala.
-    // No elimina el huevo (eso lo hace ebo cuando el jugador se conecta).
+    /// <summary>
+    /// Transición visual de eclosión: tinte cálido + pequeño "pop" de escala.
+    /// No elimina el huevo, eso ocurre por separado cuando el jugador se conecta.
+    /// </summary>
     public void Hatch()
     {
         if (_hatched)
@@ -38,7 +40,7 @@ public partial class Egg : Node3D
 
         if (mesh != null)
         {
-            var mat = new StandardMaterial3D
+            StandardMaterial3D mat = new StandardMaterial3D
             {
                 AlbedoColor = new Color(1f, 0.85f, 0.3f),
                 EmissionEnabled = true,
@@ -47,7 +49,7 @@ public partial class Egg : Node3D
             mesh.MaterialOverlay = mat;
         }
 
-        var tween = CreateTween();
+        Tween tween = CreateTween();
         tween.TweenProperty(this, "scale", Vector3.One * PopScaleFactor, PopScaleUpDuration);
         tween.TweenProperty(this, "scale", Vector3.One, PopScaleDownDuration);
     }

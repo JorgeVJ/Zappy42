@@ -1,13 +1,16 @@
 using Godot;
 
-// Curvas de respuesta para el Utility AI de los animales. Espejo de las utilidades
-// de scoring del proyecto de referencia (SpringChallenge2026, TrollFarmBot/AI):
-// convierten magnitudes crudas (distancias, conteos) en features normalizadas que
-// los comportamientos combinan con pesos para producir su Score. Solo math de Godot
-// → autocontenido y portable.
+/// <summary>
+/// Curvas de respuesta para el Utility AI de los animales: convierten magnitudes
+/// crudas (distancias, conteos) en features normalizadas que los comportamientos
+/// combinan con pesos para producir su Score.
+/// </summary>
+/// <remarks>
+/// Solo usa math de Godot, por lo que es autocontenido y portable.
+/// </remarks>
 public static class ScoringUtils
 {
-	// Mapea linealmente [min, max] → [0, 1], con clamp.
+	/// <summary>Mapea linealmente [min, max] a [0, 1], con clamp.</summary>
 	public static float Normalize(float value, float min, float max)
 	{
 		if (max <= min)
@@ -15,13 +18,13 @@ public static class ScoringUtils
 		return Mathf.Clamp((value - min) / (max - min), 0f, 1f);
 	}
 
-	// Decae con la distancia: 1/(1 + dist·k). dist=0 → 1; crece la distancia → 0.
+	/// <summary>Decae con la distancia: 1/(1 + dist·k). dist=0 da 1; crece la distancia hacia 0.</summary>
 	public static float Proximity(float distance, float k = 0.5f)
 	{
 		return 1f / (1f + Mathf.Max(0f, distance) * k);
 	}
 
-	// 1 si dist ≤ inner, 0 si dist ≥ outer, lineal en medio. Útil para "cerca de X".
+	/// <summary>1 si dist es menor o igual a inner, 0 si dist es mayor o igual a outer, lineal en medio.</summary>
 	public static float Falloff(float distance, float inner, float outer)
 	{
 		return 1f - Normalize(distance, inner, outer);

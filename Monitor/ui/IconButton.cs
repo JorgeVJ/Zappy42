@@ -1,11 +1,15 @@
 using Godot;
 using System.Collections.Generic;
 
-// Estilo unificado para los botones de chrome/control del monitor: icono SVG
-// centrado, tamaño fijo y fondo redondeado translúcido que se ilumina al hover.
-// Helper estático y genérico (mismo patrón que el resto de helpers en código):
-// se aplica desde los controladores en _Ready(), sin tocar uids en los .tscn.
-// Los iconos viven en res://ui/icons/<name>.svg (blancos, 24x24).
+/// <summary>
+/// Estilo unificado para los botones de chrome/control del monitor: icono SVG
+/// centrado, tamaño fijo y fondo redondeado translúcido que se ilumina al hover.
+/// </summary>
+/// <remarks>
+/// Helper estático y genérico (mismo patrón que el resto de helpers en código):
+/// se aplica desde los controladores en _Ready(), sin tocar uids en los .tscn.
+/// Los iconos viven en res://ui/icons/&lt;name&gt;.svg (blancos, 24x24).
+/// </remarks>
 public static class IconButton
 {
     public const float Size = 36f;
@@ -21,13 +25,15 @@ public static class IconButton
     private static readonly Color IconNormal   = Colors.White;
     private static readonly Color IconDisabled = new Color(1f, 1f, 1f, 0.35f);
 
-    // Caché por nombre para no recargar la textura en cada frame (ej. el swap
-    // play/pause de TimelineBar._Process).
+    /// <summary>
+    /// Caché por nombre para no recargar la textura en cada frame (ej. el swap
+    /// play/pause de TimelineBar._Process).
+    /// </summary>
     private static readonly Dictionary<string, Texture2D> _icons = new();
 
     public static Texture2D Load(string name)
     {
-        if (!_icons.TryGetValue(name, out var tex))
+        if (!_icons.TryGetValue(name, out Texture2D tex))
         {
             tex = GD.Load<Texture2D>($"res://ui/icons/{name}.svg");
             _icons[name] = tex;
@@ -35,8 +41,10 @@ public static class IconButton
         return tex;
     }
 
-    // Tamaño + estilo, sin icono. Para botones cuyo icono se asigna aparte o
-    // cambia en runtime (Play/Pause, Mute).
+    /// <summary>
+    /// Tamaño + estilo, sin icono. Para botones cuyo icono se asigna aparte o
+    /// cambia en runtime (Play/Pause, Mute).
+    /// </summary>
     public static void Style(Button btn)
     {
         btn.Text              = "";
@@ -57,7 +65,7 @@ public static class IconButton
         btn.AddThemeColorOverride("icon_disabled_color", IconDisabled);
     }
 
-    // Estilo + icono fijo (Cerrar, Limpiar, Live).
+    /// <summary>Estilo + icono fijo (Cerrar, Limpiar, Live).</summary>
     public static void Apply(Button btn, string iconName, string tooltip = null)
     {
         Style(btn);
@@ -68,7 +76,7 @@ public static class IconButton
 
     private static StyleBoxFlat MakeBox(Color bg)
     {
-        var box = new StyleBoxFlat { BgColor = bg };
+        StyleBoxFlat box = new StyleBoxFlat { BgColor = bg };
         box.SetCornerRadiusAll(CornerRadius);
         box.SetContentMarginAll(ContentMargin);
         return box;

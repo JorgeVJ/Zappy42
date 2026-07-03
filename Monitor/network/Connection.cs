@@ -1,13 +1,16 @@
 using Godot;
 
-// Hub central: cablea los componentes (transporte, dispatcher, managers, UI) y
-// mantiene el estado compartido entre los handlers del protocolo (repartidos en
-// Connection.Players.cs / Connection.Eggs.cs / Connection.System.cs).
-//
-// El transporte (socket real o MockServer) vive en ServerTransport, que emite
-// LineReceived(line) por cada línea completa del protocolo; este hub la pasa al
-// MessageDispatcher, que enruta por comando a los métodos handler de las clases
-// parciales. La selección por click vive en SelectionController.
+/// <summary>
+/// Hub central: cablea los componentes (transporte, dispatcher, managers, UI) y
+/// mantiene el estado compartido entre los handlers del protocolo (repartidos en
+/// Connection.Players.cs / Connection.Eggs.cs / Connection.System.cs).
+/// </summary>
+/// <remarks>
+/// El transporte (socket real o MockServer) vive en ServerTransport, que emite
+/// LineReceived(line) por cada línea completa del protocolo; este hub la pasa al
+/// MessageDispatcher, que enruta por comando a los métodos handler de las clases
+/// parciales. La selección por click vive en SelectionController.
+/// </remarks>
 public partial class Connection : Node
 {
     private PlayerManager playerManager;
@@ -28,29 +31,62 @@ public partial class Connection : Node
     private MessageDispatcher _dispatcher;
     private SelectionController _selectionController;
 
-    // Pon a true para usar el servidor simulado sin intentar conexión real
-    [Export] public bool UseMockServer = true;
+    /// <summary>
+    /// Pon a true para usar el servidor simulado sin intentar conexión real.
+    /// </summary>
+    [Export]
+    public bool UseMockServer = true;
 
     private CrowdSystem _crowd;
 
     public override void _Ready()
     {
+        SetupNodeReferences();
+
+        CameraFollowBehavior followBehavior = SetupCameraAndSelection();
+        SetupCrowdSystem();
+        SetupPanels(followBehavior);
+        SetupTransport();
+        SetupDispatcherAndTimeline();
+    }
+
+    private void SetupNodeReferences()
+    {
         playerManager = GetNode<PlayerManager>("PlayerManager");
         terrainManager = GetParent().GetNode<Terrain>("Terrain");
         camera = GetParent().GetNode<Camera>("Camera");
         eggManager = GetNode<EggManager>("EggManager");
+    }
 
+    private CameraFollowBehavior SetupCameraAndSelection()
+    {
         _selectionController = new SelectionController(terrainManager, inventoryPanel);
         camera.OnLeftClick += _selectionController.HandleLeftClick;
 
-        var followBehavior = new CameraFollowBehavior();
+        CameraFollowBehavior followBehavior = new CameraFollowBehavior();
         camera.AddChild(followBehavior);
+        return followBehavior;
+    }
 
-        // Posicionamiento dinámico (steering) de los jugadores dentro de su tile.
+    /// <summary>
+    /// Posicionamiento dinámico (steering) de los jugadores dentro de su tile.
+    /// </summary>
+    private void SetupCrowdSystem()
+    {
         _crowd = new CrowdSystem();
         AddChild(_crowd);
         _crowd.Setup(playerManager, terrainManager);
+    }
 
+    /// <remarks>
+    /// _logPanel y _teamPanel se añaden dinámicamente con AddChild() aquí, lo
+    /// que los deja por delante de TimelineBar (declarada en game.tscn) en el
+    /// orden de hermanos: en Godot, hermanos posteriores se dibujan y reciben
+    /// input por encima de los anteriores. Forzamos a TimelineBar al final
+    /// para que su slider no quede tapado por esos paneles.
+    /// </remarks>
+    private void SetupPanels(CameraFollowBehavior followBehavior)
+    {
         _logPanel = new MessageLogPanel();
         AddChild(_logPanel);
 
@@ -58,7 +94,7 @@ public partial class Connection : Node
         AddChild(_teamPanel);
         _teamPanel.PlayerSelected += id =>
         {
-            if (playerManager.TryGet(id, out var p))
+            if (playerManager.TryGet(id, out Player p))
             {
                 _selectionController.ShowInventory(p);
                 followBehavior.StartFollowing(p);
@@ -69,16 +105,15 @@ public partial class Connection : Node
         _speedPanel.SpeedChanged += OnSpeedChanged;
 
         _timelineBar = GetNode<TimelineBar>("TimelineBar");
-
-        // _logPanel y _teamPanel se añaden dinámicamente con AddChild() arriba,
-        // lo que los deja por delante de TimelineBar (declarada en game.tscn) en
-        // el orden de hermanos: en Godot, hermanos posteriores se dibujan y
-        // reciben input por encima de los anteriores. Forzamos a TimelineBar al
-        // final para que su slider no quede tapado por esos paneles.
         MoveChild(_timelineBar, GetChildCount() - 1);
+    }
 
-        // Transporte: decide internamente mock vs. socket real (ParseConnectionArgs)
-        // y nos avisa con UseMockServer cuál fue el resultado (p. ej. para el log inicial).
+    /// <summary>
+    /// Decide internamente mock vs. socket real (ParseConnectionArgs) y nos
+    /// avisa con UseMockServer cuál fue el resultado (p. ej. para el log inicial).
+    /// </summary>
+    private void SetupTransport()
+    {
         _transport = new ServerTransport();
         _transport.UseMockServer = UseMockServer;
         AddChild(_transport);
@@ -86,7 +121,10 @@ public partial class Connection : Node
 
         _transport.LineReceived += OnLineReceived;
         _transport.Disconnected += OnTransportDisconnected;
+    }
 
+    private void SetupDispatcherAndTimeline()
+    {
         _dispatcher = new MessageDispatcher();
         RegisterSystemHandlers(_dispatcher);
         RegisterPlayerHandlers(_dispatcher);
@@ -96,11 +134,13 @@ public partial class Connection : Node
         _timelineBar.Setup(_timeline);
     }
 
-    // Línea completa del protocolo (real o mock): loguear y entregar a la
-    // barra de tiempo, que decide si se despacha en vivo o solo se acumula.
+    /// <summary>
+    /// Línea completa del protocolo (real o mock): loguear y entregar a la
+    /// barra de tiempo, que decide si se despacha en vivo o solo se acumula.
+    /// </summary>
     private void OnLineReceived(string line)
     {
-        var parts = line.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+        string[] parts = line.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0)
             return;
 
@@ -113,11 +153,13 @@ public partial class Connection : Node
         _logPanel?.Log("NET", $"Servidor desconectado: {reason}");
     }
 
+    /// <summary>
+    /// Durante el replay instantáneo de la barra de tiempo no se reenvían
+    /// comandos al servidor (mct, sgt, GRAPHIC...): solo se reproduce el
+    /// log ya recibido.
+    /// </summary>
     public void SendMessage(string msg)
     {
-        // Durante el replay instantáneo de la barra de tiempo no se reenvían
-        // comandos al servidor (mct, sgt, GRAPHIC...): solo se reproduce el
-        // log ya recibido.
         if (ReplayInstant)
             return;
 
@@ -135,13 +177,16 @@ public partial class Connection : Node
         }
     }
 
-    // --- Helpers compartidos para los handlers del protocolo (network/Connection*.cs) ---
-
-    // Comprueba que el mensaje tenga al menos `minLength` tokens (incluyendo
-    // parts[0], el comando). Si no, loguea un warning con el comando y la
-    // longitud recibida y devuelve false: el handler debe hacer `return` sin
-    // procesar el mensaje. Evita IndexOutOfRangeException con mensajes cortos
-    // o malformados.
+    /// <summary>
+    /// Helpers compartidos para los handlers del protocolo (network/Connection*.cs).
+    /// </summary>
+    /// <remarks>
+    /// Comprueba que el mensaje tenga al menos <paramref name="minLength"/> tokens
+    /// (incluyendo parts[0], el comando). Si no, loguea un warning con el comando y
+    /// la longitud recibida y devuelve false: el handler debe hacer <c>return</c>
+    /// sin procesar el mensaje. Evita IndexOutOfRangeException con mensajes cortos
+    /// o malformados.
+    /// </remarks>
     private static bool RequireLength(string[] parts, int minLength, string command)
     {
         if (parts.Length >= minLength)
@@ -151,9 +196,11 @@ public partial class Connection : Node
         return false;
     }
 
-    // int.TryParse con log de error si falla. Usar en lugar de int.Parse directo
-    // sobre campos del mensaje: un valor no numérico (mensaje corrupto/malformado)
-    // se descarta sin lanzar FormatException.
+    /// <summary>
+    /// int.TryParse con log de error si falla. Usar en lugar de int.Parse directo
+    /// sobre campos del mensaje: un valor no numérico (mensaje corrupto/malformado)
+    /// se descarta sin lanzar FormatException.
+    /// </summary>
     private static bool TryParseField(string text, string command, string fieldName, out int value)
     {
         if (int.TryParse(text, out value))

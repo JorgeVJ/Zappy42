@@ -1,19 +1,36 @@
 using Godot;
 using System.Collections.Generic;
 
+/// <summary>
+/// Servidor simulado para desarrollo y pruebas de UI sin necesidad de un
+/// servidor Zappy real: reproduce una secuencia de mensajes de protocolo
+/// predefinida y, agotada esta, sigue generando actividad aleatoria.
+/// </summary>
 public class MockServer
 {
-    // Tamaño del mapa simulado (coincide con el "msz 25 25" enviado al inicio).
+    /// <summary>
+    /// Tamaño del mapa simulado (coincide con el "msz 25 25" enviado al inicio).
+    /// </summary>
     private const int MapWidth = 25;
     private const int MapHeight = 25;
-    private const int ResourceTypeCount = 7; // Resource.ResourceType: 0..6
+
+    /// <summary>
+    /// Resource.ResourceType: 0..6.
+    /// </summary>
+    private const int ResourceTypeCount = 7;
 
     private float _timer = 0f;
-    private float _delay = 1f; // Segundos entre cada mensaje simulado
+
+    /// <summary>
+    /// Segundos entre cada mensaje simulado.
+    /// </summary>
+    private float _delay = 1f;
     private int _currentIndex = 0;
     private readonly RandomNumberGenerator _rng = new RandomNumberGenerator();
 
-    // Secuencia de mensajes simulados para probar funcionalidades
+    /// <summary>
+    /// Secuencia de mensajes simulados para probar funcionalidades.
+    /// </summary>
     private readonly List<string> _messages = new List<string>
     {
         // ── 0. Handshake: WELCOME -> (Connection responde GRAPHIC + sgt) ──
@@ -197,18 +214,20 @@ public class MockServer
         if (_currentIndex < _messages.Count)
             return _messages[_currentIndex++];
 
-        // Una vez agotada la secuencia de mensajes, seguimos simulando actividad
-        // del servidor: cada tick reportamos la aparición de recursos en una
-        // casilla aleatoria del mapa mediante "bct X Y q0 q1 q2 q3 q4 q5 q6".
         return RandomResourceCommand();
     }
 
+    /// <summary>
+    /// Una vez agotada la secuencia de mensajes, seguimos simulando actividad
+    /// del servidor: cada tick reportamos la aparición de recursos en una
+    /// casilla aleatoria del mapa mediante "bct X Y q0 q1 q2 q3 q4 q5 q6".
+    /// </summary>
     private string RandomResourceCommand()
     {
         int x = _rng.RandiRange(0, MapWidth - 1);
         int y = _rng.RandiRange(0, MapHeight - 1);
 
-        var quantities = new int[ResourceTypeCount];
+        int[] quantities = new int[ResourceTypeCount];
         for (int i = 0; i < ResourceTypeCount; i++)
             quantities[i] = _rng.RandiRange(0, 3);
 

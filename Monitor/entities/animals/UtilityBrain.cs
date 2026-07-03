@@ -1,17 +1,18 @@
-// Cerebro de Utility AI: elige, entre varios comportamientos candidatos, el de mayor
-// Score y lo ejecuta; reevalúa periódicamente y conmuta cuando otro pasa a ser más
-// deseable. Es a su vez un IAnimalBehavior (patrón compuesto), de modo que Animal
-// sigue corriendo un único Behavior sin cambios en su bucle.
-//
-// Espejo del "decider" del proyecto de referencia (UtilityDecider.Decide: puntuar
-// todo y quedarse con el máximo), adaptado a comportamientos con estado (Enter/Tick).
+/// <summary>
+/// Cerebro de Utility AI: elige, entre varios comportamientos candidatos, el de mayor
+/// Score y lo ejecuta; reevalúa periódicamente y conmuta cuando otro pasa a ser más
+/// deseable. Es a su vez un IAnimalBehavior (patrón compuesto), de modo que Animal
+/// sigue corriendo un único Behavior sin cambios en su bucle.
+/// </summary>
 public class UtilityBrain : IAnimalBehavior
 {
-	// Cada cuánto se reevalúan los scores (s). Entre evaluaciones corre el activo.
+	/// <summary>Cada cuántos segundos se reevalúan los scores. Entre evaluaciones corre el activo.</summary>
 	public float EvalInterval = 0.5f;
 
-	// Histéresis: el candidato debe superar al activo por este margen para conmutar,
-	// evitando parpadeo cuando dos scores quedan casi empatados en el umbral.
+	/// <summary>
+	/// Histéresis: el candidato debe superar al activo por este margen para conmutar,
+	/// evitando parpadeo cuando dos scores quedan casi empatados en el umbral.
+	/// </summary>
 	public float SwitchMargin = 0.15f;
 
 	private readonly IAnimalBehavior[] _behaviors;
@@ -44,7 +45,7 @@ public class UtilityBrain : IAnimalBehavior
 		_active?.Tick(animal, delta);
 	}
 
-	// El cerebro vale lo que su mejor opción (permite anidar cerebros sin romper nada).
+	/// <summary>El cerebro vale lo que su mejor opción (permite anidar cerebros sin romper nada).</summary>
 	public float Score(Animal animal)
 	{
 		BestBehavior(animal, out float best);

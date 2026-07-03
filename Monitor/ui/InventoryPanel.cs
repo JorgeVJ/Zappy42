@@ -3,22 +3,38 @@ using zappy;
 
 public partial class InventoryPanel : Control
 {
-	[Export] private Label title;
-	[Export] private Label food;
-	[Export] private Label linemate;
-	[Export] private Label deraumere;
-	[Export] private Label sibur;
-	[Export] private Label mendiane;
-	[Export] private Label phiras;
-	[Export] private Label thystame;
-	[Export] private Label titleDetail;
-	[Export] private Label foodDetail;
-	[Export] private Label linemateDetail;
-	[Export] private Label deraumereDetail;
-	[Export] private Label siburDetail;
-	[Export] private Label mendianeDetail;
-	[Export] private Label phirasDetail;
-	[Export] private Label thystameDetail;
+	[Export]
+	private Label title;
+	[Export]
+	private Label food;
+	[Export]
+	private Label linemate;
+	[Export]
+	private Label deraumere;
+	[Export]
+	private Label sibur;
+	[Export]
+	private Label mendiane;
+	[Export]
+	private Label phiras;
+	[Export]
+	private Label thystame;
+	[Export]
+	private Label titleDetail;
+	[Export]
+	private Label foodDetail;
+	[Export]
+	private Label linemateDetail;
+	[Export]
+	private Label deraumereDetail;
+	[Export]
+	private Label siburDetail;
+	[Export]
+	private Label mendianeDetail;
+	[Export]
+	private Label phirasDetail;
+	[Export]
+	private Label thystameDetail;
 
 	public override void _Ready()
 	{

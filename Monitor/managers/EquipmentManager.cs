@@ -43,12 +43,12 @@ public class EquipmentManager
         if (string.IsNullOrEmpty(keyOrPath))
             return null;
 
-        if (sceneCache.TryGetValue(keyOrPath, out var scene))
+        if (sceneCache.TryGetValue(keyOrPath, out PackedScene scene))
             return scene;
 
         scene = ResourceLoader.Load<PackedScene>(keyOrPath);
         if (scene != null)
-        {   
+        {
             sceneCache[keyOrPath] = scene;
             Log.Debug($"EquipmentManager: implicitly loaded scene from path '{keyOrPath}'");
             return scene;
@@ -78,93 +78,153 @@ public class EquipmentManager
 
     /// <summary>
     /// Attaches an instantiated scene to the specified bone of the skeleton.
-    /// sceneKey can be the registered key or a path to the scene.
+    /// <paramref name="slot"/>'s ScenePath can be the registered key or a path to the scene.
     /// Optionally instantiates a list of child scenes as children of the attached
     /// instance itself (e.g. a gem socketed into a staff), each with its own offsets
     /// relative to the parent instance's local space.
     /// Returns the created BoneAttachment3D or null on error.
     /// </summary>
-    public BoneAttachment3D AttachToBone(Node owner, string boneName, string sceneKey, Offsets? offsets = null, IReadOnlyList<EquipmentChild> children = null)
+    public BoneAttachment3D AttachToBone(Node owner, EquipmentSlot slot)
     {
-        Skeleton3D skeleton = FindSkeleton3D(owner);
+        if (!TryResolveAttachment(owner, slot, out Skeleton3D skeleton, out PackedScene scene))
+            return null;
+
+        return BuildBoneAttachment(skeleton, slot, scene);
+    }
+
+    /// <summary>
+    /// Validates that <paramref name="owner"/> has a skeleton, <paramref name="slot"/>'s
+    /// bone exists on it and its scene can be resolved. Extracted from AttachToBone to
+    /// keep that method within the project's method-length convention.
+    /// </summary>
+    private bool TryResolveAttachment(Node owner, EquipmentSlot slot, out Skeleton3D skeleton, out PackedScene scene)
+    {
+        scene = null;
+        if (!TryResolveSkeletonBone(owner, slot, out skeleton))
+            return false;
+
+        scene = ResolveScene(slot.ScenePath);
+        if (scene == null)
+        {
+            Log.Error($"EquipmentManager: scene not found for key/path '{slot.ScenePath}'");
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Validates that <paramref name="owner"/> has a skeleton and that <paramref name="slot"/>'s
+    /// bone exists on it. Extracted from TryResolveAttachment to keep that method within the
+    /// project's method-length convention.
+    /// </summary>
+    private bool TryResolveSkeletonBone(Node owner, EquipmentSlot slot, out Skeleton3D skeleton)
+    {
+        skeleton = FindSkeleton3D(owner);
         if (skeleton == null)
         {
             Log.Error("EquipmentManager.AttachToBone: skeleton is null");
-            return null;
+            return false;
         }
 
-        if (string.IsNullOrEmpty(boneName) || string.IsNullOrEmpty(sceneKey))
+        if (string.IsNullOrEmpty(slot.BoneName) || string.IsNullOrEmpty(slot.ScenePath))
         {
             Log.Error("EquipmentManager.AttachToBone: boneName or sceneKey is null/empty");
-            return null;
+            return false;
         }
 
-        if (skeleton.FindBone(boneName) == -1)
+        if (skeleton.FindBone(slot.BoneName) == -1)
         {
-            Log.Debug($"EquipmentManager: bone not found: {boneName}");
-            return null;
+            Log.Debug($"EquipmentManager: bone not found: {slot.BoneName}");
+            return false;
         }
 
-        PackedScene scene = ResolveScene(sceneKey);
-        if (scene == null)
-        {
-            Log.Error($"EquipmentManager: scene not found for key/path '{sceneKey}'");
-            return null;
-        }
+        return true;
+    }
 
+    /// <summary>
+    /// Instantiates <paramref name="scene"/>, attaches it to a new BoneAttachment3D on
+    /// <paramref name="slot"/>'s bone, applies offsets/children and registers the
+    /// attachment. Extracted from AttachToBone to keep that method within the
+    /// project's method-length convention.
+    /// </summary>
+    private BoneAttachment3D BuildBoneAttachment(Skeleton3D skeleton, EquipmentSlot slot, PackedScene scene)
+    {
         BoneAttachment3D boneAttach = new();
-        boneAttach.BoneName = boneName;
+        boneAttach.BoneName = slot.BoneName;
         skeleton.AddChild(boneAttach);
 
-        // Instantiate the scene and add it to the BoneAttachment
-        Node3D inst;
-        try
+        if (!TryInstantiate(scene, slot.ScenePath, out Node3D inst))
         {
-            inst = scene.Instantiate<Node3D>();
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"EquipmentManager: failed to instantiate scene '{sceneKey}': {ex.Message}");
             boneAttach.QueueFree();
             return null;
         }
 
         boneAttach.AddChild(inst);
-
-        // Reset transform to exactly inherit from the bone
         inst.Transform = Transform3D.Identity;
+        ApplyOffsetsAndChildren(inst, slot);
+        RegisterAttachment(slot.BoneName, boneAttach);
 
-        // Apply offsets if provided
-        if (offsets is not null)
-        {
-            inst.Position = offsets.Value.Position;
-            inst.Rotation = new Vector3(
-                Mathf.DegToRad(offsets.Value.RotationDeg.X),
-                Mathf.DegToRad(offsets.Value.RotationDeg.Y),
-                Mathf.DegToRad(offsets.Value.RotationDeg.Z));
-            inst.Scale = offsets.Value.Scale;
-        }
+        Log.Debug($"EquipmentManager: attached scene '{slot.ScenePath}' to bone '{slot.BoneName}'");
+        return boneAttach;
+    }
 
-        // Instantiate optional child models attached to this equipment instance
-        // (e.g. a gem socketed into a staff). Offsets are relative to inst's local space.
-        if (children is not null)
-        {
-            foreach (var child in children)
-            {
+    /// <summary>
+    /// Applies a slot's offsets and instantiates its child scenes. Extracted from
+    /// BuildBoneAttachment to keep that method within the method-length convention.
+    /// </summary>
+    private void ApplyOffsetsAndChildren(Node3D inst, EquipmentSlot slot)
+    {
+        if (slot.Offsets is not null)
+            ApplyOffsets(inst, slot.Offsets.Value);
+
+        if (slot.Children is not null)
+            foreach (EquipmentChild child in slot.Children)
                 AttachChild(inst, child);
-            }
-        }
+    }
 
-        // Store reference
-        if (!attachments.TryGetValue(boneName, out var list))
+    /// <summary>
+    /// Instantiates a scene as a Node3D, logging and reporting failure instead of throwing.
+    /// </summary>
+    private static bool TryInstantiate(PackedScene scene, string scenePath, out Node3D instance)
+    {
+        try
+        {
+            instance = scene.Instantiate<Node3D>();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"EquipmentManager: failed to instantiate scene '{scenePath}': {ex.Message}");
+            instance = null;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Applies position/rotation(deg)/scale offsets to a Node3D.
+    /// </summary>
+    private void ApplyOffsets(Node3D target, Offsets offsets)
+    {
+        target.Position = offsets.Position;
+        target.Rotation = new Vector3(
+            Mathf.DegToRad(offsets.RotationDeg.X),
+            Mathf.DegToRad(offsets.RotationDeg.Y),
+            Mathf.DegToRad(offsets.RotationDeg.Z));
+        target.Scale = offsets.Scale;
+    }
+
+    /// <summary>
+    /// Adds a BoneAttachment3D to the tracked list for a bone, creating the list if needed.
+    /// </summary>
+    private void RegisterAttachment(string boneName, BoneAttachment3D boneAttach)
+    {
+        if (!attachments.TryGetValue(boneName, out List<BoneAttachment3D> list))
         {
             list = new List<BoneAttachment3D>();
             attachments[boneName] = list;
         }
         list.Add(boneAttach);
-
-        Log.Debug($"EquipmentManager: attached scene '{sceneKey}' to bone '{boneName}'");
-        return boneAttach;
     }
 
     /// <summary>
@@ -185,29 +245,14 @@ public class EquipmentManager
             return;
         }
 
-        Node3D childInst;
-        try
-        {
-            childInst = scene.Instantiate<Node3D>();
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"EquipmentManager: failed to instantiate child scene '{child.ScenePath}': {ex.Message}");
+        if (!TryInstantiate(scene, child.ScenePath, out Node3D childInst))
             return;
-        }
 
         parent.AddChild(childInst);
         childInst.Transform = Transform3D.Identity;
 
         if (child.Offsets is not null)
-        {
-            childInst.Position = child.Offsets.Value.Position;
-            childInst.Rotation = new Vector3(
-                Mathf.DegToRad(child.Offsets.Value.RotationDeg.X),
-                Mathf.DegToRad(child.Offsets.Value.RotationDeg.Y),
-                Mathf.DegToRad(child.Offsets.Value.RotationDeg.Z));
-            childInst.Scale = child.Offsets.Value.Scale;
-        }
+            ApplyOffsets(childInst, child.Offsets.Value);
 
         if (child.Glow is not null)
             child.Glow.Value.ApplyTo(childInst);
@@ -222,16 +267,10 @@ public class EquipmentManager
     /// </summary>
     private void AttachOrb(Node3D parent, OrbSpec spec)
     {
-        var orb = new GlowOrb { OrbColor = spec.Color, Glow = spec.Glow };
+        GlowOrb orb = new() { OrbColor = spec.Color, Glow = spec.Glow };
         parent.AddChild(orb);
         orb.Transform = Transform3D.Identity;
-
-        orb.Position = spec.Offsets.Position;
-        orb.Rotation = new Vector3(
-            Mathf.DegToRad(spec.Offsets.RotationDeg.X),
-            Mathf.DegToRad(spec.Offsets.RotationDeg.Y),
-            Mathf.DegToRad(spec.Offsets.RotationDeg.Z));
-        orb.Scale = spec.Offsets.Scale;
+        ApplyOffsets(orb, spec.Offsets);
     }
 
     /// <summary>
@@ -242,9 +281,9 @@ public class EquipmentManager
     /// Tracked alongside regular attachments, so ClearAll()/ApplyLoadout() remove it too.
     /// Returns the created BoneAttachment3D or null if nothing was attached.
     /// </summary>
-    public BoneAttachment3D AttachOrbitingGroup(Node owner, string boneName, Offsets pivotOffsets, float rotationSpeedDeg, IReadOnlyList<OrbSpec> orbs)
+    public BoneAttachment3D AttachOrbitingGroup(Node owner, OrbitingSlot slot)
     {
-        if (orbs == null || orbs.Count == 0)
+        if (slot.Orbs == null || slot.Orbs.Count == 0)
             return null;
 
         Skeleton3D skeleton = FindSkeleton3D(owner);
@@ -254,37 +293,37 @@ public class EquipmentManager
             return null;
         }
 
-        if (string.IsNullOrEmpty(boneName) || skeleton.FindBone(boneName) == -1)
+        if (string.IsNullOrEmpty(slot.BoneName) || skeleton.FindBone(slot.BoneName) == -1)
         {
-            Log.Debug($"EquipmentManager: bone not found: {boneName}");
+            Log.Debug($"EquipmentManager: bone not found: {slot.BoneName}");
             return null;
         }
 
+        BoneAttachment3D boneAttach = BuildOrbitingGroup(skeleton, slot);
+
+        Log.Debug($"EquipmentManager: attached orbiting group of {slot.Orbs.Count} orb(s) to bone '{slot.BoneName}'");
+        return boneAttach;
+    }
+
+    /// <summary>
+    /// Creates the BoneAttachment3D/OrbitingPivot hierarchy for AttachOrbitingGroup and
+    /// registers it. Extracted to keep AttachOrbitingGroup within the method-length
+    /// convention.
+    /// </summary>
+    private BoneAttachment3D BuildOrbitingGroup(Skeleton3D skeleton, OrbitingSlot slot)
+    {
         BoneAttachment3D boneAttach = new();
-        boneAttach.BoneName = boneName;
+        boneAttach.BoneName = slot.BoneName;
         skeleton.AddChild(boneAttach);
 
-        var pivot = new OrbitingPivot { RotationSpeedDeg = rotationSpeedDeg };
+        OrbitingPivot pivot = new() { RotationSpeedDeg = slot.RotationSpeedDeg };
         boneAttach.AddChild(pivot);
+        ApplyOffsets(pivot, slot.PivotOffsets);
 
-        pivot.Position = pivotOffsets.Position;
-        pivot.Rotation = new Vector3(
-            Mathf.DegToRad(pivotOffsets.RotationDeg.X),
-            Mathf.DegToRad(pivotOffsets.RotationDeg.Y),
-            Mathf.DegToRad(pivotOffsets.RotationDeg.Z));
-        pivot.Scale = pivotOffsets.Scale;
-
-        foreach (var orb in orbs)
+        foreach (OrbSpec orb in slot.Orbs)
             AttachOrb(pivot, orb);
 
-        if (!attachments.TryGetValue(boneName, out var list))
-        {
-            list = new List<BoneAttachment3D>();
-            attachments[boneName] = list;
-        }
-        list.Add(boneAttach);
-
-        Log.Debug($"EquipmentManager: attached orbiting group of {orbs.Count} orb(s) to bone '{boneName}'");
+        RegisterAttachment(slot.BoneName, boneAttach);
         return boneAttach;
     }
 
@@ -294,7 +333,7 @@ public class EquipmentManager
     public List<BoneAttachment3D> GetAttachments(string boneName)
     {
         if (string.IsNullOrEmpty(boneName)) return null;
-        return attachments.TryGetValue(boneName, out var list) ? list : null;
+        return attachments.TryGetValue(boneName, out List<BoneAttachment3D> list) ? list : null;
     }
 
     /// <summary>
@@ -304,9 +343,9 @@ public class EquipmentManager
     {
         if (string.IsNullOrEmpty(boneName)) return;
 
-        if (!attachments.TryGetValue(boneName, out var list)) return;
+        if (!attachments.TryGetValue(boneName, out List<BoneAttachment3D> list)) return;
 
-        foreach (var attach in list)
+        foreach (BoneAttachment3D attach in list)
         {
             if (attach.IsInsideTree())
                 attach.QueueFree();
@@ -321,9 +360,9 @@ public class EquipmentManager
     /// </summary>
     public void ClearAll()
     {
-        foreach (var kv in attachments)
+        foreach (KeyValuePair<string, List<BoneAttachment3D>> kv in attachments)
         {
-            foreach (var attach in kv.Value)
+            foreach (BoneAttachment3D attach in kv.Value)
             {
                 if (attach.IsInsideTree())
                     attach.QueueFree();
@@ -340,7 +379,7 @@ public class EquipmentManager
     public void ApplyLoadout(Node owner, IReadOnlyList<EquipmentSlot> slots)
     {
         ClearAll();
-        foreach (var slot in slots)
-            AttachToBone(owner, slot.BoneName, slot.ScenePath, slot.Offsets, slot.Children);
+        foreach (EquipmentSlot slot in slots)
+            AttachToBone(owner, slot);
     }
 }

@@ -1,38 +1,67 @@
 using Godot;
 using System.Collections.Generic;
 
-// Coloca peces decorativos sobre las zonas de agua del mapa. Autocontenido: no
-// referencia Terrain ni ningún otro tipo del proyecto, solo recibe primitivas
-// (heightMap, width, height) para poder copiarse/pegarse a otro proyecto con
-// un sistema de heightmap similar añadiendo una única llamada a Generate().
+/// <summary>
+/// Coloca peces decorativos sobre las zonas de agua del mapa.
+/// </summary>
+/// <remarks>
+/// Autocontenido: no referencia Terrain ni ningún otro tipo del proyecto, solo
+/// recibe primitivas (heightMap, width, height).
+/// </remarks>
 public partial class AnimalSystem : Node3D
 {
-	// Mismo cálculo de nivel del mar que WaterSystem (fracción entre min y max
-	// del heightMap). Se duplica en vez de referenciar WaterSystem para que
-	// AnimalSystem no dependa de ningún otro nodo del árbol de escena.
-	[Export(PropertyHint.Range, "0,1,0.01")] public float SeaLevelFraction = 0.35f;
-	[Export] public float SeaLevelOffset = 0f;
+	/// <summary>
+	/// Mismo cálculo de nivel del mar que WaterSystem (fracción entre min y max
+	/// del heightMap). Se duplica en vez de referenciar WaterSystem para que
+	/// AnimalSystem no dependa de ningún otro nodo del árbol de escena.
+	/// </summary>
+	[Export(PropertyHint.Range, "0,1,0.01")]
+	public float SeaLevelFraction = 0.35f;
 
-	[Export(PropertyHint.Range, "0,20,1")] public int FishCount = 6;
-	[Export] public float TileSize = 2.0f;
+	[Export]
+	public float SeaLevelOffset = 0f;
 
-	// Volumen navegable: márgenes que el pez deja respecto al fondo y a la superficie.
-	[Export] public float FloorMargin = 0.4f;
-	[Export] public float SurfaceMargin = 0.4f;
+	[Export(PropertyHint.Range, "0,20,1")]
+	public int FishCount = 6;
 
-	// Tuning del paseo (se inyecta en la locomoción/comportamiento de cada pez).
-	[Export] public float MaxSpeed = 1.6f;
-	[Export] public float WanderRadius = 6f;
+	[Export]
+	public float TileSize = 2.0f;
 
-	// Tuning de la huida de la cámara (Utility AI).
-	[Export] public float FleeInner = 2f;        // distancia de cámara para huida máxima
-	[Export] public float FleeOuter = 6f;       // distancia a la que deja de huir
-	[Export] public float FleeSpeedScale = 4.2f; // cuánto acelera el nado al huir
+	/// <summary>Márgenes que el pez deja respecto al fondo del volumen navegable.</summary>
+	[Export]
+	public float FloorMargin = 0.4f;
 
-	// Especies disponibles: cada spawn elige una ruta al azar de este array. Para
-	// añadir más especies basta con incluir un .glb con huesos "Body"/"Tail" y
-	// añadir su ruta aquí (configurable desde el inspector).
-	[Export] public string[] FishModels =
+	/// <summary>Márgenes que el pez deja respecto a la superficie del volumen navegable.</summary>
+	[Export]
+	public float SurfaceMargin = 0.4f;
+
+	/// <summary>Tuning del paseo: se inyecta en la locomoción de cada pez.</summary>
+	[Export]
+	public float MaxSpeed = 1.6f;
+
+	/// <summary>Tuning del paseo: se inyecta en el comportamiento de cada pez.</summary>
+	[Export]
+	public float WanderRadius = 6f;
+
+	/// <summary>Tuning de la huida de la cámara (Utility AI): distancia de cámara para huida máxima.</summary>
+	[Export]
+	public float FleeInner = 2f;
+
+	/// <summary>Tuning de la huida de la cámara (Utility AI): distancia a la que deja de huir.</summary>
+	[Export]
+	public float FleeOuter = 6f;
+
+	/// <summary>Tuning de la huida de la cámara (Utility AI): cuánto acelera el nado al huir.</summary>
+	[Export]
+	public float FleeSpeedScale = 4.2f;
+
+	/// <summary>
+	/// Especies disponibles: cada spawn elige una ruta al azar de este array. Para
+	/// añadir más especies basta con incluir un .glb con huesos "Body"/"Tail" y
+	/// añadir su ruta aquí (configurable desde el inspector).
+	/// </summary>
+	[Export]
+	public string[] FishModels =
 	{
 		"res://entities/animals/ClownFish.glb",
 		"res://entities/animals/SurgeonFish.glb",
@@ -55,8 +84,23 @@ public partial class AnimalSystem : Node3D
 			child.QueueFree();
 
 		float seaY = ComputeSeaLevel(heightMap, SeaLevelFraction) + SeaLevelOffset;
+		List<Vector2I> waterTiles = CollectWaterTiles(heightMap, width, height, seaY);
+		if (waterTiles.Count == 0)
+			return;
 
-		var waterTiles = new List<Vector2I>();
+		HeightMapGrid grid = new HeightMapGrid(width, height, TileSize);
+		NavigableMargins margins = new NavigableMargins(FloorMargin, SurfaceMargin);
+		AquaticDomain domain = new AquaticDomain(heightMap, grid, seaY, margins);
+		SpawnFish(heightMap, seaY, waterTiles, domain);
+	}
+
+	/// <summary>
+	/// Recorre todos los tiles del mapa y devuelve los que quedan por debajo del
+	/// nivel del mar (candidatos válidos para colocar peces).
+	/// </summary>
+	private static List<Vector2I> CollectWaterTiles(float[,] heightMap, int width, int height, float seaY)
+	{
+		List<Vector2I> waterTiles = new List<Vector2I>();
 		for (int x = 0; x < width; x++)
 		{
 			for (int y = 0; y < height; y++)
@@ -66,18 +110,19 @@ public partial class AnimalSystem : Node3D
 			}
 		}
 
-		if (waterTiles.Count == 0)
-			return;
+		return waterTiles;
+	}
 
-		// Dominio navegable acuático compartido por todos los peces: define en qué
-		// volumen pueden moverse (columnas de agua entre fondo+margen y superficie−margen).
-		var domain = new AquaticDomain(heightMap, width, height, TileSize, seaY, FloorMargin, SurfaceMargin);
-
+	/// <summary>
+	/// Elige FishCount tiles de agua al azar y coloca un pez en cada uno, inyectando
+	/// el dominio navegable compartido y el cerebro de Utility AI (pasear/huir).
+	/// </summary>
+	private void SpawnFish(float[,] heightMap, float seaY, List<Vector2I> waterTiles, AquaticDomain domain)
+	{
 		int count = Mathf.Min(FishCount, waterTiles.Count);
 		for (int i = 0; i < count; i++)
 		{
 			Vector2I tile = waterTiles[GD.RandRange(0, waterTiles.Count - 1)];
-			// Punto de spawn en el centro del tile, a media columna, ajustado al volumen.
 			Vector3 pos = domain.ClampToValid(new Vector3(
 				tile.X * TileSize + TileSize / 2f,
 				(seaY + GetTileHeight(heightMap, tile.X, tile.Y)) / 2f,
@@ -88,7 +133,6 @@ public partial class AnimalSystem : Node3D
 			Fish fish = Fish.Create(pos, modelPath);
 			fish.Domain = domain;
 			fish.Locomotion.MaxSpeed = MaxSpeed;
-			// Cerebro de Utility: elige entre pasear y huir de la cámara según el score.
 			fish.Behavior = new UtilityBrain(new IAnimalBehavior[]
 			{
 				new WanderBehavior { WanderRadius = WanderRadius },

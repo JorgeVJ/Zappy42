@@ -1,18 +1,31 @@
 using Godot;
 
-// Pez decorativo móvil. Hereda de Animal (dominio + locomoción + comportamiento) y
-// añade la animación procedural de los huesos "Body" y "Tail" (los modelos no traen
-// clips). Genérico: sirve para cualquier .glb de pez con ese rig; la malla concreta
-// se pasa como ruta al factory. Autocontenido: no referencia tipos del proyecto.
+/// <summary>
+/// Pez decorativo móvil. Hereda de Animal (dominio + locomoción + comportamiento) y
+/// añade la animación procedural de los huesos "Body" y "Tail" (los modelos no traen
+/// clips). Genérico: sirve para cualquier .glb de pez con ese rig; la malla concreta
+/// se pasa como ruta al factory.
+/// </summary>
+/// <remarks>
+/// Autocontenido: no referencia tipos del proyecto.
+/// </remarks>
 public partial class Fish : Animal
 {
-	[Export] public float TailFrequency = 3.5f;
-	[Export] public float TailAmplitudeDegrees = 25f;
-	[Export] public float BodyFrequency = 3.5f;
-	[Export] public float BodyAmplitudeDegrees = 8f;
+	[Export]
+	public float TailFrequency = 3.5f;
 
-	// Cuánto acelera el aleteo de la cola con la velocidad de nado (0 = constante).
-	[Export] public float SpeedTailBoost = 1.2f;
+	[Export]
+	public float TailAmplitudeDegrees = 25f;
+
+	[Export]
+	public float BodyFrequency = 3.5f;
+
+	[Export]
+	public float BodyAmplitudeDegrees = 8f;
+
+	/// <summary>Cuánto acelera el aleteo de la cola con la velocidad de nado (0 = constante).</summary>
+	[Export]
+	public float SpeedTailBoost = 1.2f;
 
 	private string _modelPath;
 
@@ -25,37 +38,45 @@ public partial class Fish : Animal
 
 	public static Fish Create(Vector3 pos, string modelPath)
 	{
-		var fish = new Fish { Position = pos, _modelPath = modelPath };
+		Fish fish = new Fish { Position = pos, _modelPath = modelPath };
 		return fish;
 	}
 
 	public override void _Ready()
 	{
 		_phase = GD.Randf() * Mathf.Tau;
-
-		if (!string.IsNullOrEmpty(_modelPath))
-		{
-			var packed = ResourceLoader.Load<PackedScene>(_modelPath);
-			if (packed != null)
-			{
-				var model = packed.Instantiate<Node3D>();
-				AddChild(model);
-
-				_skeleton = FindSkeleton(model);
-				if (_skeleton != null)
-				{
-					_bodyBone = _skeleton.FindBone("Body");
-					_tailBone = _skeleton.FindBone("Tail");
-
-					if (_bodyBone >= 0)
-						_bodyRest = _skeleton.GetBoneRest(_bodyBone);
-					if (_tailBone >= 0)
-						_tailRest = _skeleton.GetBoneRest(_tailBone);
-				}
-			}
-		}
-
+		LoadModelAndSkeleton();
 		base._Ready();
+	}
+
+	/// <summary>
+	/// Instancia el modelo del pez desde <see cref="_modelPath"/> (si hay uno) y
+	/// resuelve el esqueleto y los huesos "Body"/"Tail" que anima OnLocomotionUpdate,
+	/// guardando su pose de reposo.
+	/// </summary>
+	private void LoadModelAndSkeleton()
+	{
+		if (string.IsNullOrEmpty(_modelPath))
+			return;
+
+		PackedScene packed = ResourceLoader.Load<PackedScene>(_modelPath);
+		if (packed == null)
+			return;
+
+		Node3D model = packed.Instantiate<Node3D>();
+		AddChild(model);
+
+		_skeleton = FindSkeleton(model);
+		if (_skeleton == null)
+			return;
+
+		_bodyBone = _skeleton.FindBone("Body");
+		_tailBone = _skeleton.FindBone("Tail");
+
+		if (_bodyBone >= 0)
+			_bodyRest = _skeleton.GetBoneRest(_bodyBone);
+		if (_tailBone >= 0)
+			_tailRest = _skeleton.GetBoneRest(_tailBone);
 	}
 
 	private static Skeleton3D FindSkeleton(Node node)
@@ -65,7 +86,7 @@ public partial class Fish : Animal
 
 		foreach (Node child in node.GetChildren())
 		{
-			var found = FindSkeleton(child);
+			Skeleton3D found = FindSkeleton(child);
 			if (found != null)
 				return found;
 		}
@@ -73,9 +94,10 @@ public partial class Fish : Animal
 		return null;
 	}
 
-	// Animación de huesos, modulada por la velocidad de nado: la cola bate más rápido
-	// y con más amplitud al crucero, y suave al estar casi parado (anticipa el objetivo
-	// de "animaciones que cambian según el estado").
+	/// <summary>
+	/// Animación de huesos, modulada por la velocidad de nado: la cola bate más rápido
+	/// y con más amplitud al crucero, y suave al estar casi parado.
+	/// </summary>
 	protected override void OnLocomotionUpdate(float speed)
 	{
 		if (_skeleton == null)
@@ -85,22 +107,33 @@ public partial class Fish : Animal
 		float speedFactor = Mathf.Clamp(speed / maxSpeed, 0f, 1f);
 
 		float freqMul = 1f + SpeedTailBoost * speedFactor;
-		float ampMul = 0.5f + 0.5f * speedFactor; // 50% en reposo → 100% nadando
+		float ampMul = 0.5f + 0.5f * speedFactor;
 
 		_phase += (float)GetProcessDeltaTime() * freqMul;
 
-		if (_tailBone >= 0)
-		{
-			float angle = Mathf.DegToRad(TailAmplitudeDegrees) * ampMul * Mathf.Sin(_phase * TailFrequency);
-			Transform3D pose = _tailRest with { Basis = _tailRest.Basis * Basis.FromEuler(new Vector3(angle, 0f, 0f)) };
-			_skeleton.SetBonePoseRotation(_tailBone, pose.Basis.GetRotationQuaternion());
-		}
+		AnimateTail(ampMul);
+		AnimateBody(ampMul);
+	}
 
-		if (_bodyBone >= 0)
-		{
-			float angle = Mathf.DegToRad(BodyAmplitudeDegrees) * ampMul * Mathf.Sin(_phase * BodyFrequency + Mathf.Pi);
-			Transform3D pose = _bodyRest with { Basis = _bodyRest.Basis * Basis.FromEuler(new Vector3(angle, 0f, 0f)) };
-			_skeleton.SetBonePoseRotation(_bodyBone, pose.Basis.GetRotationQuaternion());
-		}
+	/// <summary>Aplica la rotación sinusoidal del aleteo de cola sobre su pose de reposo.</summary>
+	private void AnimateTail(float ampMul)
+	{
+		if (_tailBone < 0)
+			return;
+
+		float angle = Mathf.DegToRad(TailAmplitudeDegrees) * ampMul * Mathf.Sin(_phase * TailFrequency);
+		Transform3D pose = _tailRest with { Basis = _tailRest.Basis * Basis.FromEuler(new Vector3(angle, 0f, 0f)) };
+		_skeleton.SetBonePoseRotation(_tailBone, pose.Basis.GetRotationQuaternion());
+	}
+
+	/// <summary>Aplica la rotación sinusoidal (en contrafase) del balanceo de cuerpo sobre su pose de reposo.</summary>
+	private void AnimateBody(float ampMul)
+	{
+		if (_bodyBone < 0)
+			return;
+
+		float angle = Mathf.DegToRad(BodyAmplitudeDegrees) * ampMul * Mathf.Sin(_phase * BodyFrequency + Mathf.Pi);
+		Transform3D pose = _bodyRest with { Basis = _bodyRest.Basis * Basis.FromEuler(new Vector3(angle, 0f, 0f)) };
+		_skeleton.SetBonePoseRotation(_bodyBone, pose.Basis.GetRotationQuaternion());
 	}
 }

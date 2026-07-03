@@ -16,6 +16,7 @@ cabeza.
 | `core/EquipmentChild.cs` | Struct: `(ScenePath, Offsets?, GlowEffect?)` — modelo GLB hijo de otra pieza (ej. gema en bastón) | Genérico |
 | `core/OrbitingPivot.cs` | `Node3D` que rota sobre su eje Y a velocidad constante | Genérico |
 | `core/OrbSpec.cs` | Struct: `(Offsets, Color, GlowEffect)` — una orbe procedural alrededor de un `OrbitingPivot` | Genérico |
+| `core/OrbitingSlot.cs` | Struct: `(BoneName, PivotOffsets, RotationSpeedDeg, Orbs)` — parámetros de `AttachOrbitingGroup` | Genérico |
 | `core/GlowOrb.cs` | `MeshInstance3D`: esfera procedural translúcida + rim + `GlowEffect` (sin GLB) | Genérico |
 | `core/GlowEffect.cs` | Struct: `(Color, EnergyMultiplier)` — aplica emisión a los materiales de un `Node3D` | Genérico |
 | `core/Offsets.cs` | Struct: `(Position, RotationDeg, Scale)` para cualquier attachment | Genérico |
@@ -35,12 +36,18 @@ nuevo esqueleto.
 2. `ApplyEquipment()`:
    ```csharp
    equipmentManager.ApplyLoadout(modelNode, ShamanEquipmentConfig.GetLoadout(Level));
-   equipmentManager.AttachOrbitingGroup(modelNode, "Head", ShamanEquipmentConfig.OrbitPivotOffsets, ShamanEquipmentConfig.OrbitRotationSpeedDeg, ShamanEquipmentConfig.GetOrbitingGems(Level));
+
+   OrbitingSlot orbitingSlot = new(
+       "Head",
+       ShamanEquipmentConfig.OrbitPivotOffsets,
+       ShamanEquipmentConfig.OrbitRotationSpeedDeg,
+       ShamanEquipmentConfig.GetOrbitingGems(Level));
+   equipmentManager.AttachOrbitingGroup(modelNode, orbitingSlot);
    ```
 3. `ApplyLoadout(owner, slots)`:
    - `ClearAll()` — libera **todos** los `BoneAttachment3D` registrados (piezas normales + grupo orbital).
-   - Para cada `EquipmentSlot`, llama a `AttachToBone(owner, slot.BoneName, slot.ScenePath, slot.Offsets, slot.Children)`.
-4. `AttachToBone(...)`:
+   - Para cada `EquipmentSlot`, llama a `AttachToBone(owner, slot)`.
+4. `AttachToBone(owner, slot)`:
    - Busca el `Skeleton3D` con `FindSkeleton3D` (recursivo).
    - Verifica que el hueso existe (`skeleton.FindBone(boneName) != -1`); si no, loguea y no rompe la escena.
    - Instancia la escena GLB (`ResolveScene`, con caché), la añade como `BoneAttachment3D.AddChild`, resetea `Transform` y aplica `Offsets` (posición/rotación en grados→rad/escala).
@@ -49,10 +56,10 @@ nuevo esqueleto.
 5. `AttachChild(parent, child)`:
    - Instancia `child.ScenePath`, lo añade como hijo normal de `parent`, aplica `child.Offsets` (relativos al espacio local del padre, no al hueso).
    - Si `child.Glow` no es null, llama a `child.Glow.Value.ApplyTo(childInst)` (ver sección Glow más abajo).
-6. `AttachOrbitingGroup(owner, boneName, pivotOffsets, rotationSpeedDeg, orbs)`:
+6. `AttachOrbitingGroup(owner, slot)` (con `slot: OrbitingSlot`):
    - Igual que `AttachToBone` pero crea un `OrbitingPivot` (rota sobre Y) en vez de instanciar una escena.
-   - Para cada `OrbSpec` en `orbs`, llama a `AttachOrb(pivot, spec)`.
-   - Si `orbs` es `null`/vacío, no adjunta nada (p.ej. niveles 1-3 sin orbes) y devuelve `null`.
+   - Para cada `OrbSpec` en `slot.Orbs`, llama a `AttachOrb(pivot, spec)`.
+   - Si `slot.Orbs` es `null`/vacío, no adjunta nada (p.ej. niveles 1-3 sin orbes) y devuelve `null`.
    - También se registra en `attachments[boneName]`, así que `ApplyLoadout()`/`ClearAll()` también lo limpian en cada cambio de nivel.
 7. `AttachOrb(parent, spec)`:
    - Crea un `GlowOrb { OrbColor = spec.Color, Glow = spec.Glow }`, lo añade como hijo de `parent` (el pivote) y aplica `spec.Offsets`.

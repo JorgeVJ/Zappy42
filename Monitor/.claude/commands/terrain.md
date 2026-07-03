@@ -219,6 +219,27 @@ void fragment() {
 Líneas de grid = bordes donde `fract(coord / tile_size) ≈ 0` o `≈ 1`.  
 **`line_width` controla el grosor:** aumentar para líneas más gruesas; 0.05 es el valor actual.
 
+### Color de arena por altura (orilla/playa)
+
+El suelo base se mezcla de verde a arena amarilla por debajo de una altura world-Y fija:
+
+```glsl
+uniform vec4  sand_color : source_color = vec4(0.851, 0.784, 0.451, 1.0); // arena cálida
+uniform float sand_height = 1.0;   // world-Y por debajo del cual el suelo es arena
+uniform float sand_blend  = 0.6;   // ancho de la transición pasto→arena
+
+// en fragment(), tras varied_ground y antes de aplicar las líneas:
+float sand_factor = 1.0 - smoothstep(sand_height - sand_blend, sand_height, world_pos.y);
+vec3 ground_with_sand = mix(varied_ground, sand_color.rgb, sand_factor);
+vec3 base = mix(ground_with_sand, line_color.rgb, line);  // líneas y highlight van encima
+```
+
+- **`sand_height` es world-Y absoluto**, NO está anclado al nivel del mar (`WaterSystem._seaY`).
+  Con `HeightScale = 6` el terreno va de ~-6 a +6; subir el valor amplía la arena hacia tierras
+  altas, bajarlo la restringe a lo más profundo.
+- Tuneable desde el inspector: `terrain.tscn` tiene `shader_parameter/sand_color|sand_height|sand_blend`.
+  No requiere ningún cambio en C#.
+
 ### Sincronización shader ↔ C#
 - **Runtime:** automática via `mat.SetShaderParameter("tile_size", TILE_SIZE)` en `GenerateTerrainMesh()`
 - **Editor/Default:** `terrain.tscn` línea `shader_parameter/tile_size = 10.0` — actualizar manualmente si cambia TILE_SIZE

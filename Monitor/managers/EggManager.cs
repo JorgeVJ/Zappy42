@@ -6,10 +6,10 @@ public partial class EggManager : EntityManager<Egg>
 
     public Egg CreateEgg(int id, Vector3 pos)
     {
-        if (entities.TryGetValue(id, out var existing))
+        if (entities.TryGetValue(id, out Egg existing))
             return existing;
 
-        var egg = Egg.Create(pos, id);
+        Egg egg = Egg.Create(pos, id);
         return Register(id, egg);
     }
 }

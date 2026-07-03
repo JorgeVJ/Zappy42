@@ -35,25 +35,25 @@ public static class ShamanEquipmentConfig
             _ => Level1
         };
 
-    // -------------------------------------------------------------------------
-    // Shared offsets — reused across levels
-    // -------------------------------------------------------------------------
-
-    // Staff.glb on RightHand. Adapted from the old staff_basic.glb offsets;
-    // re-tune in-editor once Staff.glb is visible on the character.
+    /// <summary>
+    /// Shared offsets, reused across levels. Staff.glb on RightHand: adapted from the old
+    /// staff_basic.glb offsets; re-tune in-editor once Staff.glb is visible on the character.
+    /// </summary>
     private static readonly Offsets StaffOffsets =
         new(new Godot.Vector3(-10.455f, 15.318f, -2.096f), new Godot.Vector3(-41.7f, 104.2f, -104.6f), new Godot.Vector3(50, 80, 50));
 
-    // skull_mask.glb on Head, as used from Level 4 onward.
+    /// <summary>skull_mask.glb on Head, as used from Level 4 onward.</summary>
     private static readonly Offsets SkullMaskOffsets =
         new(new Godot.Vector3(0, 28f, 16f), new Godot.Vector3(-15F, 0.7f, -0.4f), new Godot.Vector3(16, 16, 16));
 
-    // Placeholder identity offsets for the staff gem children — needs visual
-    // tuning in-editor once the gem is visible attached to Staff.glb.
+    /// <summary>
+    /// Placeholder identity offsets for the staff gem children — needs visual tuning
+    /// in-editor once the gem is visible attached to Staff.glb.
+    /// </summary>
     private static readonly Offsets GemOffsets =
         new(new Godot.Vector3(0, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(1, 1, 1));
 
-    // Gem children — each level's "active" gem replaces the previous one (not cumulative).
+    /// <summary>Gem children — each level's "active" gem replaces the previous one (not cumulative).</summary>
     private static readonly List<EquipmentChild> GemLvl1 = new()
     {
         new(Eq + "Staff_Gem_Lvl1.glb", GemOffsets),
@@ -64,7 +64,7 @@ public static class ShamanEquipmentConfig
         new(Eq + "Staff_Gem_Lvl2.glb", GemOffsets),
     };
 
-    // Gem Lvl3 (max level) glows to stand out — tune color/energy in-editor.
+    /// <summary>Gem Lvl3 (max level) glows to stand out — tune color/energy in-editor.</summary>
     private static readonly GlowEffect Gem3Glow = new(new Godot.Color(0.25f, 0.85f, 1f), 2.5f);
 
     private static readonly List<EquipmentChild> GemLvl3 = new()
@@ -72,25 +72,27 @@ public static class ShamanEquipmentConfig
         new(Eq + "Staff_Gem_Lvl3.glb", GemOffsets, Gem3Glow),
     };
 
-    // -------------------------------------------------------------------------
-    // Orbiting gems above the head — replaces the old neck collar (see C10/D6).
-    // A small group of gems spins continuously above the Shaman's head, growing
-    // from 0 (levels 1-3) to 2 (levels 4-5) to 3 (levels 6-7).
-    // -------------------------------------------------------------------------
-
-    // Pivot anchored above the Head bone. Placeholder — needs visual tuning in-editor.
+    /// <summary>
+    /// Orbiting gems above the head. A small group of gems spins continuously above the
+    /// Shaman's head, growing from 0 (levels 1-3) to 2 (levels 4-5) to 3 (levels 6-7).
+    /// Pivot anchored above the Head bone. Placeholder — needs visual tuning in-editor.
+    /// </summary>
     public static readonly Offsets OrbitPivotOffsets =
         new(new Godot.Vector3(0, 80f, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(1, 1, 1));
 
-    // One full rotation every 6 seconds.
+    /// <summary>One full rotation every 6 seconds.</summary>
     public const float OrbitRotationSpeedDeg = 60f;
 
-    // Shared arcane look for every orbiting orb. Placeholder — needs visual
-    // tuning in-editor (color, glow energy).
+    /// <summary>
+    /// Shared arcane look for every orbiting orb. Placeholder — needs visual tuning
+    /// in-editor (color, glow energy).
+    /// </summary>
     private static readonly Godot.Color[] OrbColors = [new(1f, 0.25f, 1f, 0.6f), new(0f, 1f, 1f, 0.6f) , new(0.25f, 0.5f, 1f, 0.6f)];
 
-    // Procedural glowing orbs (GlowOrb). Position (orbit radius/angle) and scale are
-    // placeholders — needs visual tuning in-editor once visible above the head.
+    /// <summary>
+    /// Procedural glowing orbs (GlowOrb). Position (orbit radius/angle) and scale are
+    /// placeholders — needs visual tuning in-editor once visible above the head.
+    /// </summary>
     private static readonly List<OrbSpec> OrbitGems2 = new()
     {
         new(new Offsets(new Godot.Vector3(18, 0, 0), new Godot.Vector3(0, 0, 0), new Godot.Vector3(6, 6, 6)), OrbColors[0], new (OrbColors[0])),
@@ -116,47 +118,43 @@ public static class ShamanEquipmentConfig
             _ => null
         };
 
-    // -------------------------------------------------------------------------
-    // Level definitions — edit here to change what each level wears
-    // -------------------------------------------------------------------------
-
-    // Level 1 — no accessories
+    /// <summary>Level definitions — edit here to change what each level wears. Level 1 — no accessories.</summary>
     private static readonly List<EquipmentSlot> Level1 = new();
 
-    // Level 2 — Staff
+    /// <summary>Level 2 — Staff.</summary>
     private static readonly List<EquipmentSlot> Level2 = new()
     {
         new("RightHand", Eq + "Staff.glb", StaffOffsets),
     };
 
-    // Level 3 — skull mask + Staff with Gem Lvl1
+    /// <summary>Level 3 — skull mask + Staff with Gem Lvl1.</summary>
     private static readonly List<EquipmentSlot> Level3 = new()
     {
         new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl1),
     };
 
-    // Level 4 — skull mask (with offsets) + Staff with Gem Lvl1
+    /// <summary>Level 4 — skull mask (with offsets) + Staff with Gem Lvl1.</summary>
     private static readonly List<EquipmentSlot> Level4 = new()
     {
         new("Head", Eq + "skull_mask.glb", SkullMaskOffsets),
         new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl1),
     };
 
-    // Level 5 — skull mask + Staff with Gem Lvl2 (replaces Lvl1)
+    /// <summary>Level 5 — skull mask + Staff with Gem Lvl2 (replaces Lvl1).</summary>
     private static readonly List<EquipmentSlot> Level5 = new()
     {
         new("Head", Eq + "skull_mask.glb", SkullMaskOffsets),
         new("RightHand", Eq + "Staff.glb", StaffOffsets, GemLvl2),
     };
 
-    // Level 6 — skull mask + Staff with Gem Lvl2
+    /// <summary>Level 6 — skull mask + Staff with Gem Lvl2.</summary>
     private static readonly List<EquipmentSlot> Level6 = new()
     {
         new("Head",     Eq + "skull_mask.glb", SkullMaskOffsets),
         new("RightHand",     Eq + "Staff.glb", StaffOffsets, GemLvl2),
     };
 
-    // Level 7 — skull mask + Staff with Gem Lvl3 (replaces Lvl2, glows — see Gem3Glow)
+    /// <summary>Level 7 — skull mask + Staff with Gem Lvl3 (replaces Lvl2, glows — see Gem3Glow).</summary>
     private static readonly List<EquipmentSlot> Level7 = new()
     {
         new("Head",     Eq + "skull_mask.glb", SkullMaskOffsets),

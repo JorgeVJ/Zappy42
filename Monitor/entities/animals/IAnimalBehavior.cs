@@ -1,17 +1,21 @@
-// Un comportamiento de animal: decide a dónde ir / qué hacer a lo largo del tiempo,
-// actuando sobre la locomoción y la animación del animal. Es la "costura" para el
-// futuro sistema de decisiones de Utility: hoy cada animal corre un único
-// comportamiento (WanderBehavior); mañana un UtilityBrain elegirá entre varios
-// según un Score (volar/posarse/cazar, pasear/saltar/huir/comer, etc.).
+/// <summary>
+/// Un comportamiento de animal: decide a dónde ir / qué hacer a lo largo del tiempo,
+/// actuando sobre la locomoción y la animación del animal. Es la "costura" del
+/// sistema de decisiones de Utility: cada animal corre un único comportamiento activo
+/// (por ejemplo WanderBehavior), y un UtilityBrain elige entre varios candidatos según
+/// su Score.
+/// </summary>
 public interface IAnimalBehavior
 {
-	// Se llama una vez al activar el comportamiento (reinicia su estado interno).
+	/// <summary>Se llama una vez al activar el comportamiento (reinicia su estado interno).</summary>
 	void Enter(Animal animal);
 
-	// Se llama cada frame mientras el comportamiento está activo.
+	/// <summary>Se llama cada frame mientras el comportamiento está activo.</summary>
 	void Tick(Animal animal, double delta);
 
-	// Utilidad actual de este comportamiento: el UtilityBrain elige el de mayor
-	// Score. Mayor = más deseable; ~0 = irrelevante ahora mismo.
+	/// <summary>
+	/// Utilidad actual de este comportamiento: el UtilityBrain elige el de mayor
+	/// Score. Mayor = más deseable; cercano a 0 = irrelevante ahora mismo.
+	/// </summary>
 	float Score(Animal animal);
 }

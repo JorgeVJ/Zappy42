@@ -23,7 +23,7 @@ public partial class SelectableInventoryNode3D : Node3D, ISelectable, IInventory
             return;
         }
 
-        var mat = new StandardMaterial3D();
+        StandardMaterial3D mat = new StandardMaterial3D();
         mat.AlbedoColor = Colors.DarkCyan;
         mesh.MaterialOverlay = mat;
     }

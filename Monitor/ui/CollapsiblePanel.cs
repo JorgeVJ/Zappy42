@@ -21,56 +21,71 @@ public partial class CollapsiblePanel : Control
     /// El botón colapsado se coloca en la bandeja compartida (esquina superior izquierda), no en este panel.</param>
     protected void Setup(string title, Rect2 panelRect, string minimizedIcon = null)
     {
-        // Este nodo llena toda la pantalla pero es transparente al ratón
         SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
 
-        // ── Panel expandido ───────────────────────────────────────────────
-        var panel = new PanelContainer();
+        BuildPanel(title, panelRect);
+        BuildMinimizedButton(title, minimizedIcon);
+    }
+
+    /// <summary>
+    /// Construye el panel expandido (contenedor, margen, cabecera y área de
+    /// contenido). Incluye un ResizeBehavior hijo, equivalente a añadirlo como
+    /// hijo en el editor de escenas pero sin necesidad de fichero .tscn.
+    /// </summary>
+    private void BuildPanel(string title, Rect2 panelRect)
+    {
+        PanelContainer panel = new PanelContainer();
         panel.Position = panelRect.Position;
         panel.Size     = panelRect.Size;
         AddChild(panel);
         _panelRoot = panel;
 
-        // Equivale a añadir ResizeBehavior como hijo en el editor de escenas —
-        // misma jerarquía en runtime, sin necesidad de fichero .tscn.
         panel.AddChild(new ResizeBehavior());
 
-        var margin = new MarginContainer();
+        MarginContainer margin = new MarginContainer();
         margin.AddThemeConstantOverride("margin_left",   8);
         margin.AddThemeConstantOverride("margin_right",  8);
         margin.AddThemeConstantOverride("margin_top",    6);
         margin.AddThemeConstantOverride("margin_bottom", 6);
         panel.AddChild(margin);
 
-        var mainVBox = new VBoxContainer();
+        VBoxContainer mainVBox = new VBoxContainer();
         margin.AddChild(mainVBox);
 
-        // Cabecera: título (izquierda) + botón ✕ (derecha)
-        var header = new HBoxContainer();
+        BuildHeader(mainVBox, title);
+        mainVBox.AddChild(new HSeparator());
+
+        Content = new VBoxContainer();
+        Content.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        mainVBox.AddChild(Content);
+    }
+
+    /// <summary>Cabecera del panel: título (izquierda) + botón ✕ (derecha).</summary>
+    private void BuildHeader(VBoxContainer mainVBox, string title)
+    {
+        HBoxContainer header = new HBoxContainer();
         mainVBox.AddChild(header);
 
-        var titleLbl = new Label();
+        Label titleLbl = new Label();
         titleLbl.Text                = title;
         titleLbl.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         header.AddChild(titleLbl);
 
-        var closeBtn = new Button();
+        Button closeBtn = new Button();
         IconButton.Apply(closeBtn, "close", "Cerrar");
         closeBtn.Pressed += Collapse;
         header.AddChild(closeBtn);
+    }
 
-        mainVBox.AddChild(new HSeparator());
-
-        // Área de contenido
-        Content = new VBoxContainer();
-        Content.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        mainVBox.AddChild(Content);
-
-        // ── Botón minimizado ──────────────────────────────────────────────
-        // Vive en la bandeja compartida (HBoxContainer): el contenedor ignora a
-        // los hijos ocultos, así que solo los paneles colapsados muestran su
-        // botón y todos quedan pegados a la izquierda, sin solaparse.
+    /// <summary>
+    /// Botón minimizado: vive en la bandeja compartida (HBoxContainer). El
+    /// contenedor ignora a los hijos ocultos, así que solo los paneles
+    /// colapsados muestran su botón y todos quedan pegados a la izquierda,
+    /// sin solaparse.
+    /// </summary>
+    private void BuildMinimizedButton(string title, string minimizedIcon)
+    {
         _minimizedBtn = new Button();
         if (minimizedIcon != null)
             IconButton.Apply(_minimizedBtn, minimizedIcon, title);
@@ -81,11 +96,22 @@ public partial class CollapsiblePanel : Control
         GetTray().AddChild(_minimizedBtn);
     }
 
-    // Bandeja compartida por todos los CollapsiblePanel para sus botones
-    // colapsados (esquina superior izquierda). Creada de forma perezosa la
-    // primera vez que un panel hace Setup().
+    /// <summary>
+    /// Bandeja compartida por todos los CollapsiblePanel para sus botones
+    /// colapsados (esquina superior izquierda). Creada de forma perezosa la
+    /// primera vez que un panel hace Setup().
+    /// </summary>
     private static HBoxContainer _minimizedTray;
 
+    /// <summary>
+    /// Obtiene (creando de forma perezosa si hace falta) la bandeja compartida.
+    /// Se cuelga del root para renderizar por encima del 3D (igual que los
+    /// paneles) y quedar por debajo del overlay de ganador (CanvasLayer 10).
+    /// El AddChild se difiere porque este método se llama desde Setup() en
+    /// _Ready, momento en que el root está "ocupado montando hijos" y un
+    /// AddChild directo falla silenciosamente (la bandeja no entraría al árbol
+    /// y los botones colapsados no se verían); CallDeferred lo añade ya libre.
+    /// </summary>
     private HBoxContainer GetTray()
     {
         if (_minimizedTray == null || !IsInstanceValid(_minimizedTray))
@@ -94,12 +120,6 @@ public partial class CollapsiblePanel : Control
             _minimizedTray.AddThemeConstantOverride("separation", 8);
             _minimizedTray.SetAnchorsAndOffsetsPreset(
                 Control.LayoutPreset.TopLeft, Control.LayoutPresetMode.Minsize, 10);
-            // Se cuelga del root para renderizar por encima del 3D (igual que los
-            // paneles) y quedar por debajo del overlay de ganador (CanvasLayer 10).
-            // El AddChild se DIFIERE: GetTray() se llama desde Setup() en _Ready,
-            // momento en que el root está "ocupado montando hijos" y un AddChild
-            // directo falla silenciosamente (la bandeja no entraría al árbol y los
-            // botones colapsados no se verían). call_deferred lo añade ya libre.
             GetTree().Root.CallDeferred(Node.MethodName.AddChild, _minimizedTray);
         }
         return _minimizedTray;

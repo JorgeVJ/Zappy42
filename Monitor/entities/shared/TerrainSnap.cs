@@ -17,16 +17,15 @@ public static class TerrainSnap
         );
     }
 
-    // Bilinear interpolation para posiciones mundo arbitrarias (e.g. grass)
-    public static float SampleHeight(float[,] heightMap, float worldX, float worldZ,
-                                     float tileSize, int mapWidth, int mapHeight)
+    /// <summary>Bilinear interpolation para posiciones mundo arbitrarias (p. ej. grass).</summary>
+    public static float SampleHeight(float[,] heightMap, float worldX, float worldZ, HeightMapGrid grid)
     {
-        float tx = worldX / tileSize;
-        float tz = worldZ / tileSize;
-        int x0 = Mathf.Clamp(Mathf.FloorToInt(tx), 0, mapWidth);
-        int z0 = Mathf.Clamp(Mathf.FloorToInt(tz), 0, mapHeight);
-        int x1 = Mathf.Min(x0 + 1, mapWidth);
-        int z1 = Mathf.Min(z0 + 1, mapHeight);
+        float tx = worldX / grid.TileSize;
+        float tz = worldZ / grid.TileSize;
+        int x0 = Mathf.Clamp(Mathf.FloorToInt(tx), 0, grid.Width);
+        int z0 = Mathf.Clamp(Mathf.FloorToInt(tz), 0, grid.Height);
+        int x1 = Mathf.Min(x0 + 1, grid.Width);
+        int z1 = Mathf.Min(z0 + 1, grid.Height);
         float fx = tx - x0;
         float fz = tz - z0;
 

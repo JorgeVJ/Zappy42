@@ -1,23 +1,32 @@
 using Godot;
 
-// UI de la barra de tiempo: HSlider + label de franja + botón de "Live" +
-// botón de Play/Pause. Consume la API de TimelineController (CursorBandIndex,
-// Log.Bands.Count, IsLive, IsPlaying, JumpTo, GoLive, Play, Pause, Tick) — ver
-// network/TimelineController.cs. Cableado por Connection en _Ready() vía
-// Setup().
+/// <summary>
+/// UI de la barra de tiempo: HSlider + label de franja + botón de "Live" +
+/// botón de Play/Pause.
+/// </summary>
+/// <remarks>
+/// Consume la API de TimelineController (CursorBandIndex, Log.Bands.Count,
+/// IsLive, IsPlaying, JumpTo, GoLive, Play, Pause, Tick) — ver
+/// network/TimelineController.cs. Cableado por Connection en _Ready() vía
+/// Setup().
+/// </remarks>
 public partial class TimelineBar : Control
 {
-    [Export] private HSlider _slider;
-    [Export] private Label _statusLabel;
-    [Export] private Button _liveButton;
-    [Export] private Button _playPauseButton;
+    [Export]
+    private HSlider _slider;
+    [Export]
+    private Label _statusLabel;
+    [Export]
+    private Button _liveButton;
+    [Export]
+    private Button _playPauseButton;
 
     private TimelineController _timeline;
 
-    // Mientras el usuario arrastra el slider, _Process no debe pisar su valor.
+    /// <summary>Mientras el usuario arrastra el slider, _Process no debe pisar su valor.</summary>
     private bool _dragging = false;
 
-    // Iconos del botón Play/Pause, cacheados para no recargarlos por frame.
+    /// <summary>Iconos del botón Play/Pause, cacheados para no recargarlos por frame.</summary>
     private Texture2D _playIcon;
     private Texture2D _pauseIcon;
 
@@ -33,7 +42,6 @@ public partial class TimelineBar : Control
         _liveButton.Pressed += () => _timeline?.GoLive();
         _playPauseButton.Pressed += OnPlayPausePressed;
 
-        // Estilo uniforme de icono (ver ui/IconButton.cs).
         IconButton.Apply(_liveButton, "live", "Live");
         IconButton.Style(_playPauseButton);
         _playPauseButton.TooltipText = "Play/Pause";
@@ -63,16 +71,20 @@ public partial class TimelineBar : Control
         _playPauseButton.Disabled = _timeline.IsLive || _timeline.CursorBandIndex >= maxBand;
     }
 
-    // Al empezar a arrastrar el slider, pausar el modo Play (igual que ya
-    // ocurre con Live al saltar de franja vía JumpTo).
+    /// <summary>
+    /// Al empezar a arrastrar el slider, pausar el modo Play (igual que ya
+    /// ocurre con Live al saltar de franja vía JumpTo).
+    /// </summary>
     private void OnDragStarted()
     {
         _dragging = true;
         _timeline?.Pause();
     }
 
-    // Al soltar el slider, saltar a la franja elegida (reset + replay
-    // instantáneo vía TimelineController.JumpTo).
+    /// <summary>
+    /// Al soltar el slider, saltar a la franja elegida (reset + replay
+    /// instantáneo vía TimelineController.JumpTo).
+    /// </summary>
     private void OnDragEnded(bool valueChanged)
     {
         _dragging = false;
@@ -80,7 +92,7 @@ public partial class TimelineBar : Control
             _timeline.JumpTo((int)_slider.Value);
     }
 
-    // Alterna entre reproducir (avanzar franjas con el tiempo) y pausar.
+    /// <summary>Alterna entre reproducir (avanzar franjas con el tiempo) y pausar.</summary>
     private void OnPlayPausePressed()
     {
         if (_timeline == null)
