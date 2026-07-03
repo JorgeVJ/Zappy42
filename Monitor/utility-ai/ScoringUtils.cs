@@ -1,9 +1,9 @@
 using Godot;
 
 /// <summary>
-/// Curvas de respuesta para el Utility AI de los animales: convierten magnitudes
-/// crudas (distancias, conteos) en features normalizadas que los comportamientos
-/// combinan con pesos para producir su Score.
+/// Curvas de respuesta para el Utility AI: convierten magnitudes crudas (distancias,
+/// conteos) en features normalizadas que los comportamientos combinan con pesos para
+/// producir su Score.
 /// </summary>
 /// <remarks>
 /// Solo usa math de Godot, por lo que es autocontenido y portable.

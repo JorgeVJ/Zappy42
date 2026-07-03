@@ -1,10 +1,10 @@
 /// <summary>
 /// Cerebro de Utility AI: elige, entre varios comportamientos candidatos, el de mayor
 /// Score y lo ejecuta; reevalúa periódicamente y conmuta cuando otro pasa a ser más
-/// deseable. Es a su vez un IAnimalBehavior (patrón compuesto), de modo que Animal
+/// deseable. Es a su vez un IUtilityBehavior (patrón compuesto), de modo que el agente
 /// sigue corriendo un único Behavior sin cambios en su bucle.
 /// </summary>
-public class UtilityBrain : IAnimalBehavior
+public class UtilityBrain<TAgent> : IUtilityBehavior<TAgent>
 {
 	/// <summary>Cada cuántos segundos se reevalúan los scores. Entre evaluaciones corre el activo.</summary>
 	public float EvalInterval = 0.5f;
@@ -15,65 +15,65 @@ public class UtilityBrain : IAnimalBehavior
 	/// </summary>
 	public float SwitchMargin = 0.15f;
 
-	private readonly IAnimalBehavior[] _behaviors;
-	private IAnimalBehavior _active;
+	private readonly IUtilityBehavior<TAgent>[] _behaviors;
+	private IUtilityBehavior<TAgent> _active;
 	private float _evalTimer;
 
-	public IAnimalBehavior Active => _active;
+	public IUtilityBehavior<TAgent> Active => _active;
 
-	public UtilityBrain(IAnimalBehavior[] behaviors)
+	public UtilityBrain(IUtilityBehavior<TAgent>[] behaviors)
 	{
 		_behaviors = behaviors;
 	}
 
-	public void Enter(Animal animal)
+	public void Enter(TAgent agent)
 	{
 		_evalTimer = 0f;
-		_active = BestBehavior(animal, out _);
-		_active?.Enter(animal);
+		_active = BestBehavior(agent, out _);
+		_active?.Enter(agent);
 	}
 
-	public void Tick(Animal animal, double delta)
+	public void Tick(TAgent agent, double delta)
 	{
 		_evalTimer -= (float)delta;
 		if (_evalTimer <= 0f)
 		{
 			_evalTimer = EvalInterval;
-			Reevaluate(animal);
+			Reevaluate(agent);
 		}
 
-		_active?.Tick(animal, delta);
+		_active?.Tick(agent, delta);
 	}
 
 	/// <summary>El cerebro vale lo que su mejor opción (permite anidar cerebros sin romper nada).</summary>
-	public float Score(Animal animal)
+	public float Score(TAgent agent)
 	{
-		BestBehavior(animal, out float best);
+		BestBehavior(agent, out float best);
 		return best;
 	}
 
-	private void Reevaluate(Animal animal)
+	private void Reevaluate(TAgent agent)
 	{
-		IAnimalBehavior best = BestBehavior(animal, out float bestScore);
+		IUtilityBehavior<TAgent> best = BestBehavior(agent, out float bestScore);
 		if (best == null || best == _active)
 			return;
 
-		float activeScore = _active?.Score(animal) ?? float.NegativeInfinity;
+		float activeScore = _active?.Score(agent) ?? float.NegativeInfinity;
 		if (bestScore > activeScore + SwitchMargin)
 		{
 			_active = best;
-			_active.Enter(animal);
+			_active.Enter(agent);
 		}
 	}
 
-	private IAnimalBehavior BestBehavior(Animal animal, out float bestScore)
+	private IUtilityBehavior<TAgent> BestBehavior(TAgent agent, out float bestScore)
 	{
-		IAnimalBehavior best = null;
+		IUtilityBehavior<TAgent> best = null;
 		bestScore = float.NegativeInfinity;
 
-		foreach (IAnimalBehavior b in _behaviors)
+		foreach (IUtilityBehavior<TAgent> b in _behaviors)
 		{
-			float s = b.Score(animal);
+			float s = b.Score(agent);
 			if (s > bestScore)
 			{
 				bestScore = s;

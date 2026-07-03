@@ -101,6 +101,10 @@ Monitor/
 │   ├── PlacementFinder.cs   # Helper estático: offset/posición libre dentro de una región evitando obstáculos circulares (XZ + radio)
 │   ├── PlacementQuery.cs    # Struct: parámetros de una búsqueda de PlacementFinder
 │   └── Obstacle.cs          # Struct: obstáculo circular (posición XZ + radio) para PlacementFinder
+├── utility-ai/              # Módulo portable (C# puro, copiable a otro proyecto): framework de Utility AI genérico
+│   ├── IUtilityBehavior.cs  # Interfaz genérica <TAgent>: Enter/Tick/Score. No referencia ningún tipo del proyecto
+│   ├── UtilityBrain.cs      # IUtilityBehavior<TAgent> compuesto: elige el candidato de mayor Score con histéresis (SwitchMargin)
+│   └── ScoringUtils.cs      # Curvas de respuesta (Normalize, Proximity, Falloff) para construir scores
 ├── game.tscn
 ├── player.tscn
 ├── terrain.tscn

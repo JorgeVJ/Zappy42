@@ -9,7 +9,7 @@ using Godot;
 /// Consulta la cámara con API de Godot (GetViewport().GetCamera3D()), no con tipos
 /// del proyecto, para mantener la portabilidad del sistema de animales.
 /// </remarks>
-public class FleeBehavior : IAnimalBehavior
+public class FleeBehavior : IUtilityBehavior<Animal>
 {
 	/// <summary>A esta distancia (o menos) de la cámara, huida máxima.</summary>
 	public float FleeInner = 1f;
@@ -34,18 +34,12 @@ public class FleeBehavior : IAnimalBehavior
 		if (cam == null)
 			return 0f;
 		float dist = animal.GlobalPosition.DistanceTo(cam.GlobalPosition);
-		GD.Print("ScoreIn");
-		GD.Print(dist);
-		GD.Print(FleeInner);
-		GD.Print(FleeOuter);
-		GD.Print("ScoreOut");
 		float closeness = ScoringUtils.Falloff(dist, FleeInner, FleeOuter);
 		return FleeWeight * closeness;
 	}
 
 	public void Enter(Animal animal)
 	{
-		GD.Print("FleeBehavior Enter");
 		PickFleeTarget(animal);
 	}
 

@@ -8,8 +8,9 @@ Skill de referencia para el sistema de fauna decorativa del Zappy Monitor (actua
 
 Este sistema se diseñó deliberadamente **independiente del resto del proyecto**, para poder copiarlo/pegarlo a otro proyecto Godot con heightmap, o eliminarlo por completo sin dejar rastro. Reglas que mantienen esa independencia:
 
-- **Ningún** archivo de `entities/animals/` (`AnimalSystem.cs`, `Animal.cs`, `Fish.cs`, locomoción, comportamientos) referencia `Terrain`, `Connection`, `TerrainSnap`, `CrowdSystem`, `EntityManager` ni ningún otro tipo específico de este proyecto. Solo usan tipos de Godot (`Node3D`, `Skeleton3D`, etc.), primitivas (`float[,] heightMap, int width, int height`) y las interfaces/dominios de `spatial/` (ver más abajo).
+- **Ningún** archivo de `entities/animals/` (`AnimalSystem.cs`, `Animal.cs`, `Fish.cs`, locomoción, comportamientos) referencia `Terrain`, `Connection`, `TerrainSnap`, `CrowdSystem`, `EntityManager` ni ningún otro tipo específico de este proyecto. Solo usan tipos de Godot (`Node3D`, `Skeleton3D`, etc.), primitivas (`float[,] heightMap, int width, int height`) y las interfaces/dominios de `spatial/` y `utility-ai/` (ver más abajo).
 - `entities/animals/` depende de la carpeta hermana `spatial/` para saber **dónde puede moverse un animal** (`IAnimalDomain`, `AquaticDomain`). `spatial/` es a su vez 100% Godot-only y no depende de nada de `entities/animals/` ni del resto del proyecto — también la consume `entities/terrain/` (p. ej. `TerrainDomain` para restringir dónde nace la vegetación), así que la dependencia siempre va de los sistemas concretos hacia `spatial/`, nunca al revés.
+- `entities/animals/` también depende de la carpeta hermana `utility-ai/` para el framework de decisiones (`IUtilityBehavior<TAgent>`, `UtilityBrain<TAgent>`, `ScoringUtils`). `utility-ai/` es C# puro, no referencia `Animal` ni ningún tipo del proyecto — está parametrizada con un genérico `TAgent`, así que sirve igual para animales que para cualquier otro tipo de agente (humanos, objetos animados) en este u otro proyecto.
 - No usa `PlacementFinder` (evita solapes entre decoraciones en tierra; no aplica a peces en agua) ni `EntityManager<T>` (eso es para entidades con ID de servidor — altas/bajas dinámicas; los peces se generan una sola vez junto con el terreno y no tienen ID). `PlacementFinder` vive en `spatial/` junto a los dominios (misma carpeta portable), pero es una utilidad independiente que `entities/animals/` no consume.
 - No depende de `Connection.ReplayInstant` ni de ningún global estático del proyecto.
 
@@ -24,11 +25,11 @@ El sistema está organizado en **capas** (pensadas para crecer a animales terres
 | `spatial/IAnimalDomain.cs` | Dominio | Interfaz "**dónde puede moverse** un animal": extiende `ISpatialDomain` y añade `ClampToValid`, `SampleWanderTarget`. El eje del diseño. |
 | `spatial/AquaticDomain.cs` | Dominio | Implementación acuática: volumen de agua entre el fondo (+margen) y la superficie del mar (−margen), construido desde el heightmap. Usa los structs `spatial/HeightMapGrid.cs` y `spatial/NavigableMargins.cs`. |
 | `entities/animals/AnimalLocomotion.cs` | Locomoción | Steering procedural genérico (estilo `CrowdSystem`): mueve un `Node3D` hacia un objetivo con aceleración/frenado suaves y giro gradual hacia el rumbo. |
-| `entities/animals/IAnimalBehavior.cs` | Comportamiento | Interfaz de comportamiento (`Enter`/`Tick`/`Score`). `Score` es la utilidad para el cerebro. |
-| `entities/animals/WanderBehavior.cs` | Comportamiento | Pasear: elige destinos del dominio con pausas. `Score` = baseline constante (estado por defecto). |
-| `entities/animals/FleeBehavior.cs` | Comportamiento | Huir de la cámara: `Score` sube al acercarse la cámara; al activarse, acelera el nado y elige destinos alejándose. |
-| `entities/animals/ScoringUtils.cs` | Utility AI | Curvas de respuesta (`Normalize`, `Proximity`, `Falloff`) para construir scores. Espejo del proyecto de referencia. |
-| `entities/animals/UtilityBrain.cs` | Utility AI | `IAnimalBehavior` compuesto: puntúa los comportamientos candidatos y ejecuta el de mayor `Score`, reevaluando con histéresis. |
+| `utility-ai/IUtilityBehavior.cs` | Comportamiento | Interfaz genérica `IUtilityBehavior<TAgent>` (`Enter`/`Tick`/`Score`). `Score` es la utilidad para el cerebro. Portable: no referencia `Animal` ni ningún tipo del proyecto. |
+| `entities/animals/WanderBehavior.cs` | Comportamiento | Pasear: `IUtilityBehavior<Animal>` que elige destinos del dominio con pausas. `Score` = baseline constante (estado por defecto). |
+| `entities/animals/FleeBehavior.cs` | Comportamiento | Huir de la cámara: `IUtilityBehavior<Animal>` cuyo `Score` sube al acercarse la cámara; al activarse, acelera el nado y elige destinos alejándose. |
+| `utility-ai/ScoringUtils.cs` | Utility AI | Curvas de respuesta (`Normalize`, `Proximity`, `Falloff`) para construir scores. Portable, espejo del proyecto de referencia. |
+| `utility-ai/UtilityBrain.cs` | Utility AI | `UtilityBrain<TAgent> : IUtilityBehavior<TAgent>` compuesto: puntúa los comportamientos candidatos y ejecuta el de mayor `Score`, reevaluando con histéresis. Animal lo usa instanciado como `UtilityBrain<Animal>`. |
 | `entities/animals/Animal.cs` | Entidad base | `Node3D` genérico que reúne dominio + locomoción + comportamiento (el cerebro) y los ejecuta cada frame; hook `OnLocomotionUpdate(speed)` para animación. |
 | `entities/animals/Fish.cs` | Entidad | `Fish : Animal`. Carga el `.glb` (ruta como parámetro), anima los huesos `Body`/`Tail` por código y modula el aleteo con la velocidad. Sirve para cualquier especie con ese rig. |
 | `entities/animals/ClownFish.glb`, `entities/animals/SurgeonFish.glb` | Asset | Modelos con 2 huesos `Body`/`Tail`, sin animaciones. Mismo rig → intercambiables por la misma clase `Fish`. |
@@ -54,9 +55,9 @@ _animalSystem?.Generate(heightMap, Width, Height);
 script = ExtResource("...AnimalSystem.cs")
 ```
 
-**Para portar el sistema a otro proyecto:** copiar las carpetas `entities/animals/` **y** `spatial/` (esta última aporta `IAnimalDomain`/`AquaticDomain`, sin los cuales `entities/animals/` no compila) y añadir una llamada a `animalSystem.Generate(heightMap, width, height)` en cualquier punto donde ese proyecto tenga un `float[,] heightMap` con su ancho/alto — no requiere más que eso. Si el proyecto destino ya tiene su propia copia de `spatial/` (p. ej. porque también se portó `TerrainDomain`/`PlacementFinder`), basta con `entities/animals/`.
+**Para portar el sistema a otro proyecto:** copiar las carpetas `entities/animals/`, `spatial/` (aporta `IAnimalDomain`/`AquaticDomain`, sin los cuales `entities/animals/` no compila) **y** `utility-ai/` (aporta `IUtilityBehavior<TAgent>`/`UtilityBrain<TAgent>`/`ScoringUtils`, el framework de decisiones que usan `WanderBehavior`/`FleeBehavior`) y añadir una llamada a `animalSystem.Generate(heightMap, width, height)` en cualquier punto donde ese proyecto tenga un `float[,] heightMap` con su ancho/alto — no requiere más que eso. Si el proyecto destino ya tiene su propia copia de `spatial/` y/o `utility-ai/` (p. ej. porque también se portó `TerrainDomain`/`PlacementFinder`, o porque ya usa el framework de Utility AI para otro tipo de agente), basta con copiar las que falten.
 
-**Para eliminarlo por completo:** borrar `entities/animals/`, quitar el campo `_animalSystem`, la línea de `GetNodeOrNull` y la línea de `Generate(...)` en `Terrain.cs`, y quitar el nodo `AnimalSystem` + su `ext_resource` de `terrain.tscn`. `spatial/` se puede conservar si algún otro sistema (p. ej. `DecorationSystem`) sigue usando `TerrainDomain`/`PlacementFinder`.
+**Para eliminarlo por completo:** borrar `entities/animals/`, quitar el campo `_animalSystem`, la línea de `GetNodeOrNull` y la línea de `Generate(...)` en `Terrain.cs`, y quitar el nodo `AnimalSystem` + su `ext_resource` de `terrain.tscn`. `spatial/` se puede conservar si algún otro sistema (p. ej. `DecorationSystem`) sigue usando `TerrainDomain`/`PlacementFinder`; `utility-ai/` se puede conservar igual si algo más lo consume (es un módulo genérico, no específico de animales).
 
 ## Cómo decide dónde colocar los peces
 
@@ -75,9 +76,9 @@ El eje del diseño es que **el animal sepa a dónde puede moverse**, vía la abs
 
 - **Dominio (`IAnimalDomain` / `AquaticDomain`)**: responde `Contains(pos)`, `ClampToValid(pos)` y `SampleWanderTarget(from, radius, rng)`. El acuático define un **volumen 3D**: columnas de agua entre `fondo+FloorMargin` y `seaY−SurfaceMargin`. Replica el muestreo bilineal de altura internamente (sin `TerrainSnap`) para no acoplar.
 - **Locomoción (`AnimalLocomotion`)**: clase simple (no nodo) que imita el steering de `CrowdSystem` — `Velocity.Lerp(desiredVel, Damping*dt)`, frenado de llegada, `ClampToValid` cada paso, y giro suave (slerp de orientación, con pitch para subir/bajar; **no** snapping a 90° como `Player`).
-- **Comportamiento (`IAnimalBehavior` / `WanderBehavior`)**: pasea eligiendo destinos cercanos del dominio con pausas ocasionales. Es la **costura del futuro Utility AI**: hoy cada animal corre un único comportamiento; mañana un `UtilityBrain` elegirá entre varios por `Score` (ver comentario en `IAnimalBehavior`).
+- **Comportamiento (`IUtilityBehavior<Animal>` / `WanderBehavior`)**: pasea eligiendo destinos cercanos del dominio con pausas ocasionales. Es la **costura del Utility AI**: cada animal corre un único comportamiento (el `Behavior` activo), que hoy es un `UtilityBrain<Animal>` que elige entre varios por `Score` (ver `utility-ai/IUtilityBehavior.cs`).
 
-**No-objetivos actuales:** sin pathfinding (los saltos cortos validados por `Contains` bastan para un paseo decorativo; en aguas no convexas un tramo recto puede rozar tierra brevemente), sin Utility AI todavía (solo el interfaz + `WanderBehavior`), sin separación entre individuos.
+**No-objetivos actuales:** sin pathfinding (los saltos cortos validados por `Contains` bastan para un paseo decorativo; en aguas no convexas un tramo recto puede rozar tierra brevemente), sin separación entre individuos.
 
 ## Parámetros `[Export]`
 
@@ -114,18 +115,20 @@ La arquitectura ya está preparada para ello sin tocar locomoción ni comportami
 - **Nueva entidad**: subclase de `Animal` (p. ej. `Bird : Animal`) que cargue su modelo y anime su rig en `OnLocomotionUpdate`. La locomoción (`AnimalLocomotion`) y el paseo (`WanderBehavior`) se reutilizan tal cual.
 - **Colocación**: `AnimalSystem` puede generalizarse (p. ej. spawnear varias especies/medios) o crearse un sistema hermano; mantener el principio de no-dependencias.
 
-- **Comportamientos**: el cerebro (`UtilityBrain`) se reutiliza; el animal puede tener su propio conjunto de comportamientos según su medio (p. ej. un ave: `FlyBehavior`/`PerchBehavior`/`HuntBehavior`).
+- **Comportamientos**: el cerebro (`UtilityBrain<Animal>`) se reutiliza; el animal puede tener su propio conjunto de comportamientos según su medio (p. ej. un ave: `FlyBehavior`/`PerchBehavior`/`HuntBehavior`).
 
 ## Utility AI (sistema de decisiones)
 
-Inspirado en el patrón de `C:\Users\desarrollo\Documents\SpringChallenge2026` (`TrollFarmBot/AI`): cada comportamiento expone un `Score`, y un "decider" elige el de mayor puntuación. Aquí el decider es `UtilityBrain`, que es a su vez un `IAnimalBehavior` compuesto, así que `Animal` sigue corriendo un único `Behavior` (el cerebro) sin cambios en su bucle.
+Inspirado en el patrón de `C:\Users\desarrollo\Documents\SpringChallenge2026` (`TrollFarmBot/AI`): cada comportamiento expone un `Score`, y un "decider" elige el de mayor puntuación. El framework en sí (`IUtilityBehavior<TAgent>`, `UtilityBrain<TAgent>`, `ScoringUtils`) vive en la carpeta portable `utility-ai/` (raíz del proyecto) y no conoce `Animal`: está parametrizado por el genérico `TAgent`, así que sirve igual para animales, humanos o cualquier otro objeto animado. Aquí el decider es `UtilityBrain<Animal>`, que es a su vez un `IUtilityBehavior<Animal>` compuesto, así que `Animal` sigue corriendo un único `Behavior` (el cerebro) sin cambios en su bucle.
 
-- **`IAnimalBehavior.Score(animal)`**: utilidad actual del comportamiento (mayor = más deseable). `ScoringUtils` (`Normalize`, `Proximity = 1/(1+dist·k)`, `Falloff`) ayuda a construir scores a partir de distancias/conteos.
-- **`UtilityBrain`**: cada `EvalInterval` (0,25 s) puntúa todos los candidatos y conmuta al mejor si supera al activo por `SwitchMargin` (histéresis anti-parpadeo); cada frame ejecuta el `Tick` del activo. Llama `Enter` al cambiar.
+- **`IUtilityBehavior<Animal>.Score(animal)`**: utilidad actual del comportamiento (mayor = más deseable). `ScoringUtils` (`Normalize`, `Proximity = 1/(1+dist·k)`, `Falloff`) ayuda a construir scores a partir de distancias/conteos.
+- **`UtilityBrain<Animal>`**: cada `EvalInterval` (0,25 s) puntúa todos los candidatos y conmuta al mejor si supera al activo por `SwitchMargin` (histéresis anti-parpadeo); cada frame ejecuta el `Tick` del activo. Llama `Enter` al cambiar.
 - **Comportamientos actuales**: `WanderBehavior` (`Score` = `WanderWeight` constante, el suelo por defecto) y `FleeBehavior` (`Score` = `FleeWeight · Falloff(distCámara, FleeInner, FleeOuter)`; cerca de la cámara supera a pasear → el pez acelera (`Locomotion.SpeedScale = FleeSpeedScale`) y se aleja; lejos cae a 0 → vuelve a pasear).
 - **Aceleración del nado**: los comportamientos fijan `Locomotion.SpeedScale` cada frame (1 al pasear, >1 al huir). El aleteo de la cola se acelera solo porque `Fish.OnLocomotionUpdate` lo modula con la velocidad real.
 - **Cámara sin acoplar**: `FleeBehavior` la obtiene con `animal.GetViewport().GetCamera3D()` (API de Godot), no con un tipo del proyecto → portabilidad intacta.
 
-**Añadir un comportamiento nuevo** (p. ej. `JumpBehavior`, `EatBehavior`): crear la clase `IAnimalBehavior` con su `Score`/`Enter`/`Tick`, y añadirla al array que `AnimalSystem` pasa al `UtilityBrain`. Nada más cambia.
+**Añadir un comportamiento nuevo** (p. ej. `JumpBehavior`, `EatBehavior`): crear una clase que implemente `IUtilityBehavior<Animal>` con su `Score`/`Enter`/`Tick`, y añadirla al array que `AnimalSystem` pasa al `UtilityBrain<Animal>`. Nada más cambia.
+
+**Reutilizar el framework para un agente que no sea `Animal`** (p. ej. un `Human` en otro sistema del proyecto o en otro proyecto): implementar `IUtilityBehavior<Human>` en cada comportamiento e instanciar `new UtilityBrain<Human>(behaviors)`; `utility-ai/` no requiere ningún cambio.
 
 **Al crecer**: con muchos comportamientos/features conviene externalizar los pesos en una tabla (como el `WeightTable`/`FeatureVector` del proyecto de referencia); hoy van como campos públicos de cada comportamiento.

@@ -15,7 +15,7 @@ public partial class Animal : Node3D
 {
 	public IAnimalDomain Domain { get; set; }
 	public AnimalLocomotion Locomotion { get; protected set; } = new AnimalLocomotion();
-	public IAnimalBehavior Behavior { get; set; }
+	public IUtilityBehavior<Animal> Behavior { get; set; }
 	public RandomNumberGenerator Rng { get; } = new RandomNumberGenerator();
 
 	public override void _Ready()

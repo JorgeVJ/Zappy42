@@ -133,7 +133,7 @@ public partial class AnimalSystem : Node3D
 			Fish fish = Fish.Create(pos, modelPath);
 			fish.Domain = domain;
 			fish.Locomotion.MaxSpeed = MaxSpeed;
-			fish.Behavior = new UtilityBrain(new IAnimalBehavior[]
+			fish.Behavior = new UtilityBrain<Animal>(new IUtilityBehavior<Animal>[]
 			{
 				new WanderBehavior { WanderRadius = WanderRadius },
 				new FleeBehavior { FleeInner = FleeInner, FleeOuter = FleeOuter, FleeSpeedScale = FleeSpeedScale },

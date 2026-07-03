@@ -6,7 +6,7 @@ using Godot;
 /// que el movimiento sea orgánico. Es el comportamiento por defecto entre los que
 /// elige el UtilityBrain.
 /// </summary>
-public class WanderBehavior : IAnimalBehavior
+public class WanderBehavior : IUtilityBehavior<Animal>
 {
 	public float WanderRadius = 6f;
 
