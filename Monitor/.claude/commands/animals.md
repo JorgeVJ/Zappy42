@@ -8,9 +8,9 @@ Skill de referencia para el sistema de fauna decorativa del Zappy Monitor (actua
 
 Este sistema se diseñó deliberadamente **independiente del resto del proyecto**, para poder copiarlo/pegarlo a otro proyecto Godot con heightmap, o eliminarlo por completo sin dejar rastro. Reglas que mantienen esa independencia:
 
-- **Ningún** archivo del sistema (`AnimalSystem.cs`, `Animal.cs`, `Fish.cs`, dominios, locomoción, comportamientos) referencia `Terrain`, `Connection`, `TerrainSnap`, `CrowdSystem`, `EntityManager` ni ningún otro tipo del proyecto. Solo usan tipos de Godot (`Node3D`, `Skeleton3D`, etc.) y primitivas (`float[,] heightMap, int width, int height`).
-- Todo vive dentro de `entities/animals/` — script de la entidad, script del sistema de colocación y el modelo `.glb`. No hay lógica repartida en `entities/terrain/` ni en `managers/`.
-- No usa `PlacementFinder` (evita solapes entre decoraciones en tierra; no aplica a peces en agua) ni `EntityManager<T>` (eso es para entidades con ID de servidor — altas/bajas dinámicas; los peces se generan una sola vez junto con el terreno y no tienen ID).
+- **Ningún** archivo de `entities/animals/` (`AnimalSystem.cs`, `Animal.cs`, `Fish.cs`, locomoción, comportamientos) referencia `Terrain`, `Connection`, `TerrainSnap`, `CrowdSystem`, `EntityManager` ni ningún otro tipo específico de este proyecto. Solo usan tipos de Godot (`Node3D`, `Skeleton3D`, etc.), primitivas (`float[,] heightMap, int width, int height`) y las interfaces/dominios de `spatial/` (ver más abajo).
+- `entities/animals/` depende de la carpeta hermana `spatial/` para saber **dónde puede moverse un animal** (`IAnimalDomain`, `AquaticDomain`). `spatial/` es a su vez 100% Godot-only y no depende de nada de `entities/animals/` ni del resto del proyecto — también la consume `entities/terrain/` (p. ej. `TerrainDomain` para restringir dónde nace la vegetación), así que la dependencia siempre va de los sistemas concretos hacia `spatial/`, nunca al revés.
+- No usa `PlacementFinder` (evita solapes entre decoraciones en tierra; no aplica a peces en agua) ni `EntityManager<T>` (eso es para entidades con ID de servidor — altas/bajas dinámicas; los peces se generan una sola vez junto con el terreno y no tienen ID). `PlacementFinder` vive en `spatial/` junto a los dominios (misma carpeta portable), pero es una utilidad independiente que `entities/animals/` no consume.
 - No depende de `Connection.ReplayInstant` ni de ningún global estático del proyecto.
 
 ## Archivos
@@ -20,8 +20,9 @@ El sistema está organizado en **capas** (pensadas para crecer a animales terres
 | Archivo | Capa | Rol |
 |---|---|---|
 | `entities/animals/AnimalSystem.cs` | Colocación | Recibe el heightmap, calcula tiles de agua, construye el **dominio** y reparte `FishCount` peces al azar (modelo al azar de `FishModels`), inyectándoles dominio + tuning. |
-| `entities/animals/IAnimalDomain.cs` | Dominio | Interfaz "**dónde puede moverse** un animal": `Contains`, `ClampToValid`, `SampleWanderTarget`. El eje del diseño. |
-| `entities/animals/AquaticDomain.cs` | Dominio | Implementación acuática: volumen de agua entre el fondo (+margen) y la superficie del mar (−margen), construido desde el heightmap. |
+| `spatial/ISpatialDomain.cs` | Dominio | Interfaz mínima "**es válido este punto**": sólo `Contains(worldPos)`. Base de `IAnimalDomain`; también la implementa `spatial/TerrainDomain.cs` (consumida por `entities/terrain/DecorationSystem.cs`) para restringir dónde nace la vegetación. |
+| `spatial/IAnimalDomain.cs` | Dominio | Interfaz "**dónde puede moverse** un animal": extiende `ISpatialDomain` y añade `ClampToValid`, `SampleWanderTarget`. El eje del diseño. |
+| `spatial/AquaticDomain.cs` | Dominio | Implementación acuática: volumen de agua entre el fondo (+margen) y la superficie del mar (−margen), construido desde el heightmap. Usa los structs `spatial/HeightMapGrid.cs` y `spatial/NavigableMargins.cs`. |
 | `entities/animals/AnimalLocomotion.cs` | Locomoción | Steering procedural genérico (estilo `CrowdSystem`): mueve un `Node3D` hacia un objetivo con aceleración/frenado suaves y giro gradual hacia el rumbo. |
 | `entities/animals/IAnimalBehavior.cs` | Comportamiento | Interfaz de comportamiento (`Enter`/`Tick`/`Score`). `Score` es la utilidad para el cerebro. |
 | `entities/animals/WanderBehavior.cs` | Comportamiento | Pasear: elige destinos del dominio con pausas. `Score` = baseline constante (estado por defecto). |
@@ -53,9 +54,9 @@ _animalSystem?.Generate(heightMap, Width, Height);
 script = ExtResource("...AnimalSystem.cs")
 ```
 
-**Para portar el sistema a otro proyecto:** copiar la carpeta `entities/animals/` completa y añadir una llamada a `animalSystem.Generate(heightMap, width, height)` en cualquier punto donde ese proyecto tenga un `float[,] heightMap` con su ancho/alto — no requiere más que eso.
+**Para portar el sistema a otro proyecto:** copiar las carpetas `entities/animals/` **y** `spatial/` (esta última aporta `IAnimalDomain`/`AquaticDomain`, sin los cuales `entities/animals/` no compila) y añadir una llamada a `animalSystem.Generate(heightMap, width, height)` en cualquier punto donde ese proyecto tenga un `float[,] heightMap` con su ancho/alto — no requiere más que eso. Si el proyecto destino ya tiene su propia copia de `spatial/` (p. ej. porque también se portó `TerrainDomain`/`PlacementFinder`), basta con `entities/animals/`.
 
-**Para eliminarlo por completo:** borrar `entities/animals/`, quitar el campo `_animalSystem`, la línea de `GetNodeOrNull` y la línea de `Generate(...)` en `Terrain.cs`, y quitar el nodo `AnimalSystem` + su `ext_resource` de `terrain.tscn`.
+**Para eliminarlo por completo:** borrar `entities/animals/`, quitar el campo `_animalSystem`, la línea de `GetNodeOrNull` y la línea de `Generate(...)` en `Terrain.cs`, y quitar el nodo `AnimalSystem` + su `ext_resource` de `terrain.tscn`. `spatial/` se puede conservar si algún otro sistema (p. ej. `DecorationSystem`) sigue usando `TerrainDomain`/`PlacementFinder`.
 
 ## Cómo decide dónde colocar los peces
 
@@ -109,7 +110,7 @@ Mientras el modelo comparta el rig de 2 huesos `Body`/`Tail`, **no hace falta to
 ## Añadir animales terrestres / aéreos (capas listas)
 
 La arquitectura ya está preparada para ello sin tocar locomoción ni comportamiento:
-- **Nuevo dominio**: crear `TerrestrialDomain` (superficie: `Y` pegado a la altura del terreno, X/Z en tiles de tierra) o `AerialDomain` (volumen de aire sobre el terreno hasta un techo) implementando `IAnimalDomain`. Es la única pieza específica del medio.
+- **Nuevo dominio**: crear `TerrestrialDomain` (superficie: `Y` pegado a la altura del terreno, X/Z en tiles de tierra) o `AerialDomain` (volumen de aire sobre el terreno hasta un techo) en `spatial/`, implementando `IAnimalDomain` completa (no basta con `ISpatialDomain`: un animal terrestre/aéreo también necesita `ClampToValid`/`SampleWanderTarget` para moverse). Es la única pieza específica del medio. Nota: `spatial/TerrainDomain.cs` ya cubre el caso de "punto válido en tierra" para la colocación de decoraciones, pero sólo implementa `ISpatialDomain` — no sirve tal cual para un animal que necesite pasear, sólo como referencia de la fórmula de altura de tierra.
 - **Nueva entidad**: subclase de `Animal` (p. ej. `Bird : Animal`) que cargue su modelo y anime su rig en `OnLocomotionUpdate`. La locomoción (`AnimalLocomotion`) y el paseo (`WanderBehavior`) se reutilizan tal cual.
 - **Colocación**: `AnimalSystem` puede generalizarse (p. ej. spawnear varias especies/medios) o crearse un sistema hermano; mantener el principio de no-dependencias.
 

@@ -16,31 +16,28 @@ public partial class DecorationSystem : Node3D
 	[Export]
 	public float GrassPropDensity = 0.16f;
 
+	/// <summary>
+	/// Mismo cálculo de nivel del mar que WaterSystem (fracción entre min y max
+	/// del heightMap). Se duplica en vez de referenciar WaterSystem para que
+	/// DecorationSystem no dependa de ningún otro nodo del árbol de escena.
+	/// </summary>
+	[Export(PropertyHint.Range, "0,1,0.01")]
+	public float SeaLevelFraction = 0.35f;
+
+	[Export]
+	public float SeaLevelOffset = 0f;
+
+	/// <summary>
+	/// Distancia por encima del nivel del mar que debe tener un tile para contar
+	/// como tierra firme, de forma que la vegetación no nazca pegada a la orilla.
+	/// </summary>
+	[Export]
+	public float ShoreMargin = 0.3f;
+
 	private const string ModelsPath = "res://entities/terrain/models/";
 
 	private static readonly Regex ModelNamePattern =
 		new(@"^(?<type>[A-Za-z]+)_(?<letter>[A-Z])_(?<w>\d+)x(?<l>\d+)\.glb$", RegexOptions.Compiled);
-
-	private readonly record struct DecorationModel(PackedScene Scene, int FootprintW, int FootprintL);
-
-	/// <summary>
-	/// Agrupa los datos compartidos por toda una llamada a <see cref="Generate"/>
-	/// (mapa de modelos, dimensiones, heightmap, ocupación y RNG) para que los métodos
-	/// que colocan decoraciones queden dentro del límite de 4 parámetros.
-	/// </summary>
-	private readonly record struct MapContext(
-		Dictionary<string, List<DecorationModel>> ModelsByType,
-		int Width,
-		int Height,
-		float[,] HeightMap,
-		bool[,] Occupied,
-		RandomNumberGenerator Rng);
-
-	/// <summary>
-	/// Rectángulo de tiles (footprint) ocupado por una decoración: esquina superior-izquierda
-	/// (Tx, Ty) y tamaño (W, L) en tiles.
-	/// </summary>
-	private readonly record struct TileRect(int Tx, int Ty, int W, int L);
 
 	/// <summary>
 	/// Obstáculos colocados durante <see cref="Generate"/>, expuestos para que Terrain pueda evitar
@@ -64,13 +61,30 @@ public partial class DecorationSystem : Node3D
 
 		MapContext ctx = new MapContext(DiscoverModels(), width, height, heightMap, new bool[width, height], rng);
 
-		PlaceDecorations(ctx, "Tree", TreeDensity);
-		PlaceDecorations(ctx, "Rock", RockDensity);
-		PlaceDecorations(ctx, "Bush", BushDensity);
-		PlaceDecorations(ctx, "Grass", GrassPropDensity);
+		float seaY = ComputeSeaLevel(heightMap, SeaLevelFraction) + SeaLevelOffset;
+		HeightMapGrid grid = new HeightMapGrid(width, height, Terrain.TILE_SIZE);
+		TerrainDomain landDomain = new TerrainDomain(heightMap, grid, seaY, ShoreMargin);
+
+		PlaceDecorations(ctx, "Tree", TreeDensity, landDomain);
+		PlaceDecorations(ctx, "Rock", RockDensity, null);
+		PlaceDecorations(ctx, "Bush", BushDensity, landDomain);
+		PlaceDecorations(ctx, "Grass", GrassPropDensity, landDomain);
 	}
 
-	private void PlaceDecorations(MapContext ctx, string type, float density)
+	private static float ComputeSeaLevel(float[,] heightMap, float fraction)
+	{
+		float min = float.MaxValue;
+		float max = float.MinValue;
+		foreach (float h in heightMap)
+		{
+			if (h < min) min = h;
+			if (h > max) max = h;
+		}
+
+		return Mathf.Lerp(min, max, fraction);
+	}
+
+	private void PlaceDecorations(MapContext ctx, string type, float density, ISpatialDomain domain)
 	{
 		if (!ctx.ModelsByType.TryGetValue(type, out List<DecorationModel> models) || models.Count == 0)
 			return;
@@ -80,7 +94,7 @@ public partial class DecorationSystem : Node3D
 
 		for (int placed = 0, attempts = 0; placed < count && attempts < maxAttempts; attempts++)
 		{
-			if (TryPlaceOne(ctx, models))
+			if (TryPlaceOne(ctx, models, domain))
 				placed++;
 		}
 	}
@@ -89,7 +103,7 @@ public partial class DecorationSystem : Node3D
 	/// Intenta colocar una única decoración de la lista de modelos candidatos.
 	/// Extraído de PlaceDecorations para respetar el límite de longitud de método.
 	/// </summary>
-	private bool TryPlaceOne(MapContext ctx, List<DecorationModel> models)
+	private bool TryPlaceOne(MapContext ctx, List<DecorationModel> models, ISpatialDomain domain)
 	{
 		DecorationModel model = models[ctx.Rng.RandiRange(0, models.Count - 1)];
 		int w = model.FootprintW;
@@ -105,9 +119,20 @@ public partial class DecorationSystem : Node3D
 		if (!IsFree(ctx.Occupied, rect))
 			return false;
 
+		Vector2 centerXZ = TileCenterXZ(rect);
+		if (domain != null && !domain.Contains(new Vector3(centerXZ.X, 0f, centerXZ.Y)))
+			return false;
+
 		MarkOccupied(ctx.Occupied, rect);
 		PlaceInstance(model, rect, ctx);
 		return true;
+	}
+
+	private static Vector2 TileCenterXZ(TileRect rect)
+	{
+		float worldX = rect.Tx * Terrain.TILE_SIZE + rect.W * Terrain.TILE_SIZE / 2f;
+		float worldZ = rect.Ty * Terrain.TILE_SIZE + rect.L * Terrain.TILE_SIZE / 2f;
+		return new Vector2(worldX, worldZ);
 	}
 
 	private static bool IsFree(bool[,] occupied, TileRect rect)
@@ -136,18 +161,17 @@ public partial class DecorationSystem : Node3D
 	/// </remarks>
 	private void PlaceInstance(DecorationModel model, TileRect rect, MapContext ctx)
 	{
-		float worldX = rect.Tx * Terrain.TILE_SIZE + rect.W * Terrain.TILE_SIZE / 2f;
-		float worldZ = rect.Ty * Terrain.TILE_SIZE + rect.L * Terrain.TILE_SIZE / 2f;
+		Vector2 centerXZ = TileCenterXZ(rect);
 		HeightMapGrid grid = new HeightMapGrid(ctx.Width, ctx.Height, Terrain.TILE_SIZE);
-		float worldY = TerrainSnap.SampleHeight(ctx.HeightMap, worldX, worldZ, grid);
+		float worldY = TerrainSnap.SampleHeight(ctx.HeightMap, centerXZ.X, centerXZ.Y, grid);
 
 		Node3D instance = model.Scene.Instantiate<Node3D>();
-		instance.Position = new Vector3(worldX, worldY, worldZ);
+		instance.Position = new Vector3(centerXZ.X, worldY, centerXZ.Y);
 		instance.RotateY(ctx.Rng.RandfRange(0f, Mathf.Tau));
 		AddChild(instance);
 
 		float footprintRadius = new Vector2(rect.W * Terrain.TILE_SIZE, rect.L * Terrain.TILE_SIZE).Length() / 2f;
-		_obstacles.Add(new PlacementFinder.Obstacle(new Vector2(worldX, worldZ), footprintRadius));
+		_obstacles.Add(new PlacementFinder.Obstacle(centerXZ, footprintRadius));
 	}
 
 	private static Dictionary<string, List<DecorationModel>> DiscoverModels()

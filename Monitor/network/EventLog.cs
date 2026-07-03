@@ -2,38 +2,6 @@ using Godot;
 using System.Collections.Generic;
 
 /// <summary>
-/// Línea cruda recibida del servidor junto con el instante de recepción
-/// (Time.GetTicksMsec()), usado por EventLog para agrupar mensajes en franjas.
-/// </summary>
-public struct LogEntry
-{
-    public string Raw;
-    public double ReceivedAtMs;
-
-    public LogEntry(string raw, double receivedAtMs)
-    {
-        Raw = raw;
-        ReceivedAtMs = receivedAtMs;
-    }
-}
-
-/// <summary>
-/// Rango inclusivo [StartIndex, EndIndex] sobre EventLog.Messages que agrupa
-/// mensajes recibidos "juntos" (ver EventLog.BandGapMs).
-/// </summary>
-public struct TimeBand
-{
-    public int StartIndex;
-    public int EndIndex;
-
-    public TimeBand(int startIndex, int endIndex)
-    {
-        StartIndex = startIndex;
-        EndIndex = endIndex;
-    }
-}
-
-/// <summary>
 /// Historial de mensajes crudos del servidor, agrupados en "franjas de tiempo"
 /// (TimeBand) por proximidad de llegada.
 /// </summary>

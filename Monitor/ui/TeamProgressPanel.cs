@@ -5,13 +5,6 @@ using System.Linq;
 
 public partial class TeamProgressPanel : CollapsiblePanel
 {
-    private struct PlayerEntry
-    {
-        public int    Id;
-        public int    Level;
-        public string LastAction;
-    }
-
     /// <summary>Se dispara al pulsar el botón de un jugador. Parámetro: ID del jugador.</summary>
     public event Action<int> PlayerSelected;
 

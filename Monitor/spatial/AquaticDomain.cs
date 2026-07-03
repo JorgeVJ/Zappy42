@@ -1,40 +1,6 @@
 using Godot;
 
 /// <summary>
-/// Dimensiones de la rejilla del heightmap: ancho/alto en tiles y el tamaño de
-/// cada tile en unidades de mundo.
-/// </summary>
-public readonly struct HeightMapGrid
-{
-	public readonly int Width;
-	public readonly int Height;
-	public readonly float TileSize;
-
-	public HeightMapGrid(int width, int height, float tileSize)
-	{
-		Width = width;
-		Height = height;
-		TileSize = tileSize;
-	}
-}
-
-/// <summary>
-/// Márgenes que un dominio navegable deja respecto al fondo y a la superficie
-/// del volumen en el que se puede mover un animal.
-/// </summary>
-public readonly struct NavigableMargins
-{
-	public readonly float Floor;
-	public readonly float Surface;
-
-	public NavigableMargins(float floor, float surface)
-	{
-		Floor = floor;
-		Surface = surface;
-	}
-}
-
-/// <summary>
 /// Dominio navegable acuático: el volumen de agua del mapa. Construido a partir del
 /// heightMap (primitivas, sin depender de Terrain): un punto es válido si su columna
 /// X/Z es un tile de agua (altura de tile por debajo del nivel del mar) y su Y está

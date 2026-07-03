@@ -57,7 +57,6 @@ Monitor/
 ├── GlowEffect.cs           # Struct genérico: (Color, EnergyMultiplier) — aplica emisión a los materiales de un Node3D
 ├── ShamanEquipmentConfig.cs # Config específica del proyecto: loadout por nivel (1-7) para el Shaman, incl. grupo de orbes brillantes en órbita
 ├── ShamanAnimationController.cs # Controlador de animaciones del Shaman: PlayWalk/Idle/Run/Spell/etc., loop automático
-├── PlacementFinder.cs      # Helper estático genérico: busca un offset/posición libre dentro de una región evitando obstáculos circulares (XZ + radio); usado por Terrain para no embeber recursos en decoraciones (C12)
 ├── IInventory.cs           # Interfaz: objeto con inventario
 ├── ISelectable.cs          # Interfaz: objeto seleccionable (highlight)
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
@@ -92,6 +91,16 @@ Monitor/
 │   │   ├── Staff_Gem_Lvl2.glb # Lvl 5-6 (hija de Staff.glb, reemplaza Lvl1)
 │   │   └── Staff_Gem_Lvl3.glb # Lvl 7 (hija de Staff.glb, reemplaza Lvl2)
 │   └── meshy_models/        # Recursos del mundo (linemate, deraumere, etc.)
+├── spatial/                # Módulo portable (solo tipos de Godot, copiable a otro proyecto): dominios espaciales + colocación
+│   ├── ISpatialDomain.cs    # Interfaz mínima: ¿es válido este punto del mundo?
+│   ├── IAnimalDomain.cs     # Extiende ISpatialDomain: ClampToValid/SampleWanderTarget (locomoción animal)
+│   ├── AquaticDomain.cs     # IAnimalDomain: volumen de agua (fondo+margen a superficie−margen)
+│   ├── TerrainDomain.cs     # ISpatialDomain: tierra firme (altura de tile ≥ nivel del mar + margen de orilla)
+│   ├── HeightMapGrid.cs     # Struct: dimensiones de la rejilla del heightmap
+│   ├── NavigableMargins.cs  # Struct: márgenes de fondo/superficie de un volumen navegable
+│   ├── PlacementFinder.cs   # Helper estático: offset/posición libre dentro de una región evitando obstáculos circulares (XZ + radio)
+│   ├── PlacementQuery.cs    # Struct: parámetros de una búsqueda de PlacementFinder
+│   └── Obstacle.cs          # Struct: obstáculo circular (posición XZ + radio) para PlacementFinder
 ├── game.tscn
 ├── player.tscn
 ├── terrain.tscn
@@ -252,6 +261,7 @@ Ver skill `/terrain` para contexto completo. Resumen:
 - `GetTileFromPosition()` divide por `TILE_SIZE` antes de hacer `FloorToInt`
 - **Margen de borde (falloff de isla):** la malla se genera sobre un grid extendido `±BorderMargin` (def. 4) anillos alrededor de la región jugable `[0..Width, 0..Height]`. El `heightMap` sigue siendo solo jugable `[W+1, H+1]` (recursos/entidades/hierba/decoración/`GetTileHeight` intactos); las esquinas del margen las calcula `CornerHeight(cx, cy)`, que mezcla la altura natural de ruido hacia `outerY = _minHeight - SkirtDepth` (def. 5) según un `SmoothStep` de cuán fuera del grid jugable está la esquina. Así el terreno **desciende bajo el nivel del mar en los bordes**, ocultando la cara inferior de la malla flotando sobre el agua. Las casillas del margen **no son seleccionables** (coordenadas fuera de rango → `GetTile` devuelve `null`). `BorderMargin`/`SkirtDepth` son `[Export]` tuneables
 - Tras generar el mesh, `DecorationSystem.Generate()` esparce props GLB (árboles/rocas/arbustos/hierba) sobre el heightmap, descubriendo modelos por convención de nombre `<Tipo>_<Letra>_<Ancho>x<Largo>.glb` en `entities/terrain/models/` (sin listas hardcodeadas)
+- **Restricción a tierra firme:** árboles, arbustos y props de hierba sólo se colocan si el tile cae en `TerrainDomain` ([TerrainDomain.cs](../spatial/TerrainDomain.cs)): tierra = altura de tile ≥ nivel del mar (mismo cálculo `SeaLevelFraction`/`SeaLevelOffset` que `WaterSystem`, duplicado deliberadamente en `DecorationSystem` para no depender de otro nodo) más un `ShoreMargin` para no nacer pegados a la orilla. Las rocas no llevan esta restricción (semisumergidas en la orilla quedan bien). `TerrainDomain` implementa `ISpatialDomain` ([spatial/ISpatialDomain.cs](../spatial/ISpatialDomain.cs)), la interfaz mínima (`Contains(worldPos)`) de la que también hereda `IAnimalDomain` — ambas viven en la carpeta portable `spatial/` (Godot-only, sin dependencias del proyecto), ver skill `/animals`
 - `GrassSystem` y `DecorationSystem` son complementarios, no redundantes (C11): `GrassSystem` cubre todo el mapa con una "alfombra" densa de billboards animados por shader (viento); `DecorationSystem` reparte props grandes y estáticos de forma dispersa vía occupancy grid — las matas `Grass_*_1x1.glb` son solo uno de sus cuatro tipos de prop, a modo de variedad puntual junto a árboles/rocas/arbustos, no un sustituto del césped base
 - `WaterSystem` ([WaterSystem.cs](../entities/terrain/WaterSystem.cs), D10) rodea el terreno de un **mar procedural infinito**: un único plano grande (sin colisión, así que la selección de tile sigue impactando el terreno bajo el agua) que `_Process` **recentra sobre la cámara** cada frame; como el shader es world-space, deslizar el plano no desplaza el patrón → el agua llega siempre al horizonte sin bordes. `Generate()` lo coloca a un nivel del mar relativo al heightMap (`SeaLevelFraction`, def. 0.35) → **archipiélago**: los valles quedan sumergidos y los picos sobresalen como islotes, en cualquier tamaño de mapa. `water.gdshader` (transparente, `depth_draw_never`) anima **caústicas** (capas de voronoi scrolleando), perturba la normal para specular en movimiento, añade fresnel hacia el horizonte y usa `DEPTH_TEXTURE` para la **costa**: aclara el color, sube la transparencia y dibuja una banda de **espuma** animada donde el agua toca el terreno. No modifica el `WorldEnvironment`.
 - **C12 — evitar recursos embebidos en decoraciones:** `DecorationSystem` expone `Obstacles` (`IReadOnlyList<PlacementFinder.Obstacle>`, poblada en `PlaceInstance` durante `Generate()`) con la posición world XZ y un radio de exclusión por cada prop colocado (mitad de la diagonal de su footprint). `Terrain.GetNearbyDecorationObstacles(x, y)` filtra los obstáculos cercanos al tile (`DecorationProximityRange = TILE_SIZE * 1.5f`) y `GetResourceOffset()` los pasa a `PlacementFinder.FindFreeOffset()` junto con el mismo RNG sembrado por `(x, y, tipo)`, manteniendo el determinismo (sin parpadeos). Si tras varios intentos no hay hueco libre, hace fallback al último offset candidato (comportamiento previo sin chequeo de colisión)

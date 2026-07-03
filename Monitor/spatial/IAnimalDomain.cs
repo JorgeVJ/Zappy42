@@ -7,14 +7,11 @@ using Godot;
 /// alcanzables.
 /// </summary>
 /// <remarks>
-/// Mantener este interfaz agnóstico del proyecto (solo tipos de Godot) para
-/// conservar la portabilidad del sistema de animales.
+/// Solo usa tipos de Godot, sin referenciar ningún tipo específico de este proyecto,
+/// para que este módulo se pueda copiar entero a otro proyecto Godot.
 /// </remarks>
-public interface IAnimalDomain
+public interface IAnimalDomain : ISpatialDomain
 {
-	/// <summary>¿Es este punto del mundo un sitio válido donde el animal puede estar?</summary>
-	bool Contains(Vector3 worldPos);
-
 	/// <summary>
 	/// Proyecta un punto (posiblemente fuera) de vuelta al interior de la región.
 	/// Usado cada frame por la locomoción para que el animal no salga del dominio.

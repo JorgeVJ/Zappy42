@@ -208,13 +208,6 @@ public partial class Terrain : Node3D
 	}
 
 	/// <summary>
-	/// Agrupa los parámetros de contexto de tile compartidos por todas las llamadas a
-	/// <see cref="GetResourceOffset"/> para un mismo tile, de forma que el método
-	/// quede dentro del límite de 4 parámetros.
-	/// </summary>
-	private readonly record struct ResourceOffsetContext(int X, int Y, Vector3 Center, List<PlacementFinder.Obstacle> Obstacles);
-
-	/// <summary>
 	/// Posición pseudoaleatoria dentro del tile, sembrada por (x, y, tipo) para que sea
 	/// determinista: no cambia entre actualizaciones de inventario (sin parpadeos), pero
 	/// varía entre tiles y tipos en lugar de repetir siempre el mismo patrón (C9).
@@ -306,12 +299,6 @@ public partial class Terrain : Node3D
 	/// Las casillas del margen no son seleccionables (coordenadas fuera de rango) y
 	/// CornerHeight las hace descender bajo el agua para ocultar el borde flotante de la malla.
 	/// </remarks>
-	/// <summary>
-	/// Agrupa las listas de vértices/índices/normales en construcción para que los
-	/// métodos que las rellenan queden dentro del límite de 4 parámetros.
-	/// </summary>
-	private readonly record struct MeshBuffers(List<Vector3> Vertices, List<int> Indices, List<Vector3> Normals);
-
 	private ArrayMesh BuildTerrainMesh()
 	{
 		MeshBuffers buffers = new MeshBuffers(new List<Vector3>(), new List<int>(), new List<Vector3>());

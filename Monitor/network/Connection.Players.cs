@@ -438,29 +438,6 @@ public partial class Connection
     }
 
     /// <summary>
-    /// Datos de posición/orientación/nivel de un jugador en el momento del spawn
-    /// o reconexión (pnw), agrupados para no exceder el máximo de parámetros por
-    /// método.
-    /// </summary>
-    private readonly struct PlayerSpawnState
-    {
-        public readonly Vector3 WorldPos;
-        public readonly int X;
-        public readonly int Y;
-        public readonly int Orientation;
-        public readonly int Level;
-
-        public PlayerSpawnState(Vector3 worldPos, int x, int y, int orientation, int level)
-        {
-            WorldPos = worldPos;
-            X = x;
-            Y = y;
-            Orientation = orientation;
-            Level = level;
-        }
-    }
-
-    /// <summary>
     /// Aplica el estado de spawn/reconexión a un jugador nuevo o ya existente.
     /// Alinea el tile lógico con la posición de spawn explícitamente: sin esto
     /// TilePos queda en (0,0) por defecto y CrowdSystem arrastra a todos los

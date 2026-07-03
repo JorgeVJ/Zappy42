@@ -3,17 +3,6 @@ using System;
 
 public partial class Resource : Node3D
 {
-	public enum ResourceType
-	{
-		Nourriture,
-		Linemate,
-		Deraumere,
-		Sibur,
-		Mendiane,
-		Phiras,
-		Thystame,
-	}
-
 	private static PackedScene scene = ResourceLoader.Load("res://entities/resources/resource.tscn") as PackedScene;
 
 	private MeshInstance3D mesh;
