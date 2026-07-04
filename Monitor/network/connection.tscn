@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://jbsn3gabtt6h"]
+
+[ext_resource type="Script" path="res://network/Connection.cs" id="1_ayfnv"]
+
+[node name="Connection" type="Node"]
+script = ExtResource("1_ayfnv")
+
+[node name="Tiles" type="Node" parent="."]

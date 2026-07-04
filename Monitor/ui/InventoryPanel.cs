@@ -1,0 +1,79 @@
+using Godot;
+using zappy;
+
+public partial class InventoryPanel : Control
+{
+	[Export]
+	private Label title;
+	[Export]
+	private Label food;
+	[Export]
+	private Label linemate;
+	[Export]
+	private Label deraumere;
+	[Export]
+	private Label sibur;
+	[Export]
+	private Label mendiane;
+	[Export]
+	private Label phiras;
+	[Export]
+	private Label thystame;
+	[Export]
+	private Label titleDetail;
+	[Export]
+	private Label foodDetail;
+	[Export]
+	private Label linemateDetail;
+	[Export]
+	private Label deraumereDetail;
+	[Export]
+	private Label siburDetail;
+	[Export]
+	private Label mendianeDetail;
+	[Export]
+	private Label phirasDetail;
+	[Export]
+	private Label thystameDetail;
+
+	[Export]
+	private Panel background;
+
+	public override void _Ready()
+	{
+		if (background != null)
+			Neumorphism.StylePanel(background);
+
+		Hide();
+	}
+
+	public void ShowForTile(IInventory owner)
+	{
+		if (owner == null)
+		{
+			Log.Debug("Owner is null");
+			return;
+		}
+		if (title != null)
+			title.Text = owner.DisplayTitle;
+
+		food.Text = $"Food:";
+		foodDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Nourriture)}";
+		linemate.Text = $"Linemate:";
+		linemateDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Linemate)}";
+		deraumere.Text = $"Deraumere:";
+		deraumereDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Deraumere)}";
+		sibur.Text = $"Sibur:";
+		siburDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Sibur)}";
+		mendiane.Text = $"Mendiane:";
+		mendianeDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Mendiane)}";
+		phiras.Text = $"Phiras:";
+		phirasDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Phiras)}";
+		thystame.Text = $"Thystame:";
+		thystameDetail.Text = $"{owner.Inventory.Get(Resource.ResourceType.Thystame)}";
+
+		Show();
+	}
+
+	public void HidePanel() => Hide();
+}
