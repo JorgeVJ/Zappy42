@@ -189,9 +189,6 @@ public partial class Connection
 
         _incantations[(x, y)] = playerIds;
         StartIncantationSpells(playerIds, level);
-
-        if (terrainManager != null && terrainManager[x, y] != null)
-            terrainManager.SelectTile(x, y);
     }
 
     /// <summary>

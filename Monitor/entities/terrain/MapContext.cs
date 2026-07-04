@@ -1,7 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
-public partial class DecorationSystem : Node3D
+public partial class DecorationSystem
 {
 	/// <summary>
 	/// Agrupa los datos compartidos por toda una llamada a <see cref="Generate"/>

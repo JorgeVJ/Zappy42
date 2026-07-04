@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class GrassSystem : Node3D
+public partial class GrassSystem : DecorationSystemBase
 {
 	[Export]
 	public int Density = 420;
@@ -28,7 +28,8 @@ public partial class GrassSystem : Node3D
 	public void Generate(float[,] heightMap, int width, int height)
 	{
 		int count = Density * width * height;
-		if (count == 0) return;
+		if (count <= 0)
+			return;
 
 		MapInfo mapInfo = new MapInfo(heightMap, width, height, Terrain.TILE_SIZE);
 
@@ -51,20 +52,31 @@ public partial class GrassSystem : Node3D
 		float mapW = mapInfo.Width * mapInfo.TileSize;
 		float mapD = mapInfo.Height * mapInfo.TileSize;
 
-		for (int i = 0; i < count; i++)
+		HeightMapGrid grid = new HeightMapGrid(mapInfo.Width, mapInfo.Height, mapInfo.TileSize);
+		SmoothTerrainDomain landDomain = BuildSmoothLandDomain(mapInfo.HeightMap, grid);
+
+		int placed = 0;
+		int maxAttempts = count * 20;
+
+		for (int attempts = 0; placed < count && attempts < maxAttempts; attempts++)
 		{
 			float worldX = rng.RandfRange(0f, mapW);
 			float worldZ = rng.RandfRange(0f, mapD);
 
-			HeightMapGrid grid = new HeightMapGrid(mapInfo.Width, mapInfo.Height, mapInfo.TileSize);
+			if (!landDomain.Contains(new Vector3(worldX, 0f, worldZ)))
+				continue;
+
 			float worldY = TerrainSnap.SampleHeight(mapInfo.HeightMap, worldX, worldZ, grid);
 
 			float scale = 1.0f + rng.RandfRange(-ScaleVariance, ScaleVariance);
 			float rotY  = rng.RandfRange(0f, Mathf.Tau);
 
 			Basis basis = new Basis(Vector3.Up, rotY).Scaled(new Vector3(scale, scale, scale));
-			multiMesh.SetInstanceTransform(i, new Transform3D(basis, new Vector3(worldX, worldY, worldZ)));
+			multiMesh.SetInstanceTransform(placed, new Transform3D(basis, new Vector3(worldX, worldY, worldZ)));
+			placed++;
 		}
+
+		multiMesh.InstanceCount = placed;
 	}
 
 	private ShaderMaterial BuildMaterial(MapInfo mapInfo)

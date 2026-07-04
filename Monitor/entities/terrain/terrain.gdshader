@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode world_vertex_coords;
+render_mode cull_back, diffuse_lambert;
 
 // Exportados
 uniform float tile_size = 10.0;
@@ -14,7 +14,7 @@ uniform vec4 ground_color : source_color = vec4(0.18, 0.82, 0.12, 1.0);
 uniform float color_variation = 0.82;
 uniform float noise_scale = 1;
 uniform vec4 sand_color : source_color = vec4(0.851, 0.784, 0.451, 1.0); // arena cálida
-uniform float sand_height = 0.0;   // world-Y por debajo del cual el suelo es arena
+uniform float sand_height = 100.0;   // world-Y por debajo del cual el suelo es arena
 uniform float sand_blend  = 1.2;   // ancho de la transición pasto→arena (unidades de mundo)
 uniform vec4 highlight_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float pulse_speed = 3.0;

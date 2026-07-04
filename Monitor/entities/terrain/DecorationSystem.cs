@@ -2,7 +2,7 @@ using Godot;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-public partial class DecorationSystem : Node3D
+public partial class DecorationSystem : DecorationSystemBase
 {
 	[Export]
 	public float TreeDensity = 0.04f;
@@ -15,24 +15,6 @@ public partial class DecorationSystem : Node3D
 
 	[Export]
 	public float GrassPropDensity = 0.16f;
-
-	/// <summary>
-	/// Mismo cálculo de nivel del mar que WaterSystem (fracción entre min y max
-	/// del heightMap). Se duplica en vez de referenciar WaterSystem para que
-	/// DecorationSystem no dependa de ningún otro nodo del árbol de escena.
-	/// </summary>
-	[Export(PropertyHint.Range, "0,1,0.01")]
-	public float SeaLevelFraction = 0.35f;
-
-	[Export]
-	public float SeaLevelOffset = 0f;
-
-	/// <summary>
-	/// Distancia por encima del nivel del mar que debe tener un tile para contar
-	/// como tierra firme, de forma que la vegetación no nazca pegada a la orilla.
-	/// </summary>
-	[Export]
-	public float ShoreMargin = 0.3f;
 
 	private const string ModelsPath = "res://entities/terrain/models/";
 
@@ -61,27 +43,13 @@ public partial class DecorationSystem : Node3D
 
 		MapContext ctx = new MapContext(DiscoverModels(), width, height, heightMap, new bool[width, height], rng);
 
-		float seaY = ComputeSeaLevel(heightMap, SeaLevelFraction) + SeaLevelOffset;
 		HeightMapGrid grid = new HeightMapGrid(width, height, Terrain.TILE_SIZE);
-		TerrainDomain landDomain = new TerrainDomain(heightMap, grid, seaY, ShoreMargin);
+		TerrainDomain landDomain = BuildLandDomain(heightMap, grid);
 
 		PlaceDecorations(ctx, "Tree", TreeDensity, landDomain);
 		PlaceDecorations(ctx, "Rock", RockDensity, null);
 		PlaceDecorations(ctx, "Bush", BushDensity, landDomain);
 		PlaceDecorations(ctx, "Grass", GrassPropDensity, landDomain);
-	}
-
-	private static float ComputeSeaLevel(float[,] heightMap, float fraction)
-	{
-		float min = float.MaxValue;
-		float max = float.MinValue;
-		foreach (float h in heightMap)
-		{
-			if (h < min) min = h;
-			if (h > max) max = h;
-		}
-
-		return Mathf.Lerp(min, max, fraction);
 	}
 
 	private void PlaceDecorations(MapContext ctx, string type, float density, ISpatialDomain domain)

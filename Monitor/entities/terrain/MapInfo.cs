@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class GrassSystem : Node3D
+public partial class GrassSystem
 {
 	/// <summary>
 	/// Agrupa las dimensiones del mapa y el heightmap compartidos por los métodos
