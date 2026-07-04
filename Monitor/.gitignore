@@ -1,3 +1,10 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# .NET SDK instalado localmente por 'make gui' (dotnet-install.sh)
+/.dotnet/
+/dotnet-install.sh
+
+# Capturas de pantalla del ScreenshotService (herramienta de desarrollo)
+/.captures/

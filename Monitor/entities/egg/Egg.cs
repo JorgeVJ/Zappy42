@@ -1,0 +1,56 @@
+using Godot;
+
+public partial class Egg : Node3D
+{
+    private static PackedScene scene = ResourceLoader.Load("res://entities/egg/egg.tscn") as PackedScene;
+
+    private MeshInstance3D mesh;
+    private bool _hatched;
+
+    /// <summary>Hatch "pop" animation: scale up then settle back to normal size.</summary>
+    private const float PopScaleFactor = 1.3f;
+    private const float PopScaleUpDuration = 0.15f;
+    private const float PopScaleDownDuration = 0.2f;
+
+    public int Id { get; private set; }
+
+    public static Egg Create(Vector3 pos, int id)
+    {
+        Egg instance = scene.Instantiate<Egg>();
+        instance.Position = pos;
+        instance.Id = id;
+        instance.Name = $"Egg_{id}";
+        return instance;
+    }
+
+    public override void _Ready()
+    {
+        mesh = GetNode<MeshInstance3D>("Mesh");
+    }
+
+    /// <summary>
+    /// Transición visual de eclosión: tinte cálido + pequeño "pop" de escala.
+    /// No elimina el huevo, eso ocurre por separado cuando el jugador se conecta.
+    /// </summary>
+    public void Hatch()
+    {
+        if (_hatched)
+            return;
+        _hatched = true;
+
+        if (mesh != null)
+        {
+            StandardMaterial3D mat = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(1f, 0.85f, 0.3f),
+                EmissionEnabled = true,
+                Emission = new Color(1f, 0.6f, 0.1f),
+            };
+            mesh.MaterialOverlay = mat;
+        }
+
+        Tween tween = CreateTween();
+        tween.TweenProperty(this, "scale", Vector3.One * PopScaleFactor, PopScaleUpDuration);
+        tween.TweenProperty(this, "scale", Vector3.One, PopScaleDownDuration);
+    }
+}
