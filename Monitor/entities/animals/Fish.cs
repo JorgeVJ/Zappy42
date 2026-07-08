@@ -27,8 +27,6 @@ public partial class Fish : Animal
 	[Export]
 	public float SpeedTailBoost = 1.2f;
 
-	private string _modelPath;
-
 	private Skeleton3D _skeleton;
 	private int _bodyBone = -1;
 	private int _tailBone = -1;
@@ -38,7 +36,7 @@ public partial class Fish : Animal
 
 	public static Fish Create(Vector3 pos, string modelPath)
 	{
-		Fish fish = new Fish { Position = pos, _modelPath = modelPath };
+		Fish fish = new Fish { Position = pos, ModelPath = modelPath };
 		return fish;
 	}
 
@@ -50,23 +48,17 @@ public partial class Fish : Animal
 	}
 
 	/// <summary>
-	/// Instancia el modelo del pez desde <see cref="_modelPath"/> (si hay uno) y
+	/// Instancia el modelo del pez desde <see cref="Animal.ModelPath"/> (si hay uno) y
 	/// resuelve el esqueleto y los huesos "Body"/"Tail" que anima OnLocomotionUpdate,
 	/// guardando su pose de reposo.
 	/// </summary>
 	private void LoadModelAndSkeleton()
 	{
-		if (string.IsNullOrEmpty(_modelPath))
+		Node3D model = LoadModel();
+		if (model == null)
 			return;
 
-		PackedScene packed = ResourceLoader.Load<PackedScene>(_modelPath);
-		if (packed == null)
-			return;
-
-		Node3D model = packed.Instantiate<Node3D>();
-		AddChild(model);
-
-		_skeleton = FindSkeleton(model);
+		_skeleton = FindInDescendants<Skeleton3D>(model);
 		if (_skeleton == null)
 			return;
 
@@ -77,21 +69,6 @@ public partial class Fish : Animal
 			_bodyRest = _skeleton.GetBoneRest(_bodyBone);
 		if (_tailBone >= 0)
 			_tailRest = _skeleton.GetBoneRest(_tailBone);
-	}
-
-	private static Skeleton3D FindSkeleton(Node node)
-	{
-		if (node is Skeleton3D skeleton)
-			return skeleton;
-
-		foreach (Node child in node.GetChildren())
-		{
-			Skeleton3D found = FindSkeleton(child);
-			if (found != null)
-				return found;
-		}
-
-		return null;
 	}
 
 	/// <summary>

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://kn20kedugkb2"
 path.s3tc="res://.godot/imported/Grass_D_1x1_forest_texture.png-957cb70d67565cb9c333c305c034d18d.s3tc.ctex"
+path.etc2="res://.godot/imported/Grass_D_1x1_forest_texture.png-957cb70d67565cb9c333c305c034d18d.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://entities/terrain/models/Grass_D_1x1_forest_texture.png"
-dest_files=["res://.godot/imported/Grass_D_1x1_forest_texture.png-957cb70d67565cb9c333c305c034d18d.s3tc.ctex"]
+dest_files=["res://.godot/imported/Grass_D_1x1_forest_texture.png-957cb70d67565cb9c333c305c034d18d.s3tc.ctex", "res://.godot/imported/Grass_D_1x1_forest_texture.png-957cb70d67565cb9c333c305c034d18d.etc2.ctex"]
 
 [params]
 

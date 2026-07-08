@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwtnj4bvop2hg"
 path.s3tc="res://.godot/imported/Bush_G_3x1_forest_texture.png-ffcfead00eda186b0c92d20a8db35b79.s3tc.ctex"
+path.etc2="res://.godot/imported/Bush_G_3x1_forest_texture.png-ffcfead00eda186b0c92d20a8db35b79.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://entities/terrain/models/Bush_G_3x1_forest_texture.png"
-dest_files=["res://.godot/imported/Bush_G_3x1_forest_texture.png-ffcfead00eda186b0c92d20a8db35b79.s3tc.ctex"]
+dest_files=["res://.godot/imported/Bush_G_3x1_forest_texture.png-ffcfead00eda186b0c92d20a8db35b79.s3tc.ctex", "res://.godot/imported/Bush_G_3x1_forest_texture.png-ffcfead00eda186b0c92d20a8db35b79.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4ix37ns12ccq"
 path.s3tc="res://.godot/imported/Rock_G_1x1_forest_texture.png-b851c3ecfd83f865b6c7ca72454c9ee1.s3tc.ctex"
+path.etc2="res://.godot/imported/Rock_G_1x1_forest_texture.png-b851c3ecfd83f865b6c7ca72454c9ee1.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://entities/terrain/models/Rock_G_1x1_forest_texture.png"
-dest_files=["res://.godot/imported/Rock_G_1x1_forest_texture.png-b851c3ecfd83f865b6c7ca72454c9ee1.s3tc.ctex"]
+dest_files=["res://.godot/imported/Rock_G_1x1_forest_texture.png-b851c3ecfd83f865b6c7ca72454c9ee1.s3tc.ctex", "res://.godot/imported/Rock_G_1x1_forest_texture.png-b851c3ecfd83f865b6c7ca72454c9ee1.etc2.ctex"]
 
 [params]
 

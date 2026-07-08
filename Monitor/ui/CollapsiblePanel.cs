@@ -6,11 +6,17 @@ using Godot;
 /// </summary>
 public partial class CollapsiblePanel : Control
 {
-    private Control       _panelRoot;
     private Button        _minimizedBtn;
 
     /// <summary>Área de contenido expuesta a las subclases.</summary>
     protected VBoxContainer Content { get; private set; }
+
+    /// <summary>
+    /// Contenedor raíz del panel expandido, expuesto a las subclases para que
+    /// puedan re-estilar su propio fondo (p. ej. estilo neumórfico) sin afectar
+    /// al resto de paneles.
+    /// </summary>
+    protected PanelContainer PanelRoot { get; private set; }
 
     /// <summary>
     /// Construye la estructura del panel.
@@ -39,7 +45,7 @@ public partial class CollapsiblePanel : Control
         panel.Position = panelRect.Position;
         panel.Size     = panelRect.Size;
         AddChild(panel);
-        _panelRoot = panel;
+        PanelRoot = panel;
 
         panel.AddChild(new ResizeBehavior());
 
@@ -125,22 +131,25 @@ public partial class CollapsiblePanel : Control
         return _minimizedTray;
     }
 
+    /// <summary>Arranca el panel colapsado (solo su botón en la bandeja compartida).</summary>
+    protected void StartCollapsed() => Collapse();
+
     /// <summary>Alterna entre expandido y colapsado.</summary>
     public void Toggle()
     {
-        if (_panelRoot.Visible) Collapse();
+        if (PanelRoot.Visible) Collapse();
         else Expand();
     }
 
     private void Collapse()
     {
-        _panelRoot.Hide();
+        PanelRoot.Hide();
         _minimizedBtn.Show();
     }
 
     private void Expand()
     {
         _minimizedBtn.Hide();
-        _panelRoot.Show();
+        PanelRoot.Show();
     }
 }

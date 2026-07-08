@@ -22,7 +22,8 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Seguimiento de progreso por equipo | ✅ | TeamProgressPanel: jugadores, niveles y equipo líder |
 | Quién ganó (`seg`) | ✅ | Overlay pantalla completa con nombre del ganador |
 | Protocolo gráfico completo | ✅ | Todos los mensajes del servidor manejados |
-| Audio/música | ✅ | `MusicPlayer` (`audio/MusicPlayer.cs`): música de fondo en bucle, hijo directo de `Game` (sobrevive al replay/reset de la timeline), `ProcessMode.Always` (sigue sonando con `GetTree().Paused = true` tras `seg`), botón Mute de icono (toggle, estilo `ui/IconButton.cs`)/tecla M |
+| Audio/música | ✅ | `MusicPlayer` (`audio/MusicPlayer.cs`): música de fondo en bucle, hijo directo de `Game` (sobrevive al replay/reset de la timeline), `ProcessMode.Always` (sigue sonando con `GetTree().Paused = true` tras `seg`), mute vía `SettingsPanel` (señal `MutedChanged`)/tecla M |
+| Configuración/rendimiento | ✅ | `SettingsPanel` (`ui/SettingsPanel.cs`): panel neumórfico con interruptores animados (`ToggleSwitch`) para ocultar agua/decoración+césped/fauna (`Terrain.SetWaterEnabled/SetDecorationsEnabled/SetAnimalsEnabled`) y aligerar el render en equipos poco potentes, más el control de sonido |
 
 ---
 
@@ -62,8 +63,11 @@ Monitor/
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
 ├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ (icono) y botón de restauración (icono por panel vía Setup(minimizedIcon)); los botones colapsados se agrupan en una bandeja HBox compartida (esquina sup. izq.) para no solaparse
 ├── IconButton.cs           # UI: helper estático de estilo para botones de icono (iconos en ui/icons/*.svg, tamaño/estilo uniforme)
+├── Neumorphism.cs          # UI: helper estático de estilo soft-3D (StyleBoxFlat con sombra + borde-highlight, sin shader) + paleta compartida; usado por SettingsPanel/ToggleSwitch
+├── ToggleSwitch.cs         # UI: interruptor deslizante animado dibujado a mano (_Draw), estética neumórfica; emite Toggled(bool)
 ├── InventoryPanel.cs       # UI: panel de inventario seleccionado
 ├── MessageLogPanel.cs      # UI: log de mensajes (hereda CollapsiblePanel)
+├── SettingsPanel.cs        # UI: configuración gráfica (hereda CollapsiblePanel, icono tuerca); interruptores de agua/decoración/fauna para aligerar el render + sonido; emite señales que Connection cablea a Terrain/MusicPlayer
 ├── TeamProgressPanel.cs    # UI: progreso por equipo (hereda CollapsiblePanel)
 ├── MockServer.cs           # Servidor simulado para tests sin red
 ├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
@@ -79,8 +83,8 @@ Monitor/
 │       └── DayNightCycle.cs # Ciclo día/noche: Sol+Luna direccionales + cielo/ambiente según TimeOfDay
 ├── audio/
 │   ├── music.mp3           # Pista de música de fondo (loop manual, ver MusicPlayer.cs)
-│   ├── MusicPlayer.cs       # Música de fondo en bucle (Finished->Play()); botón Mute de icono (toggle) + tecla M; ProcessMode.Always
-│   └── MusicPlayer.tscn     # UI: Button (toggle) Mute con icono altavoz/tachado en esquina superior derecha + AudioStreamPlayer hijo
+│   ├── MusicPlayer.cs       # Música de fondo en bucle (Finished->Play()); mute vía SettingsPanel (señal MutedChanged) + tecla M; ProcessMode.Always
+│   └── MusicPlayer.tscn     # AudioStreamPlayer hijo (sin botón; el mute vive en SettingsPanel)
 ├── models/
 │   ├── Shaman/
 │   │   └── Shaman.glb      # Modelo principal del jugador (esqueleto + AnimationPlayer)
@@ -93,11 +97,15 @@ Monitor/
 │   └── meshy_models/        # Recursos del mundo (linemate, deraumere, etc.)
 ├── spatial/                # Módulo portable (solo tipos de Godot, copiable a otro proyecto): dominios espaciales + colocación
 │   ├── ISpatialDomain.cs    # Interfaz mínima: ¿es válido este punto del mundo?
-│   ├── IAnimalDomain.cs     # Extiende ISpatialDomain: ClampToValid/SampleWanderTarget (locomoción animal)
-│   ├── AquaticDomain.cs     # IAnimalDomain: volumen de agua (fondo+margen a superficie−margen)
-│   ├── TerrainDomain.cs     # ISpatialDomain: tierra firme (altura de tile ≥ nivel del mar + margen de orilla)
+│   ├── IAnimalDomain.cs     # Extiende ISpatialDomain: ClampToValid/SampleWanderTarget/SampleSurfaceTarget/IsAtSurface (locomoción animal)
+│   ├── HeightField.cs       # Base abstracta de los 4 dominios: muestreo de altura (tile+bilineal), límites y SampleRing (antes duplicado en cada uno)
+│   ├── AquaticDomain.cs     # HeightField+IAnimalDomain: volumen de agua (fondo+margen a superficie−margen)
+│   ├── AerialDomain.cs      # HeightField+IAnimalDomain: volumen suelo↔techo sobre todo el mapa (ave: camina en tierra, vuela sobre todo)
+│   ├── GroundDomain.cs      # HeightField+IAnimalDomain: suelo puro sobre tierra (zorro: pasea pegado a la superficie; ClampToValid fija Y al terreno)
+│   ├── TerrainDomain.cs     # HeightField+ISpatialDomain: tierra firme (altura de tile ≥ nivel del mar + margen de orilla)
 │   ├── HeightMapGrid.cs     # Struct: dimensiones de la rejilla del heightmap
 │   ├── NavigableMargins.cs  # Struct: márgenes de fondo/superficie de un volumen navegable
+│   ├── AerialBounds.cs      # Struct: límites del volumen aéreo (margen orilla, altura mín. de vuelo, techo)
 │   ├── PlacementFinder.cs   # Helper estático: offset/posición libre dentro de una región evitando obstáculos circulares (XZ + radio)
 │   ├── PlacementQuery.cs    # Struct: parámetros de una búsqueda de PlacementFinder
 │   └── Obstacle.cs          # Struct: obstáculo circular (posición XZ + radio) para PlacementFinder
@@ -133,14 +141,15 @@ game.tscn
     │   ├── ServerTransport          [ServerTransport.cs] (Node, creado en código: socket TCP o MockServer)
     │   ├── InventoryPanel           [InventoryPanel.cs] (UI Control)
     │   ├── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
-    │   └── TeamProgressPanel        [TeamProgressPanel.cs] (UI Control, creado en código)
+    │   ├── TeamProgressPanel        [TeamProgressPanel.cs] (UI Control, creado en código)
+    │   └── SettingsPanel            [SettingsPanel.cs] (UI Control, creado en código; toggles de render agua/decoración/fauna + sonido)
     ├── Terrain (terrain.tscn)       [Terrain.cs]
     │   ├── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
     │   ├── GrassSystem              [GrassSystem.cs] (césped procedural via MultiMeshInstance3D)
     │   ├── DecorationSystem         [DecorationSystem.cs] (props FBX: árboles/rocas/arbustos/hierba)
     │   └── WaterSystem              [WaterSystem.cs] (mar procedural infinito via water.gdshader; sigue a la cámara)
     ├── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
-    └── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (música de fondo en bucle, ProcessMode.Always; hijo directo de Game para no verse afectado por ResetWorldState; Button toggle Mute con icono arriba-derecha + tecla M)
+    └── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (música de fondo en bucle, ProcessMode.Always; hijo directo de Game para no verse afectado por ResetWorldState; mute vía SettingsPanel/tecla M, señal MutedChanged)
 
 player.tscn
 └── Node3D "Player"  [Player.cs]
@@ -155,7 +164,7 @@ player.tscn
 ### `Connection.cs` — Hub Central
 El corazón del monitor, ahora repartido en varios archivos para mantenerlo delgado:
 
-- **`Connection.cs`** (clase parcial principal): cablea los componentes en `_Ready()` — managers (`PlayerManager`, `EggManager`, `Terrain`, `Camera`), `SelectionController`, `CrowdSystem`, `MessageLogPanel`, `TeamProgressPanel`, `SpeedControlPanel`, `ServerTransport` y `MessageDispatcher`. Recibe `LineReceived(line)` de `ServerTransport`, loguea en `MessageLogPanel` y delega en `MessageDispatcher.Dispatch()`. Mantiene `_UnhandledInput` (F2/F3) y `SendMessage()` (delega a `ServerTransport`).
+- **`Connection.cs`** (clase parcial principal): cablea los componentes en `_Ready()` — managers (`PlayerManager`, `EggManager`, `Terrain`, `Camera`), `SelectionController`, `CrowdSystem`, `MessageLogPanel`, `TeamProgressPanel`, `SettingsPanel` (`WireSettingsPanel()` conecta sus señales a los toggles de `Terrain` y al mute de `MusicPlayer`), `SpeedControlPanel`, `ServerTransport` y `MessageDispatcher`. Recibe `LineReceived(line)` de `ServerTransport`, loguea en `MessageLogPanel` y delega en `MessageDispatcher.Dispatch()`. Mantiene `_UnhandledInput` (F2/F3) y `SendMessage()` (delega a `ServerTransport`).
 - **`Connection.Players.cs`** (clase parcial): handlers de jugadores (`pnw/ppo/plv/pin/pex/pbc/pic/pie/pfk/pdr/pgt/pdi`) + estado/efectos asociados (`_incantations`, `ShowPlayerMessage`, `ShowSoundWave`, `ShowIncantationResult`, `FadeOutTile`). Registra sus handlers en `RegisterPlayerHandlers()`.
 - **`Connection.Eggs.cs`** (clase parcial): handlers de huevos (`enw/eht/ebo/edi`), registrados en `RegisterEggHandlers()`.
 - **`Connection.System.cs`** (clase parcial): handshake (`WELCOME`→`OnWelcome()`), mapa/equipos (`msz/bct/tna`), velocidad (`sgt`, `OnSpeedChanged`, `ApplySpeedFactor`, `_currentSpeedFactor`, `teams`) y mensajería genérica (`smg/seg/suc/sbp`), registrados en `RegisterSystemHandlers()`.

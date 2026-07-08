@@ -6,8 +6,8 @@ using Godot;
 /// al alejarse la cámara, momento en que el cerebro vuelve a pasear.
 /// </summary>
 /// <remarks>
-/// Consulta la cámara con API de Godot (GetViewport().GetCamera3D()), no con tipos
-/// del proyecto, para mantener la portabilidad del sistema de animales.
+/// Lee la cámara ya cacheada en el blackboard (<see cref="AnimalContext"/>), no la consulta
+/// por su cuenta, para no re-percibir en cada frame y mantener la portabilidad del sistema.
 /// </remarks>
 public class FleeBehavior : IUtilityBehavior<Animal>
 {
@@ -30,12 +30,7 @@ public class FleeBehavior : IUtilityBehavior<Animal>
 
 	public float Score(Animal animal)
 	{
-		Camera3D cam = GetCamera(animal);
-		if (cam == null)
-			return 0f;
-		float dist = animal.GlobalPosition.DistanceTo(cam.GlobalPosition);
-		float closeness = ScoringUtils.Falloff(dist, FleeInner, FleeOuter);
-		return FleeWeight * closeness;
+		return FleeWeight * AnimalScoring.CameraFalloff(animal, FleeInner, FleeOuter);
 	}
 
 	public void Enter(Animal animal)
@@ -53,16 +48,15 @@ public class FleeBehavior : IUtilityBehavior<Animal>
 
 	private void PickFleeTarget(Animal animal)
 	{
-		Camera3D cam = GetCamera(animal);
 		Vector3 pos = animal.GlobalPosition;
 
-		if (cam == null)
+		if (!animal.Context.HasCamera)
 		{
 			animal.Locomotion.SetTarget(animal.Domain.SampleWanderTarget(pos, FleeStep, animal.Rng));
 			return;
 		}
 
-		Vector3 away = ComputeFleeDirection(animal, pos, cam);
+		Vector3 away = ComputeFleeDirection(animal, pos, animal.Context.CameraPosition);
 		if (TryPickDirectionalTarget(animal, pos, away))
 			return;
 
@@ -73,9 +67,9 @@ public class FleeBehavior : IUtilityBehavior<Animal>
 	/// Dirección de huida en el plano horizontal, opuesta a la cámara; si coincide con
 	/// su posición, elige una dirección aleatoria en su lugar.
 	/// </summary>
-	private static Vector3 ComputeFleeDirection(Animal animal, Vector3 pos, Camera3D cam)
+	private static Vector3 ComputeFleeDirection(Animal animal, Vector3 pos, Vector3 cameraPos)
 	{
-		Vector3 away = pos - cam.GlobalPosition;
+		Vector3 away = pos - cameraPos;
 		away.Y = 0f;
 		if (away.LengthSquared() < 0.0001f)
 			away = new Vector3(animal.Rng.Randf() - 0.5f, 0f, animal.Rng.Randf() - 0.5f);
@@ -102,10 +96,5 @@ public class FleeBehavior : IUtilityBehavior<Animal>
 		}
 
 		return false;
-	}
-
-	private static Camera3D GetCamera(Animal animal)
-	{
-		return animal.GetViewport()?.GetCamera3D();
 	}
 }

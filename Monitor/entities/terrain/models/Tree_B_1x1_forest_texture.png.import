@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bergwdcvfyfox"
 path.s3tc="res://.godot/imported/Tree_B_1x1_forest_texture.png-b56de1be3ff7f04c301ef621b30400d5.s3tc.ctex"
+path.etc2="res://.godot/imported/Tree_B_1x1_forest_texture.png-b56de1be3ff7f04c301ef621b30400d5.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://entities/terrain/models/Tree_B_1x1_forest_texture.png"
-dest_files=["res://.godot/imported/Tree_B_1x1_forest_texture.png-b56de1be3ff7f04c301ef621b30400d5.s3tc.ctex"]
+dest_files=["res://.godot/imported/Tree_B_1x1_forest_texture.png-b56de1be3ff7f04c301ef621b30400d5.s3tc.ctex", "res://.godot/imported/Tree_B_1x1_forest_texture.png-b56de1be3ff7f04c301ef621b30400d5.etc2.ctex"]
 
 [params]
 

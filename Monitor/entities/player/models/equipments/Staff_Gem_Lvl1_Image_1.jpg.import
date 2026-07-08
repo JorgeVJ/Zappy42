@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://4r8hej8tx8md"
 path.s3tc="res://.godot/imported/Staff_Gem_Lvl1_Image_1.jpg-f36fa67fd873a59cdf4ede462b189b35.s3tc.ctex"
+path.etc2="res://.godot/imported/Staff_Gem_Lvl1_Image_1.jpg-f36fa67fd873a59cdf4ede462b189b35.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://entities/player/models/equipments/Staff_Gem_Lvl1_Image_1.jpg"
-dest_files=["res://.godot/imported/Staff_Gem_Lvl1_Image_1.jpg-f36fa67fd873a59cdf4ede462b189b35.s3tc.ctex"]
+dest_files=["res://.godot/imported/Staff_Gem_Lvl1_Image_1.jpg-f36fa67fd873a59cdf4ede462b189b35.s3tc.ctex", "res://.godot/imported/Staff_Gem_Lvl1_Image_1.jpg-f36fa67fd873a59cdf4ede462b189b35.etc2.ctex"]
 
 [params]
 
