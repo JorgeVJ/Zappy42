@@ -115,6 +115,31 @@ public partial class Terrain : Node3D
 		_animalSystem = GetNodeOrNull<AnimalSystem>("AnimalSystem");
 	}
 
+	/// <summary>Muestra u oculta el mar procedural (WaterSystem).</summary>
+	public void SetWaterEnabled(bool enabled)
+	{
+		if (_waterSystem != null)
+			_waterSystem.Visible = enabled;
+	}
+
+	/// <summary>Muestra u oculta la decoración estática (árboles, rocas, arbustos) y el césped procedural.</summary>
+	public void SetDecorationsEnabled(bool enabled)
+	{
+		if (_decorationSystem != null)
+			_decorationSystem.Visible = enabled;
+		if (_grassSystem != null)
+			_grassSystem.Visible = enabled;
+	}
+
+	/// <summary>Muestra u oculta la fauna (peces y aves) y pausa su IA al ocultarla.</summary>
+	public void SetAnimalsEnabled(bool enabled)
+	{
+		if (_animalSystem == null)
+			return;
+		_animalSystem.Visible = enabled;
+		_animalSystem.ProcessMode = enabled ? ProcessModeEnum.Inherit : ProcessModeEnum.Disabled;
+	}
+
 	public void InitializeMap(int width, int height)
 	{
 		Reset();

@@ -18,6 +18,9 @@ using Godot;
 /// </remarks>
 public partial class MusicPlayer : Control
 {
+    [Signal]
+    public delegate void MutedChangedEventHandler(bool muted);
+
     [Export]
     public string MusicPath = "res://audio/music.mp3";
 
@@ -34,6 +37,9 @@ public partial class MusicPlayer : Control
     private Button _muteButton;
 
     private bool _muted;
+
+    /// <summary>Estado actual de silencio.</summary>
+    public bool IsMuted => _muted;
 
     public override void _Ready()
     {
@@ -93,6 +99,8 @@ public partial class MusicPlayer : Control
             _muteButton.SetPressedNoSignal(_muted);
             UpdateMuteButtonIcon();
         }
+
+        EmitSignal(SignalName.MutedChanged, _muted);
     }
 
     private void UpdateMuteButtonIcon()

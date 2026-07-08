@@ -39,6 +39,14 @@ public class AnimalLocomotion
 		Arrived = false;
 	}
 
+	/// <summary>Detiene al animal: descarta el objetivo y anula la velocidad (para el estado quieto).</summary>
+	public void Stop()
+	{
+		HasTarget = false;
+		Velocity = Vector3.Zero;
+		Arrived = true;
+	}
+
 	public void Tick(Node3D body, IAnimalDomain domain, double delta)
 	{
 		Arrived = false;

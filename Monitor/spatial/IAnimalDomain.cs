@@ -24,4 +24,17 @@ public interface IAnimalDomain : ISpatialDomain
 	/// ninguno (el animal se queda quieto).
 	/// </summary>
 	Vector3 SampleWanderTarget(Vector3 from, float radius, RandomNumberGenerator rng);
+
+	/// <summary>
+	/// Propone un destino a ras de la superficie sólida (suelo/tierra), no en el volumen abierto.
+	/// En dominios de suelo coincide con <see cref="SampleWanderTarget"/>; en el aéreo da un punto
+	/// de aterrizaje; en el acuático no aplica (devuelve <paramref name="from"/>).
+	/// </summary>
+	Vector3 SampleSurfaceTarget(Vector3 from, float radius, RandomNumberGenerator rng);
+
+	/// <summary>
+	/// ¿Está <paramref name="worldPos"/> sobre suelo válido y a menos de <paramref name="threshold"/>
+	/// de la superficie? Lo usan los comportamientos para detectar el "tocado suelo" (aterrizaje).
+	/// </summary>
+	bool IsAtSurface(Vector3 worldPos, float threshold);
 }

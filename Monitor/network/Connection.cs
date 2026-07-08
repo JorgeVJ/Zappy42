@@ -22,6 +22,7 @@ public partial class Connection : Node
 
     private MessageLogPanel _logPanel;
     private TeamProgressPanel _teamPanel;
+    private SettingsPanel _settingsPanel;
     private SpeedControlPanel _speedPanel;
     private TimelineBar _timelineBar;
 
@@ -101,11 +102,31 @@ public partial class Connection : Node
             }
         };
 
+        _settingsPanel = new SettingsPanel();
+        AddChild(_settingsPanel);
+        WireSettingsPanel();
+
         _speedPanel = GetNode<SpeedControlPanel>("SpeedControlPanel");
         _speedPanel.SpeedChanged += OnSpeedChanged;
 
         _timelineBar = GetNode<TimelineBar>("TimelineBar");
         MoveChild(_timelineBar, GetChildCount() - 1);
+    }
+
+    /// <summary>
+    /// Conecta los interruptores del panel de configuración a los toggles de
+    /// render de Terrain y al mute de MusicPlayer, y mantiene el interruptor de
+    /// sonido sincronizado con la tecla M.
+    /// </summary>
+    private void WireSettingsPanel()
+    {
+        _settingsPanel.WaterToggled += terrainManager.SetWaterEnabled;
+        _settingsPanel.DecorationsToggled += terrainManager.SetDecorationsEnabled;
+        _settingsPanel.AnimalsToggled += terrainManager.SetAnimalsEnabled;
+
+        MusicPlayer music = GetParent().GetNode<MusicPlayer>("MusicPlayer");
+        _settingsPanel.SoundToggled += on => music.SetMuted(!on);
+        music.MutedChanged += muted => _settingsPanel.SetSoundOn(!muted, false);
     }
 
     /// <summary>

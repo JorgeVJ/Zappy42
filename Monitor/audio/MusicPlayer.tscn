@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bg5kln3brhxbp" path="res://audio/MusicPlayer.cs" id="1_musicpl"]
 
-[node name="MusicPlayer" type="Control" node_paths=PackedStringArray("_player", "_muteButton")]
+[node name="MusicPlayer" type="Control" node_paths=PackedStringArray("_player")]
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
@@ -16,14 +16,5 @@ offset_bottom = 50.0
 grow_horizontal = 0
 script = ExtResource("1_musicpl")
 _player = NodePath("AudioStreamPlayer")
-_muteButton = NodePath("MuteButton")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
-
-[node name="MuteButton" type="Button" parent="."]
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 1
-anchors_preset = 0
-offset_right = 36.0
-offset_bottom = 36.0
-toggle_mode = true
