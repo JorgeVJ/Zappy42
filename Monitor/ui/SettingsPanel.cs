@@ -41,10 +41,10 @@ public partial class SettingsPanel : CollapsiblePanel
     /// <summary>Monta las filas de interruptores y conecta su reemisión de señales.</summary>
     private void BuildRows()
     {
-        _water = AddRow("Agua");
-        _decorations = AddRow("Decoración y césped");
-        _animals = AddRow("Fauna");
-        _sound = AddRow("Sonido");
+        _water = AddRow("Agua", false);
+        _decorations = AddRow("Decoración y césped", false);
+        _animals = AddRow("Fauna", false);
+        _sound = AddRow("Sonido", true);
         AddLowPowerButton();
 
         _water.Toggled += on => EmitSignal(SignalName.WaterToggled, on);
@@ -53,8 +53,8 @@ public partial class SettingsPanel : CollapsiblePanel
         _sound.Toggled += on => EmitSignal(SignalName.SoundToggled, on);
     }
 
-    /// <summary>Fila con etiqueta a la izquierda e interruptor (encendido) a la derecha.</summary>
-    private ToggleSwitch AddRow(string label)
+    /// <summary>Fila con etiqueta a la izquierda e interruptor a la derecha, con estado inicial dado.</summary>
+    private ToggleSwitch AddRow(string label, bool defaultOn)
     {
         HBoxContainer row = new HBoxContainer();
         row.AddThemeConstantOverride("separation", 12);
@@ -70,7 +70,7 @@ public partial class SettingsPanel : CollapsiblePanel
         row.AddChild(sw);
         Content.AddChild(row);
 
-        sw.SetOn(true, emit: false);
+        sw.SetOn(defaultOn, emit: false);
         return sw;
     }
 

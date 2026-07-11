@@ -23,7 +23,7 @@ Cliente gráfico 3D para el juego **Zappy** (proyecto UNIX 42). Conecta al servi
 | Quién ganó (`seg`) | ✅ | Overlay pantalla completa con nombre del ganador |
 | Protocolo gráfico completo | ✅ | Todos los mensajes del servidor manejados |
 | Audio/música | ✅ | `MusicPlayer` (`audio/MusicPlayer.cs`): música de fondo en bucle, hijo directo de `Game` (sobrevive al replay/reset de la timeline), `ProcessMode.Always` (sigue sonando con `GetTree().Paused = true` tras `seg`), mute vía `SettingsPanel` (señal `MutedChanged`)/tecla M |
-| Configuración/rendimiento | ✅ | `SettingsPanel` (`ui/SettingsPanel.cs`): panel neumórfico con interruptores animados (`ToggleSwitch`) para ocultar agua/decoración+césped/fauna (`Terrain.SetWaterEnabled/SetDecorationsEnabled/SetAnimalsEnabled`) y aligerar el render en equipos poco potentes, más el control de sonido |
+| Configuración/rendimiento | ✅ | `SettingsPanel` (`ui/SettingsPanel.cs`): panel neumórfico con interruptores animados (`ToggleSwitch`) para ocultar agua/decoración+césped/fauna (`Terrain.SetWaterEnabled/SetDecorationsEnabled/SetAnimalsEnabled`) y aligerar el render en equipos poco potentes, más el control de sonido. Los tres decorativos **arrancan desactivados** (interruptor en OFF y nodos `visible = false` en `terrain.tscn`, con `AnimalSystem` además en `process_mode = Disabled`); el sonido arranca activo |
 
 ---
 
