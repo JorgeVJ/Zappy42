@@ -111,12 +111,13 @@ public partial class CollapsiblePanel : Control
 
     /// <summary>
     /// Obtiene (creando de forma perezosa si hace falta) la bandeja compartida.
-    /// Se cuelga del root para renderizar por encima del 3D (igual que los
-    /// paneles) y quedar por debajo del overlay de ganador (CanvasLayer 10).
-    /// El AddChild se difiere porque este método se llama desde Setup() en
-    /// _Ready, momento en que el root está "ocupado montando hijos" y un
-    /// AddChild directo falla silenciosamente (la bandeja no entraría al árbol
-    /// y los botones colapsados no se verían); CallDeferred lo añade ya libre.
+    /// Se cuelga del contenedor UI del panel (CanvasLayer/UI) para renderizar
+    /// por encima del 3D (igual que los paneles) y quedar por debajo del overlay
+    /// de ganador (CanvasLayer 10). El AddChild se difiere porque este método se
+    /// llama desde Setup() en _Ready, momento en que el padre está "ocupado
+    /// montando hijos" y un AddChild directo falla silenciosamente (la bandeja
+    /// no entraría al árbol y los botones colapsados no se verían); CallDeferred
+    /// lo añade ya libre.
     /// </summary>
     private HBoxContainer GetTray()
     {
@@ -126,7 +127,7 @@ public partial class CollapsiblePanel : Control
             _minimizedTray.AddThemeConstantOverride("separation", 8);
             _minimizedTray.SetAnchorsAndOffsetsPreset(
                 Control.LayoutPreset.TopLeft, Control.LayoutPresetMode.Minsize, 10);
-            GetTree().Root.CallDeferred(Node.MethodName.AddChild, _minimizedTray);
+            GetParent().CallDeferred(Node.MethodName.AddChild, _minimizedTray);
         }
         return _minimizedTray;
     }

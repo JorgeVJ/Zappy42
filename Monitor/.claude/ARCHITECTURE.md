@@ -63,11 +63,12 @@ Monitor/
 ├── Inventory.cs            # Modelo de datos: 7 tipos de recurso
 ├── CollapsiblePanel.cs     # UI base: panel con título, botón ✕ (icono) y botón de restauración (icono por panel vía Setup(minimizedIcon)); los botones colapsados se agrupan en una bandeja HBox compartida (esquina sup. izq.) para no solaparse
 ├── IconButton.cs           # UI: helper estático de estilo para botones de icono (iconos en ui/icons/*.svg, tamaño/estilo uniforme)
-├── Neumorphism.cs          # UI: helper estático de estilo soft-3D (StyleBoxFlat con sombra + borde-highlight, sin shader) + paleta compartida; usado por SettingsPanel/ToggleSwitch
+├── Neumorphism.cs          # UI: helper estático de estilo soft-3D (StyleBoxFlat con sombra + borde-highlight, sin shader) + paleta compartida; StylePanel(Control) acepta PanelContainer o Panel; usado por SettingsPanel/ToggleSwitch/InventoryPanel
 ├── ToggleSwitch.cs         # UI: interruptor deslizante animado dibujado a mano (_Draw), estética neumórfica; emite Toggled(bool)
 ├── InventoryPanel.cs       # UI: panel de inventario seleccionado
 ├── MessageLogPanel.cs      # UI: log de mensajes (hereda CollapsiblePanel)
-├── SettingsPanel.cs        # UI: configuración gráfica (hereda CollapsiblePanel, icono tuerca); interruptores de agua/decoración/fauna para aligerar el render + sonido; emite señales que Connection cablea a Terrain/MusicPlayer
+├── SettingsPanel.cs        # UI: configuración gráfica (hereda CollapsiblePanel, icono tuerca); interruptores de agua/decoración/fauna para aligerar el render + sonido + ciclo día/noche (interruptor) y hora del día (deslizador); emite señales que Connection cablea a Terrain/MusicPlayer/DayNightCycle
+├── HelpPanel.cs            # UI: leyenda de todos los atajos de teclado/ratón (hereda CollapsiblePanel, icono help); toggle con F1
 ├── TeamProgressPanel.cs    # UI: progreso por equipo (hereda CollapsiblePanel)
 ├── MockServer.cs           # Servidor simulado para tests sin red
 ├── Offsets.cs              # Struct: posición/rotación/escala para equipamiento
@@ -135,27 +136,43 @@ game.tscn
     │   ├── Sun                     (DirectionalLight3D; antigua luz estática, ahora dinámica)
     │   └── Moon                    (DirectionalLight3D; nueva, luz nocturna azulada)
     ├── WorldEnvironment
-    ├── Connection (connection.tscn) [Connection.cs]
+    ├── Connection (connection.tscn) [Connection.cs] (solo lógica; la UI vive bajo CanvasLayer/UI)
     │   ├── PlayerManager            [PlayerManager.cs]
     │   ├── EggManager               [EggManager.cs]
     │   ├── ServerTransport          [ServerTransport.cs] (Node, creado en código: socket TCP o MockServer)
-    │   ├── InventoryPanel           [InventoryPanel.cs] (UI Control)
-    │   ├── MessageLogPanel          [MessageLogPanel.cs] (UI Control, creado en código)
-    │   ├── TeamProgressPanel        [TeamProgressPanel.cs] (UI Control, creado en código)
-    │   └── SettingsPanel            [SettingsPanel.cs] (UI Control, creado en código; toggles de render agua/decoración/fauna + sonido)
+    │   └── CrowdSystem              [CrowdSystem.cs] (Node, creado en código)
     ├── Terrain (terrain.tscn)       [Terrain.cs]
     │   ├── MeshInstance3D           (terrain.gdshader via ShaderMaterial)
     │   ├── GrassSystem              [GrassSystem.cs] (césped procedural via MultiMeshInstance3D)
     │   ├── DecorationSystem         [DecorationSystem.cs] (props FBX: árboles/rocas/arbustos/hierba)
     │   └── WaterSystem              [WaterSystem.cs] (mar procedural infinito via water.gdshader; sigue a la cámara)
     ├── ScreenshotService            [ScreenshotService.cs] (herramienta dev: captura PNG)
-    └── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (música de fondo en bucle, ProcessMode.Always; hijo directo de Game para no verse afectado por ResetWorldState; mute vía SettingsPanel/tecla M, señal MutedChanged)
+    ├── MusicPlayer (MusicPlayer.tscn) [MusicPlayer.cs] (Node; música en bucle, ProcessMode.Always; hijo directo de Game, fuera de la capa de UI, a salvo de ResetWorldState; sin control propio en pantalla, mute vía SettingsPanel/tecla M, señal MutedChanged)
+    └── CanvasLayer                  (contenedor único de la UI visual, layer 1)
+        └── UI (Control, FullRect, mouse_filter = Ignore) ← deja pasar los clics al 3D; cada panel captura solo su área
+            ├── InventoryPanel       [InventoryPanel.cs] (UI Control anclado abajo-derecha, fondo neumórfico vía Neumorphism.StylePanel; cableado por [Export] NodePath desde Connection)
+            ├── SpeedControlPanel    (instancia; SpeedChanged → Connection)
+            ├── MessageLogPanel      [MessageLogPanel.cs] (UI Control, creado en código, AddChild a UI)
+            ├── TeamProgressPanel    [TeamProgressPanel.cs] (UI Control, creado en código, AddChild a UI)
+            ├── SettingsPanel        [SettingsPanel.cs] (UI Control, creado en código; toggles de render agua/decoración/fauna + sonido + ciclo día/noche y deslizador de hora)
+            ├── HelpPanel            [HelpPanel.cs] (UI Control, creado en código; leyenda de atajos, toggle F1, icono help)
+            ├── _minimizedTray       (HBoxContainer creado por CollapsiblePanel; bandeja de botones colapsados)
+            └── TimelineBar          [TimelineBar.cs] (instancia; forzada al final con MoveChild para que su slider quede encima)
 
 player.tscn
 └── Node3D "Player"  [Player.cs]
     ├── Node3D "Model" (Shaman.glb) — esqueleto bípedo + AnimationPlayer
     └── StaticBody3D + CollisionShape3D
 ```
+
+> **Regla de UI (clics 3D):** el `Control` raíz a pantalla completa que contiene la UI
+> (`CanvasLayer/UI`) **debe ir en `mouse_filter = Ignore`**. Un `Control` a pantalla completa con
+> el `mouse_filter` por defecto (`Stop`) consume todos los eventos de ratón antes de que lleguen a
+> `_UnhandledInput`, donde `Camera` hace el raycast de selección (clic izquierdo) y la captura de
+> ratón (clic derecho): eso bloquea por completo la interacción con el mundo 3D. Los paneles
+> concretos sí usan `Stop` (por defecto), así capturan los clics solo en su propia área; los
+> `CollapsiblePanel` ya lo resuelven en `Setup()` (raíz `FullRect` + `Ignore`, con un
+> `PanelContainer` hijo que captura su área).
 
 ---
 
@@ -357,7 +374,7 @@ Controlador `Node3D` (`entities/sky/DayNightCycle.cs`) que da vida a un ciclo d�
   - **Iluminación:** energía/color del Sol (de naranja en el horizonte a blanco cálido al mediodía) y de la Luna (energía inversa al sol, color azul fijo). Energías máximas tuneables (`MaxSunEnergy`, `MaxMoonEnergy`).
   - **Cielo:** lerp de `SkyTopColor`/`SkyHorizonColor`/`GroundHorizonColor` entre paletas día/noche, con un tinte cálido (`HorizonDuskColor`) que aparece cerca del horizonte al amanecer/atardecer. El cielo nocturno se mantiene azul oscuro (nunca negro puro) para que el ambiente derivado del cielo conserve algo de visibilidad; la Luna aporta el relleno direccional nocturno.
 - **Ciclo automático en reloj de pared independiente:** con `AutoRun` (def. `true`), `_Process` avanza `TimeOfDay` según `DayDurationSeconds` (def. 120 s por ciclo completo). NO está ligado al tiempo del servidor ni a la timeline/replay. Usa el process mode por defecto, así que **se pausa junto con el juego** (p. ej. tras `seg`).
-- **Controles en runtime** (`_UnhandledInput`): **L** alterna `AutoRun` (pausa/reanuda el ciclo); **`[`** y **`]`** retroceden/avanzan la hora del día en pasos de 0.02 (scrub manual, aplicando al instante). Teclas libres: la cámara usa WASD/QE/ratón/rueda/clic-derecho y los toggles existentes son M, F2, F3, F12.
+- **Controles en runtime** (`_UnhandledInput`): **L** alterna `AutoRun` (pausa/reanuda el ciclo, vía `SetAutoRun()` que emite `AutoRunChanged` para sincronizar el interruptor de `SettingsPanel`); **`[`** y **`]`** retroceden/avanzan la hora del día en pasos de 0.02 (scrub manual, aplicando al instante). El ciclo y la hora también se controlan desde `SettingsPanel` (interruptor "Ciclo día/noche" + deslizador "Hora del día"), cableado por `Connection.WireDayNightPanel()`. Teclas de toggle: F1 (ayuda), M, F2, F3, F12; la cámara usa WASD/QE/ratón/rueda/clic-derecho.
 - **Solo iluminación y cielo:** no hay mallas/discos de sol o luna visibles, solo luces direccionales + cambios de cielo/ambiente.
 - **Limitación conocida:** `grass.gdshader` es `unshaded`, por lo que el césped no se oscurece de noche (no responde a la iluminación de la escena).
 

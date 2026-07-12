@@ -36,8 +36,14 @@ public partial class InventoryPanel : Control
 	[Export]
 	private Label thystameDetail;
 
+	[Export]
+	private Panel background;
+
 	public override void _Ready()
 	{
+		if (background != null)
+			Neumorphism.StylePanel(background);
+
 		Hide();
 	}
 

@@ -23,10 +23,13 @@ public partial class Connection : Node
     private MessageLogPanel _logPanel;
     private TeamProgressPanel _teamPanel;
     private SettingsPanel _settingsPanel;
+    private HelpPanel _helpPanel;
     private SpeedControlPanel _speedPanel;
     private TimelineBar _timelineBar;
 
     private Camera camera;
+
+    private Control _ui;
 
     private ServerTransport _transport;
     private MessageDispatcher _dispatcher;
@@ -57,6 +60,7 @@ public partial class Connection : Node
         terrainManager = GetParent().GetNode<Terrain>("Terrain");
         camera = GetParent().GetNode<Camera>("Camera");
         eggManager = GetNode<EggManager>("EggManager");
+        _ui = GetParent().GetNode<Control>("CanvasLayer/UI");
     }
 
     private CameraFollowBehavior SetupCameraAndSelection()
@@ -80,19 +84,20 @@ public partial class Connection : Node
     }
 
     /// <remarks>
-    /// _logPanel y _teamPanel se añaden dinámicamente con AddChild() aquí, lo
-    /// que los deja por delante de TimelineBar (declarada en game.tscn) en el
-    /// orden de hermanos: en Godot, hermanos posteriores se dibujan y reciben
+    /// Toda la UI cuelga del contenedor CanvasLayer/UI (_ui). _logPanel y
+    /// _teamPanel se añaden dinámicamente con AddChild() aquí, lo que los deja
+    /// por detrás de TimelineBar (declarada en game.tscn bajo CanvasLayer/UI) en
+    /// el orden de hermanos: en Godot, hermanos posteriores se dibujan y reciben
     /// input por encima de los anteriores. Forzamos a TimelineBar al final
     /// para que su slider no quede tapado por esos paneles.
     /// </remarks>
     private void SetupPanels(CameraFollowBehavior followBehavior)
     {
         _logPanel = new MessageLogPanel();
-        AddChild(_logPanel);
+        _ui.AddChild(_logPanel);
 
         _teamPanel = new TeamProgressPanel();
-        AddChild(_teamPanel);
+        _ui.AddChild(_teamPanel);
         _teamPanel.PlayerSelected += id =>
         {
             if (playerManager.TryGet(id, out Player p))
@@ -103,14 +108,17 @@ public partial class Connection : Node
         };
 
         _settingsPanel = new SettingsPanel();
-        AddChild(_settingsPanel);
+        _ui.AddChild(_settingsPanel);
         WireSettingsPanel();
 
-        _speedPanel = GetNode<SpeedControlPanel>("SpeedControlPanel");
+        _helpPanel = new HelpPanel();
+        _ui.AddChild(_helpPanel);
+
+        _speedPanel = _ui.GetNode<SpeedControlPanel>("SpeedControlPanel");
         _speedPanel.SpeedChanged += OnSpeedChanged;
 
-        _timelineBar = GetNode<TimelineBar>("TimelineBar");
-        MoveChild(_timelineBar, GetChildCount() - 1);
+        _timelineBar = _ui.GetNode<TimelineBar>("TimelineBar");
+        _ui.MoveChild(_timelineBar, _ui.GetChildCount() - 1);
     }
 
     /// <summary>
@@ -127,6 +135,29 @@ public partial class Connection : Node
         MusicPlayer music = GetParent().GetNode<MusicPlayer>("MusicPlayer");
         _settingsPanel.SoundToggled += on => music.SetMuted(!on);
         music.MutedChanged += muted => _settingsPanel.SetSoundOn(!muted, false);
+
+        WireDayNightPanel();
+    }
+
+    /// <summary>
+    /// Conecta el interruptor de ciclo y el deslizador de hora del día del
+    /// SettingsPanel con DayNightCycle, y mantiene el interruptor sincronizado
+    /// con la tecla L (señal AutoRunChanged), igual que el sonido con la tecla M.
+    /// </summary>
+    private void WireDayNightPanel()
+    {
+        DayNightCycle dayNight = GetParent().GetNode<DayNightCycle>("DayNightCycle");
+
+        _settingsPanel.DayNightAutoToggled += on => dayNight.SetAutoRun(on);
+        _settingsPanel.TimeOfDayChanged += t =>
+        {
+            dayNight.TimeOfDay = t;
+            dayNight.Apply(t);
+        };
+        dayNight.AutoRunChanged += on => _settingsPanel.SetDayNightAuto(on, false);
+
+        _settingsPanel.SetDayNightAuto(dayNight.AutoRun, false);
+        _settingsPanel.SetTimeOfDayValue(dayNight.TimeOfDay);
     }
 
     /// <summary>
@@ -191,7 +222,9 @@ public partial class Connection : Node
     {
         if (e is InputEventKey key && key.Pressed && !key.Echo)
         {
-            if (key.Keycode == Key.F2)
+            if (key.Keycode == Key.F1)
+                _helpPanel.Toggle();
+            else if (key.Keycode == Key.F2)
                 _logPanel.Toggle();
             else if (key.Keycode == Key.F3)
                 _teamPanel.Toggle();

@@ -12,6 +12,10 @@ using Godot;
 /// </remarks>
 public partial class DayNightCycle : Node3D
 {
+	/// <summary>Se emite al cambiar AutoRun (p. ej. tecla L) para sincronizar la UI.</summary>
+	[Signal]
+	public delegate void AutoRunChangedEventHandler(bool on);
+
 	[Export]
 	public bool AutoRun = true;
 
@@ -150,6 +154,13 @@ public partial class DayNightCycle : Node3D
 		_sky.GroundHorizonColor = skyHorizon;
 	}
 
+	/// <summary>Asigna AutoRun y notifica el cambio (para reflejarlo en la UI).</summary>
+	public void SetAutoRun(bool on)
+	{
+		AutoRun = on;
+		EmitSignal(SignalName.AutoRunChanged, on);
+	}
+
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (@event is InputEventKey k && k.Pressed && !k.Echo)
@@ -165,7 +176,7 @@ public partial class DayNightCycle : Node3D
 		switch (keycode)
 		{
 			case Key.L:
-				AutoRun = !AutoRun;
+				SetAutoRun(!AutoRun);
 				break;
 			case Key.Bracketright:
 				TimeOfDay = Mathf.PosMod(TimeOfDay + 0.02f, 1f);

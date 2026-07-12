@@ -36,8 +36,9 @@ public static class Neumorphism
     /// <summary>
     /// Aplica el fondo neumórfico al contenedor raíz de un panel: esquinas
     /// redondeadas, borde-highlight superior y sombra proyectada abajo-derecha.
+    /// Acepta cualquier Control con tema "panel" (PanelContainer o Panel).
     /// </summary>
-    public static void StylePanel(PanelContainer panel)
+    public static void StylePanel(Control panel)
     {
         StyleBoxFlat box = new StyleBoxFlat { BgColor = Surface };
         box.SetCornerRadiusAll(PanelRadius);

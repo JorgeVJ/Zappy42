@@ -46,7 +46,7 @@ shadow_enabled = true
 light_energy = 0.0
 
 [node name="Connection" parent="." unique_id=686779990 node_paths=PackedStringArray("inventoryPanel") instance=ExtResource("2_hexf3")]
-inventoryPanel = NodePath("InventoryPanel")
+inventoryPanel = NodePath("../CanvasLayer/UI/InventoryPanel")
 
 [node name="PlayerManager" type="Node" parent="Connection" unique_id=1956056664]
 script = ExtResource("3_j1vdv")
@@ -54,12 +54,43 @@ script = ExtResource("3_j1vdv")
 [node name="EggManager" type="Node" parent="Connection" unique_id=1446159505]
 script = ExtResource("4_wn21u")
 
-[node name="InventoryPanel" type="Control" parent="Connection" unique_id=539713933 node_paths=PackedStringArray("title", "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame", "titleDetail", "foodDetail", "linemateDetail", "deraumereDetail", "siburDetail", "mendianeDetail", "phirasDetail", "thystameDetail")]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1441343531]
+environment = SubResource("Environment_k485n")
+
+[node name="Terrain" parent="." unique_id=834834148 instance=ExtResource("6_bqi2m")]
+
+[node name="ScreenshotService" type="Node" parent="." unique_id=1425915694]
+script = ExtResource("7_scrn1")
+
+[node name="MusicPlayer" parent="." unique_id=10970874 instance=ExtResource("9_musicpl")]
+process_mode = 3
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=952681925]
+
+[node name="UI" type="Control" parent="CanvasLayer" unique_id=1201877520]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 147.0
-offset_bottom = 236.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="InventoryPanel" type="Control" parent="CanvasLayer/UI" unique_id=539713933 node_paths=PackedStringArray("title", "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame", "titleDetail", "foodDetail", "linemateDetail", "deraumereDetail", "siburDetail", "mendianeDetail", "phirasDetail", "thystameDetail", "background")]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -157.0
+offset_top = -292.0
+offset_right = -10.0
+offset_bottom = -56.0
+grow_horizontal = 0
+grow_vertical = 0
 script = ExtResource("5_mwang")
+background = NodePath("Panel")
 title = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Title")
 food = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Food")
 linemate = NodePath("MarginContainer/HBoxContainer/VBoxContainer/Linemate")
@@ -77,16 +108,15 @@ mendianeDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Mendiane
 phirasDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Phiras")
 thystameDetail = NodePath("MarginContainer/HBoxContainer/VBoxContainer2/Thystame")
 
-[node name="ColorRect" type="ColorRect" parent="Connection/InventoryPanel" unique_id=1053994565]
+[node name="Panel" type="Panel" parent="CanvasLayer/UI/InventoryPanel" unique_id=1053994565]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.164706, 0.164706, 0.164706, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="Connection/InventoryPanel" unique_id=842207025]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/UI/InventoryPanel" unique_id=842207025]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -96,98 +126,83 @@ grow_vertical = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_right = 8
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Connection/InventoryPanel/MarginContainer" unique_id=1552412116]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/UI/InventoryPanel/MarginContainer" unique_id=1552412116]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer" unique_id=1877649997]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer" unique_id=1877649997]
 layout_mode = 2
 size_flags_horizontal = 2
 alignment = 1
 
-[node name="Title" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1961824301]
+[node name="Title" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1961824301]
 layout_mode = 2
 text = "Title"
 
-[node name="Food" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=345987334]
+[node name="Food" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=345987334]
 layout_mode = 2
 text = "Food"
 
-[node name="Linemate" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=2125134578]
+[node name="Linemate" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=2125134578]
 layout_mode = 2
 text = "Linemate"
 
-[node name="Deraumere" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=784187798]
+[node name="Deraumere" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=784187798]
 layout_mode = 2
 text = "Deraumere"
 
-[node name="Sibur" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1933760623]
+[node name="Sibur" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1933760623]
 layout_mode = 2
 text = "Sibur"
 
-[node name="Mendiane" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=110755072]
+[node name="Mendiane" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=110755072]
 layout_mode = 2
 text = "Mendiane"
 
-[node name="Phiras" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=507203394]
+[node name="Phiras" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=507203394]
 layout_mode = 2
 text = "Phiras"
 
-[node name="Thystame" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=678214637]
+[node name="Thystame" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=678214637]
 layout_mode = 2
 text = "Thystame"
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer" unique_id=330857273]
+[node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer" unique_id=330857273]
 layout_mode = 2
 size_flags_horizontal = 8
 alignment = 1
 
-[node name="Title" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=1037181334]
+[node name="Title" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=1037181334]
 layout_mode = 2
 text = "X"
 
-[node name="Food" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=922406051]
+[node name="Food" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=922406051]
 layout_mode = 2
 text = "X"
 
-[node name="Linemate" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=750677282]
+[node name="Linemate" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=750677282]
 layout_mode = 2
 text = "X"
 
-[node name="Deraumere" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=952914626]
+[node name="Deraumere" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=952914626]
 layout_mode = 2
 text = "X"
 
-[node name="Sibur" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=743334504]
+[node name="Sibur" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=743334504]
 layout_mode = 2
 text = "X"
 
-[node name="Mendiane" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=1687294358]
+[node name="Mendiane" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=1687294358]
 layout_mode = 2
 text = "X"
 
-[node name="Phiras" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=724704088]
+[node name="Phiras" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=724704088]
 layout_mode = 2
 text = "X"
 
-[node name="Thystame" type="Label" parent="Connection/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=1455244675]
+[node name="Thystame" type="Label" parent="CanvasLayer/UI/InventoryPanel/MarginContainer/HBoxContainer/VBoxContainer2" unique_id=1455244675]
 layout_mode = 2
 text = "X"
 
-[node name="SpeedControlPanel" parent="Connection" unique_id=1331714555 instance=ExtResource("6_13bbc")]
+[node name="SpeedControlPanel" parent="CanvasLayer/UI" unique_id=1331714555 instance=ExtResource("6_13bbc")]
 
-[node name="TimelineBar" parent="Connection" unique_id=2048198502 instance=ExtResource("8_tlbar")]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1441343531]
-environment = SubResource("Environment_k485n")
-
-[node name="Terrain" parent="." unique_id=834834148 instance=ExtResource("6_bqi2m")]
-
-[node name="ScreenshotService" type="Node" parent="." unique_id=1425915694]
-script = ExtResource("7_scrn1")
-
-[node name="MusicPlayer" parent="." unique_id=10970874 instance=ExtResource("9_musicpl")]
-process_mode = 3
-offset_left = -1133.0
-offset_top = 558.0
-offset_right = -1053.0
-offset_bottom = 598.0
+[node name="TimelineBar" parent="CanvasLayer/UI" unique_id=2048198502 instance=ExtResource("8_tlbar")]
