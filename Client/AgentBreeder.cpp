@@ -4,11 +4,11 @@
 
 void AgentBreeder::GetBids(Blackboard& bb)
 {
-	double voirWeigth = 1;
-	double bias = 100;
-	double voirScore = bias + 5 * voirWeigth;
+	// double voirWeigth = 1;
+	// double bias = 100;
+	// double voirScore = bias + 5 * voirWeigth;
 
-	double score = voirScore * (1 - bb.GetHungerNeed());
+	// double score = voirScore * (1 - bb.GetHungerNeed());
 
 	// Si ya tenemos el máximo de jugadores, no hacer nada
 	if (bb.TeamNbr >= 6)

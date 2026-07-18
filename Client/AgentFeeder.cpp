@@ -25,7 +25,7 @@ void AgentFeeder::GetBids(Blackboard& bb)
 	int currentFood = bb.Me.inventory.Get(Resource::Food);
 	double lifePercentage = bb.GetLifePercentage();
 	
-	const int TICKS_PER_FOOD = 126;
+	// const int TICKS_PER_FOOD = 126;
 	
 	// Calcular prioridad basada en urgencia
 	double priority = 0.0;
