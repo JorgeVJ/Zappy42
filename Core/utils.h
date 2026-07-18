@@ -6,4 +6,4 @@
 #include <vector>
 
 std::string Trim(const std::string& str);
-bool vector_string_view_add(std::vector<std::string> *c, const std::string &str) noexcept;
+bool vector_string_add(std::vector<std::string> *c, const std::string &str) noexcept;

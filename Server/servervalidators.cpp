@@ -9,20 +9,20 @@ namespace Validators {
 		{
 			if (values.empty())
 			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
+				vector_string_add(errors, Errors::Validation::MissValue);
 				return Result<size_t>::Fail(Errors::Validation::MissValue);
 			}
 
 			auto r = Utils::parse_int(values[0]);
 			if (!r.Ok) {
-				vector_string_view_add(errors, r.Message);
+				vector_string_add(errors, r.Message);
 				return Result<size_t>::Fail(r.Message);
 			}
 
 			if (!Utils::within_bounds(static_cast<size_t>(r.Value),
 									   WidthorHeight::Min,
 									   WidthorHeight::Max)) {
-				vector_string_view_add(errors, Errors::Validation::Server::InvalidHeightorWidth);
+				vector_string_add(errors, Errors::Validation::Server::InvalidHeightorWidth);
 				return Result<size_t>::Fail(Errors::Validation::Server::InvalidHeightorWidth);
 			}
 
@@ -34,20 +34,20 @@ namespace Validators {
 		{
 			if (values.empty())
 			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
+				vector_string_add(errors, Errors::Validation::MissValue);
 				return Result<size_t>::Fail(Errors::Validation::MissValue);
 			}
 
 			auto r = Utils::parse_int(values[0]);
 			if (!r.Ok) {
-				vector_string_view_add(errors, r.Message);
+				vector_string_add(errors, r.Message);
 				return Result<size_t>::Fail(r.Message);
 			}
 
 			if (!Utils::within_bounds(static_cast<size_t>(r.Value),
 									   Time::Min,
 									   Time::Max)) {
-				vector_string_view_add(errors, Errors::Validation::Server::Time);
+				vector_string_add(errors, Errors::Validation::Server::Time);
 				return Result<size_t>::Fail(Errors::Validation::Server::Time);
 			}
 
@@ -59,20 +59,20 @@ namespace Validators {
 		{
 			if (values.empty())
 			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
+				vector_string_add(errors, Errors::Validation::MissValue);
 				return Result<size_t>::Fail(Errors::Validation::MissValue);
 			}
 
 			auto r = Utils::parse_int(values[0]);
 			if (!r.Ok) {
-				vector_string_view_add(errors, r.Message);
+				vector_string_add(errors, r.Message);
 				return Result<size_t>::Fail(r.Message);
 			}
 
 			if (!Utils::within_bounds(static_cast<size_t>(r.Value),
 									   Players::Min,
 									   Players::Max_Initial)) {
-				vector_string_view_add(errors, Errors::Validation::Server::Clients);
+				vector_string_add(errors, Errors::Validation::Server::Clients);
 				return (Result<size_t>::Fail(Errors::Validation::Server::Clients));
 			}
 
@@ -86,13 +86,13 @@ namespace Validators {
 			// Check if teams vector is empty
 			if (values.empty())
 			{
-				vector_string_view_add(errors, Errors::Validation::MissValue);
+				vector_string_add(errors, Errors::Validation::MissValue);
         return (Result<bool>::Fail(Errors::Validation::MissValue));
 			}
 			// Check if team count is within valid bounds
 			if (!Utils::within_bounds(values.size(), Teams::Min, Teams::Max))
 			{
-				vector_string_view_add(errors, Errors::Validation::Server::InvalidTeamNbr);
+				vector_string_add(errors, Errors::Validation::Server::InvalidTeamNbr);
 				return (Result<bool>::Fail(Errors::Validation::Server::InvalidTeamNbr));
 			}
 			// validate each team name and check for duplicates
@@ -108,7 +108,7 @@ namespace Validators {
           if (!teamname.Ok)
             return (teamname);
 					if (values[i] == values[j]) {
-						vector_string_view_add(errors, Errors::Validation::Server::DuplicateTeamName);
+						vector_string_add(errors, Errors::Validation::Server::DuplicateTeamName);
 						return (Result<bool>::Fail(Errors::Validation::Server::DuplicateTeamName));
 					}
 				}

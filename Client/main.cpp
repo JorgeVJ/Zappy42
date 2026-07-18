@@ -66,7 +66,7 @@ static bool ParseClientArgs(int argc, char** argv, ClientOptions& out)
 	using namespace Opt::ClientArgs;
 
 	std::vector<std::string> errors;
-	Opt::GetOpt<Id> opts(std::span{ specs }, std::span{ key_table });
+	Opt::GetOpt<Id> opts{ std::span<const Opt::Spec>(specs), std::span<const Opt::KeyEntry<Id>>(key_table) };
 
 	bool ok = opts.parse(argc, argv, &errors);
 	ok &= validate_arity(opts.values, opts.specs, &errors);

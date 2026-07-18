@@ -98,7 +98,7 @@ namespace Opt {
 				}
 				auto id = find(arg);
 				if (!id) {
-					vector_string_view_add(errors, Errors::CLI::UnknownOption);
+					vector_string_add(errors, Errors::CLI::UnknownOption);
 					ok = false;
 					continue;
 				}
@@ -108,7 +108,7 @@ namespace Opt {
 				auto& val  = values[idx];
 
 				if (val.present && !spec.is_repeatable()) {
-					vector_string_view_add(errors, Errors::CLI::RepeatOption);
+					vector_string_add(errors, Errors::CLI::RepeatOption);
 					ok = false;
 					continue;
 				}
@@ -165,7 +165,7 @@ namespace Opt {
 
 			if (arity_accepts(spec.arity, count))
 				return (ok);
-			vector_string_view_add(errors, Errors::CLI::InvalidArity);
+			vector_string_add(errors, Errors::CLI::InvalidArity);
 			ok = false;
 			return (ok);
 		}

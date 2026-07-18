@@ -27,11 +27,11 @@ Result<int> Validators::port(const std::vector<std::string> &values, std::vector
 			return (port);
 		else
 		{
-			vector_string_view_add(errors, Errors::Validation::InvalidPort);
+			vector_string_add(errors, Errors::Validation::InvalidPort);
 			return (Result<int>::Fail(Errors::Validation::InvalidPort));
 		}
 	}
-	vector_string_view_add(errors, port.Message);
+	vector_string_add(errors, port.Message);
 	return (port);
 }
 
@@ -42,7 +42,7 @@ Result<bool> Validators::teamname(const std::string &teamname,
                                 TeamNameLen::Min, 
                                 TeamNameLen::Max))
 				{
-					vector_string_view_add(errors, Errors::Validation::InvalidTeamLen);
+					vector_string_add(errors, Errors::Validation::InvalidTeamLen);
 					return (Result<bool>::Fail(Errors::Validation::InvalidTeamLen));
 				}
       return (Result<bool>::Success(true));

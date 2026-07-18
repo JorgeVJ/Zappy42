@@ -152,7 +152,7 @@ namespace ArgValidation {
 			{
 				allSuccess = false;
         if (errors)
-          vector_string_view_add(errors, result.Message);
+          vector_string_add(errors, result.Message);
 			}
     }
 		if (allSuccess)
@@ -170,7 +170,7 @@ namespace ArgValidation {
 		if (!validator)
 		{
 			if (errors)
-				vector_string_view_add(errors, "No validator registered for this argument");
+				vector_string_add(errors, "No validator registered for this argument");
 			return Result<bool>::Fail("No validator registered");
 		}
 
