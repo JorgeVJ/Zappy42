@@ -3,6 +3,8 @@
 # define _WINSOCK_DEPRECATED_NO_WARNINGS
 # include <winsock2.h>
 # include <ws2tcpip.h>
+# pragma comment(lib, "Ws2_32.lib")
+# define SOCKET_BACKLOG SOMAXCONN
 #elif defined(__linux__)
 # include <netinet/in.h>
 # include <sys/socket.h>

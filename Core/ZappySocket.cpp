@@ -42,7 +42,7 @@ ZappySocket& ZappySocket::operator=(ZappySocket& other) noexcept
     {
         if (socket != INVALID_SOCKET)
 #ifdef _WIN32
-          closesocket(sock);
+          closesocket(socket);
 #elif defined(__linux__)
           close(socket);
 #endif

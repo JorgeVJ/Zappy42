@@ -45,6 +45,9 @@ SRC-CORE			:=  Connection \
 									ZappySocket \
 									Tile \
 									CommandHistory \
+									CommandEntry \
+									Direction \
+									Player \
 									Core \
 									pch \
 									utils \
@@ -58,8 +61,8 @@ SRC-CORE			:=  Connection \
 
 
 SRC-CLIENT := \
-  $(addprefix Client/, main IAgent AgentBreeder AgentExplorer \
-    AgentChaman AgentHungry AgentStoner ExplorationService \
+  $(addprefix Client/, main IAgent responses AgentBreeder AgentExplorer \
+    AgentChaman AgentFeeder AgentStoner ExplorationService \
     InfluenceService Bid Blackboard ClientGame) \
   $(addprefix Core/, $(SRC-CORE))
 
