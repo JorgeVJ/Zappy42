@@ -1,9 +1,9 @@
 #pragma once
-#include <string_view>
+#include <string>
 
 namespace Messages {
 	namespace Game  {
-		constexpr std::string_view Welcome = "BIENVENUE\n";
+		const std::string Welcome = "BIENVENUE\n";
 		namespace Player {
 
 		}
@@ -15,39 +15,39 @@ namespace Messages {
 }
 
 namespace Errors {
-	constexpr std::string_view Unexpected   = "Unexpected error";
+	const std::string Unexpected   = "Unexpected error";
 
 	namespace Exceptions {
-		constexpr std::string_view VectorPushBack   = "Vector Push Back exceptions";
+		const std::string VectorPushBack   = "Vector Push Back exceptions";
 	}
 
 	namespace CLI {
-		constexpr std::string_view UnknownOption    = "Unknown option";
-		constexpr std::string_view RepeatOption     = "Repeated option";
-		constexpr std::string_view MissingOption    = "Missing option";
-		constexpr std::string_view TooManyArguments = "Too many arguments";
-		constexpr std::string_view MissingPort      = "Missing -p <port> argument";
-		constexpr std::string_view InvalidArity     = "Invalid argument arity";
+		const std::string UnknownOption    = "Unknown option";
+		const std::string RepeatOption     = "Repeated option";
+		const std::string MissingOption    = "Missing option";
+		const std::string TooManyArguments = "Too many arguments";
+		const std::string MissingPort      = "Missing -p <port> argument";
+		const std::string InvalidArity     = "Invalid argument arity";
 	}
 
 	namespace Parser {
-		constexpr std::string_view InvalidToken     = "Invalid token";
-		constexpr std::string_view UnexpectedEOF    = "Unexpected end of input";
+		const std::string InvalidToken     = "Invalid token";
+		const std::string UnexpectedEOF    = "Unexpected end of input";
 	}
 
 	namespace Validation {
 
-		constexpr std::string_view MissValue            = "Missing Value";
-		constexpr std::string_view InvalidInteger       = "Invalid integer";
-		constexpr std::string_view InvalidIntegerFormat = "Invalid integer format";
-		constexpr std::string_view InvalidPort          = "Invalid port number";
-    constexpr std::string_view InvalidTeamLen     = "Invalid Team Len";
+		const std::string MissValue            = "Missing Value";
+		const std::string InvalidInteger       = "Invalid integer";
+		const std::string InvalidIntegerFormat = "Invalid integer format";
+		const std::string InvalidPort          = "Invalid port number";
+    const std::string InvalidTeamLen     = "Invalid Team Len";
 		namespace Server {
-			constexpr std::string_view InvalidHeightorWidth = "Invalid Height or Width number";
-			constexpr std::string_view DuplicateTeamName    = "Invalid Duplicate Team Name";
-			constexpr std::string_view Time          = "Invalid Time Nbr";
-			constexpr std::string_view Clients     = "Invalid Client Nbr";
-			constexpr std::string_view InvalidTeamNbr     = "Invalid Team Nbr";
+			const std::string InvalidHeightorWidth = "Invalid Height or Width number";
+			const std::string DuplicateTeamName    = "Invalid Duplicate Team Name";
+			const std::string Time          = "Invalid Time Nbr";
+			const std::string Clients     = "Invalid Client Nbr";
+			const std::string InvalidTeamNbr     = "Invalid Team Nbr";
 		}
 	}
 }

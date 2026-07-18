@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <string_view>
+#include <string>
 #include "validators.h"
 
 namespace Validators {
@@ -45,8 +45,8 @@ namespace Validators {
 		/// <param name="values">Vector of string values from command line</param>
 		/// <param name="errors">Optional error message collection</param>
 		/// <returns>Result containing validated size_t value or error</returns>
-		Result<size_t> valid_heigth_or_weight(const std::vector<std::string_view> &values,
-											   std::vector<std::string_view> *errors);
+		Result<size_t> valid_heigth_or_weight(const std::vector<std::string> &values,
+											   std::vector<std::string> *errors);
 
 		/// <summary>
 		/// Validates time multiplier parameter
@@ -54,8 +54,8 @@ namespace Validators {
 		/// <param name="values">Vector of string values from command line</param>
 		/// <param name="errors">Optional error message collection</param>
 		/// <returns>Result containing validated size_t value or error</returns>
-		Result<size_t> time(const std::vector<std::string_view> &values,
-						   std::vector<std::string_view> *errors);
+		Result<size_t> time(const std::vector<std::string> &values,
+						   std::vector<std::string> *errors);
 
 		/// <summary>
 		/// Validates maximum client count parameter
@@ -63,8 +63,8 @@ namespace Validators {
 		/// <param name="values">Vector of string values from command line</param>
 		/// <param name="errors">Optional error message collection</param>
 		/// <returns>Result containing validated size_t value or error</returns>
-		Result<size_t> players(const std::vector<std::string_view> &values,
-							   std::vector<std::string_view> *errors);
+		Result<size_t> players(const std::vector<std::string> &values,
+							   std::vector<std::string> *errors);
 
 		/// <summary>
 		/// Validates team names parameter
@@ -73,9 +73,9 @@ namespace Validators {
 		/// <param name="clientnbr">Maximum number of clients to validate against</param>
 		/// <param name="errors">Optional error message collection</param>
 		/// <returns>True if all teams are valid, false otherwise</returns>
-		Result<bool> teams(const std::vector<std::string_view> &values,
+		Result<bool> teams(const std::vector<std::string> &values,
 				   size_t clientnbr,
-				   std::vector<std::string_view> *errors);
+				   std::vector<std::string> *errors);
 
   }
 }

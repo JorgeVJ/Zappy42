@@ -41,6 +41,6 @@ class ZappySocket
 	ZappySocket& operator=(ZappySocket& other) noexcept;
 	ZappySocket& operator=(SOCKET other) noexcept;
 	bool Send(std::string &data);
-	bool Send(const std::string_view &data);
+	bool Send(const std::string &data);
 	SOCKET socket;
 };

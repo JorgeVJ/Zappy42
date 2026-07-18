@@ -10,7 +10,7 @@ std::string Trim(const std::string& str)
     return str.substr(start, end - start + 1);
 }
 
-bool vector_string_view_add(std::vector<std::string_view> *c, const std::string_view &str) noexcept {
+bool vector_string_view_add(std::vector<std::string> *c, const std::string &str) noexcept {
 	if (c != nullptr) {
 		try {
 			c->push_back(str);

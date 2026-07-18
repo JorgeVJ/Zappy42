@@ -4,8 +4,8 @@
 
 namespace Validators {
 	namespace Server {
-		Result<size_t> valid_heigth_or_weight(const std::vector<std::string_view> &values,
-											   std::vector<std::string_view> *errors)
+		Result<size_t> valid_heigth_or_weight(const std::vector<std::string> &values,
+											   std::vector<std::string> *errors)
 		{
 			if (values.empty())
 			{
@@ -29,8 +29,8 @@ namespace Validators {
 			return Result<size_t>::Success(static_cast<size_t>(r.Value));
 		}
 
-		Result<size_t> time(const std::vector<std::string_view> &values,
-						   std::vector<std::string_view> *errors)
+		Result<size_t> time(const std::vector<std::string> &values,
+						   std::vector<std::string> *errors)
 		{
 			if (values.empty())
 			{
@@ -54,8 +54,8 @@ namespace Validators {
 			return Result<size_t>::Success(static_cast<size_t>(r.Value));
 		}
 
-		Result<size_t> players(const std::vector<std::string_view> &values,
-							   std::vector<std::string_view> *errors)
+		Result<size_t> players(const std::vector<std::string> &values,
+							   std::vector<std::string> *errors)
 		{
 			if (values.empty())
 			{
@@ -79,9 +79,9 @@ namespace Validators {
 			return (Result<size_t>::Success(static_cast<size_t>(r.Value)));
 		}
 
-		Result<bool> teams(const std::vector<std::string_view> &values,
+		Result<bool> teams(const std::vector<std::string> &values,
 				   size_t clientnbr,
-				   std::vector<std::string_view> *errors)
+				   std::vector<std::string> *errors)
 		{
 			// Check if teams vector is empty
 			if (values.empty())

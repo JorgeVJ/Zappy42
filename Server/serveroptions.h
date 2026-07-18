@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <string_view>
+#include <string>
 #include <span>
 #include "GetOpt.h"
 
@@ -26,7 +26,7 @@ namespace Opt {
 			{ time_keys, Arity::One, RepeatPolicy::Reject },
 		};
 
-		constexpr KeyEntry<Server::Id> key_table[] = {
+		const KeyEntry<Server::Id> key_table[] = {
 			{ "-p", Opt::Server::Id::Port },
 			{ "-x", Opt::Server::Id::Width },
 			{ "-y", Opt::Server::Id::Height },
@@ -41,7 +41,7 @@ namespace Opt {
 			int height;
 			int time;
 			int players;
-			std::vector<std::string_view> teams;
+			std::vector<std::string> teams;
 		};
 	}
 }

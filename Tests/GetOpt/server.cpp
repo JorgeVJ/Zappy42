@@ -1,9 +1,9 @@
-#include <iostream>
+﻿#include <iostream>
 #include "GetOpt.h"
 #include "serveroptions.h"
 
 int main(int argc, char** argv) {
-	std::vector<std::string_view> errors;
+	std::vector<std::string> errors;
     Opt::GetOpt<Opt::Server::Id> opts(
         std::span{Opt::Server::specs},
         std::span{Opt::Server::key_table});

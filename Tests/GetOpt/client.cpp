@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include "GetOpt.h"
 //#include "validators.h"
 
@@ -16,7 +16,7 @@ namespace Opt {
 			{ host_keys, Arity::ZeroOrOne, RepeatPolicy::Reject },
 		};
 
-		constexpr KeyEntry<Id> key_table[] = {
+		const KeyEntry<Id> key_table[] = {
 			{ "-p",       Id::Port },
 			{ "-n",       Id::Teams },
 			{ "-h",       Id::Host },
@@ -25,7 +25,7 @@ namespace Opt {
 }
 
 int main(int argc, char** argv) {
-	std::vector<std::string_view> errors;
+	std::vector<std::string> errors;
 
 
     Opt::GetOpt<Opt::Client::Id> opts(

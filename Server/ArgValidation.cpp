@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ArgValidation.h"
 #include "servervalidators.h"
 #include "utils.h"
@@ -10,9 +10,9 @@ namespace ArgValidation {
 	// PORT VALIDATOR IMPLEMENTATION
 	// ========================================================================
 
-	Result<bool> PortValidator::Validate(const std::vector<std::string_view>& values,
+	Result<bool> PortValidator::Validate(const std::vector<std::string>& values,
                                        Opt::Server::Args& outArgs,
-                                       std::vector<std::string_view>* errors)
+                                       std::vector<std::string>* errors)
 	{
 		auto port = Validators::port(values, errors);
 		if (!port.Ok)
@@ -25,9 +25,9 @@ namespace ArgValidation {
 	// WIDTH VALIDATOR IMPLEMENTATION
 	// ========================================================================
 
-	Result<bool> WidthValidator::Validate(const std::vector<std::string_view>& values,
+	Result<bool> WidthValidator::Validate(const std::vector<std::string>& values,
                                         Opt::Server::Args& outArgs,
-                                        std::vector<std::string_view>* errors)
+                                        std::vector<std::string>* errors)
 	{
 		auto width = Validators::Server::valid_heigth_or_weight(values, errors);
 		if (!width.Ok)
@@ -40,9 +40,9 @@ namespace ArgValidation {
 	// HEIGHT VALIDATOR IMPLEMENTATION
 	// ========================================================================
 
-	Result<bool> HeightValidator::Validate(const std::vector<std::string_view>& values,
+	Result<bool> HeightValidator::Validate(const std::vector<std::string>& values,
                                          Opt::Server::Args& outArgs,
-                                         std::vector<std::string_view>* errors)
+                                         std::vector<std::string>* errors)
 	{
 		auto height = Validators::Server::valid_heigth_or_weight(values, errors);
 		if (!height.Ok)
@@ -55,9 +55,9 @@ namespace ArgValidation {
 	// TIME VALIDATOR IMPLEMENTATION
 	// ========================================================================
 
-	Result<bool> TimeValidator::Validate(const std::vector<std::string_view>& values,
+	Result<bool> TimeValidator::Validate(const std::vector<std::string>& values,
                                        Opt::Server::Args& outArgs,
-                                       std::vector<std::string_view>* errors)
+                                       std::vector<std::string>* errors)
 	{
 		auto time = Validators::Server::time(values, errors);
 		if (!time.Ok)
@@ -72,9 +72,9 @@ namespace ArgValidation {
 	// CLIENTS VALIDATOR IMPLEMENTATION
 	// ========================================================================
 
-	Result<bool> ClientsValidator::Validate(const std::vector<std::string_view>& values,
+	Result<bool> ClientsValidator::Validate(const std::vector<std::string>& values,
                                           Opt::Server::Args& outArgs,
-                                          std::vector<std::string_view>* errors)
+                                          std::vector<std::string>* errors)
 	{
 		auto Players = Validators::Server::players(values, errors);
 		if (!Players.Ok)
@@ -88,9 +88,9 @@ namespace ArgValidation {
 	// TEAMS VALIDATOR IMPLEMENTATION
 	// ========================================================================
 
-	Result<bool> TeamsValidator::Validate(const std::vector<std::string_view>& values,
+	Result<bool> TeamsValidator::Validate(const std::vector<std::string>& values,
 										  Opt::Server::Args& outArgs,
-										  std::vector<std::string_view>* errors)
+										  std::vector<std::string>* errors)
 	{
 		// Note: We need to validate against client count, which should already be filled
 		auto teams = Validators::Server::teams(values, static_cast<size_t>(outArgs.players), errors);
@@ -126,7 +126,7 @@ namespace ArgValidation {
 
 	Result<bool> ArgValidatorChain::ValidateAll(const Opt::GetOpt<Opt::Server::Id>& opts,
 												Opt::Server::Args& outArgs,
-												std::vector<std::string_view> *errors)
+												std::vector<std::string> *errors)
 	{
 		bool allSuccess = true;
 
@@ -162,9 +162,9 @@ namespace ArgValidation {
 	}
 
 	Result<bool> ArgValidatorChain::ValidateSingle(Opt::Server::Id id,
-													const std::vector<std::string_view>& values,
+													const std::vector<std::string>& values,
 													Opt::Server::Args& outArgs,
-													std::vector<std::string_view>* errors)
+													std::vector<std::string>* errors)
 	{
 		IArgValidator* validator = GetValidatorForId(id);
 		if (!validator)
@@ -207,7 +207,7 @@ namespace ArgValidation {
 
 	Result<bool> ValidateServerArgs(const Opt::GetOpt<Opt::Server::Id>& opts,
 									 Opt::Server::Args& outArgs,
-									 std::vector<std::string_view>* errors)
+									 std::vector<std::string>* errors)
 	{
 		ArgValidatorChain chain;
 		return chain.ValidateAll(opts, outArgs, errors);

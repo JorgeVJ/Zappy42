@@ -11,43 +11,43 @@ struct Player
     Point Position = {0, 0};
     Direction Orientation = Direction::North;
     Inventory inventory;
-    std::string TeamName = "";//std::string_view  should use the argv.
+    std::string TeamName = "";
 
     // Constructor por defecto
     Player() = default;
 
     /// <summary>
-    /// Mueve al jugador en la dirección en la que está mirando
+    /// Mueve al jugador en la direcciï¿½n en la que estï¿½ mirando
     /// </summary>
-    /// <param name="steps">Número de pasos (positivo avanza, negativo retrocede)</param>
+    /// <param name="steps">Nï¿½mero de pasos (positivo avanza, negativo retrocede)</param>
     void Move(int steps = 1);
 
     /// <summary>
-    /// Mueve al jugador en una dirección específica (soporta diagonales)
+    /// Mueve al jugador en una direcciï¿½n especï¿½fica (soporta diagonales)
     /// </summary>
-    /// <param name="dir">Dirección del movimiento</param>
-    /// <param name="steps">Número de pasos</param>
+    /// <param name="dir">Direcciï¿½n del movimiento</param>
+    /// <param name="steps">Nï¿½mero de pasos</param>
     void MoveInDirection(Direction dir, int steps = 1);
 
     /// <summary>
-    /// Gira al jugador en la dirección especificada
+    /// Gira al jugador en la direcciï¿½n especificada
     /// </summary>
-    /// <param name="turnDir">Dirección del giro (Right o Left)</param>
+    /// <param name="turnDir">Direcciï¿½n del giro (Right o Left)</param>
     void Turn(TurnDirection turnDir);
 
     /// <summary>
-    /// Obtiene la dirección opuesta a la orientación actual
+    /// Obtiene la direcciï¿½n opuesta a la orientaciï¿½n actual
     /// </summary>
     Direction GetOppositeDirection() const;
 
 private:
     /// <summary>
-    /// Convierte la orientación actual a un índice (0-3)
+    /// Convierte la orientaciï¿½n actual a un ï¿½ndice (0-3)
     /// </summary>
     int GetDirectionIndex() const;
 
     /// <summary>
-    /// Convierte un índice (0-3) a una dirección cardinal
+    /// Convierte un ï¿½ndice (0-3) a una direcciï¿½n cardinal
     /// </summary>
     Direction IndexToDirection(int index) const;
 };

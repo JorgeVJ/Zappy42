@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <thread>
 #include <chrono>
@@ -39,7 +39,7 @@ namespace Opt {
 			{ host_keys,  Arity::ZeroOrOne, RepeatPolicy::Reject },
 		};
 
-		constexpr KeyEntry<Id> key_table[] = {
+		const KeyEntry<Id> key_table[] = {
 			{ "-p", Id::Port },
 			{ "-n", Id::Teams },
 			{ "-h", Id::Host },
@@ -65,7 +65,7 @@ static bool ParseClientArgs(int argc, char** argv, ClientOptions& out)
 {
 	using namespace Opt::ClientArgs;
 
-	std::vector<std::string_view> errors;
+	std::vector<std::string> errors;
 	Opt::GetOpt<Id> opts(std::span{ specs }, std::span{ key_table });
 
 	bool ok = opts.parse(argc, argv, &errors);
@@ -232,7 +232,7 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 
 	if (nb_client < 1)
 	{
-		// equipo lleno -> no error t�cnico, pero queremos notificar que no se puede unir
+		// equipo lleno -> no error tï¿½cnico, pero queremos notificar que no se puede unir
 		return Result<Blackboard*>::Fail("TeamFull");
 	}
 

@@ -1,4 +1,4 @@
-#include "ServerSimple.h"
+﻿#include "ServerSimple.h"
 #include "serveroptions.h"
 #include "servervalidators.h"
 #include "ArgValidation.h"
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 	// PARSE ARGUMENTS
 	// ========================================================================
 
-	std::vector<std::string_view> errors;
+	std::vector<std::string> errors;
 
 	Opt::GetOpt<Opt::Server::Id> opts(
 									  std::span<const Opt::Spec> {Opt::Server::specs},

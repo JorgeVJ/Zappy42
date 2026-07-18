@@ -1,6 +1,6 @@
-#pragma once
+﻿#pragma once
 #include <vector>
-#include <string_view>
+#include <string>
 #include <functional>
 #include <memory>
 #include "serveroptions.h"
@@ -31,14 +31,14 @@ namespace ArgValidation {
 		/// <param name="outArgs">Output struct to fill</param>
 		/// <param name="errors">Error messages if validation fails</param>
 		/// <returns>Result containing success status and any errors</returns>
-		virtual Result<bool> Validate(const std::vector<std::string_view>& values,
+		virtual Result<bool> Validate(const std::vector<std::string>& values,
 									   Opt::Server::Args& outArgs,
-									   std::vector<std::string_view>* errors) = 0;
+									   std::vector<std::string>* errors) = 0;
 
 		/// <summary>
 		/// Gets human-readable name of this argument
 		/// </summary>
-		virtual std::string_view GetName() const = 0;
+		virtual std::string GetName() const = 0;
 	};
 
 	// ========================================================================
@@ -47,11 +47,11 @@ namespace ArgValidation {
 
 	class PortValidator : public IArgValidator {
 	public:
-		Result<bool> Validate(const std::vector<std::string_view>& values,
+		Result<bool> Validate(const std::vector<std::string>& values,
 							  Opt::Server::Args& outArgs,
-							  std::vector<std::string_view>* errors) override;
+							  std::vector<std::string>* errors) override;
 
-		std::string_view GetName() const override { return "Port"; }
+		std::string GetName() const override { return "Port"; }
 	};
 
 	// ========================================================================
@@ -60,11 +60,11 @@ namespace ArgValidation {
 
 	class WidthValidator : public IArgValidator {
 	public:
-		Result<bool> Validate(const std::vector<std::string_view>& values,
+		Result<bool> Validate(const std::vector<std::string>& values,
 							  Opt::Server::Args& outArgs,
-							  std::vector<std::string_view>* errors) override;
+							  std::vector<std::string>* errors) override;
 
-		std::string_view GetName() const override { return "Width"; }
+		std::string GetName() const override { return "Width"; }
 	};
 
 	// ========================================================================
@@ -73,11 +73,11 @@ namespace ArgValidation {
 
 	class HeightValidator : public IArgValidator {
 	public:
-		Result<bool> Validate(const std::vector<std::string_view>& values,
+		Result<bool> Validate(const std::vector<std::string>& values,
 							  Opt::Server::Args& outArgs,
-							  std::vector<std::string_view>* errors) override;
+							  std::vector<std::string>* errors) override;
 
-		std::string_view GetName() const override { return "Height"; }
+		std::string GetName() const override { return "Height"; }
 	};
 
 	// ========================================================================
@@ -86,11 +86,11 @@ namespace ArgValidation {
 
 	class TimeValidator : public IArgValidator {
 	public:
-		Result<bool> Validate(const std::vector<std::string_view>& values,
+		Result<bool> Validate(const std::vector<std::string>& values,
 							  Opt::Server::Args& outArgs,
-							  std::vector<std::string_view>* errors) override;
+							  std::vector<std::string>* errors) override;
 
-		std::string_view GetName() const override { return "Time"; }
+		std::string GetName() const override { return "Time"; }
 	};
 
 	// ========================================================================
@@ -99,11 +99,11 @@ namespace ArgValidation {
 
 	class ClientsValidator : public IArgValidator {
 	public:
-		Result<bool> Validate(const std::vector<std::string_view>& values,
+		Result<bool> Validate(const std::vector<std::string>& values,
 							  Opt::Server::Args& outArgs,
-							  std::vector<std::string_view>* errors) override;
+							  std::vector<std::string>* errors) override;
 
-		std::string_view GetName() const override { return "Clients"; }
+		std::string GetName() const override { return "Clients"; }
 	};
 
 	// ========================================================================
@@ -112,11 +112,11 @@ namespace ArgValidation {
 
 	class TeamsValidator : public IArgValidator {
 	public:
-		Result<bool> Validate(const std::vector<std::string_view>& values,
+		Result<bool> Validate(const std::vector<std::string>& values,
 							  Opt::Server::Args& outArgs,
-							  std::vector<std::string_view>* errors) override;
+							  std::vector<std::string>* errors) override;
 
-		std::string_view GetName() const override { return "Teams"; }
+		std::string GetName() const override { return "Teams"; }
 	};
 
 	// ========================================================================
@@ -140,7 +140,7 @@ namespace ArgValidation {
 		/// <returns>Result containing success status and collected errors</returns>
 		Result<bool> ValidateAll(const Opt::GetOpt<Opt::Server::Id>& opts,
 								 Opt::Server::Args& outArgs,
-								 std::vector<std::string_view>* errors);
+								 std::vector<std::string>* errors);
 
 		/// <summary>
 		/// Validates a single argument by ID
@@ -151,9 +151,9 @@ namespace ArgValidation {
 		/// <param name="errors">Error messages if validation fails</param>
 		/// <returns>Result containing success status</returns>
 		Result<bool> ValidateSingle(Opt::Server::Id id,
-									 const std::vector<std::string_view>& values,
+									 const std::vector<std::string>& values,
 									 Opt::Server::Args& outArgs,
-									 std::vector<std::string_view>* errors);
+									 std::vector<std::string>* errors);
 
 		/// <summary>
 		/// Registers a custom validator for an argument ID
@@ -191,5 +191,5 @@ namespace ArgValidation {
 	/// <returns>Result containing success status and collected errors</returns>
 	Result<bool> ValidateServerArgs(const Opt::GetOpt<Opt::Server::Id>& opts,
 									 Opt::Server::Args& outArgs,
-									 std::vector<std::string_view>* errors);
+									 std::vector<std::string>* errors);
 }

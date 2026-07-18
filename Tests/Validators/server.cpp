@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include "Result.h"
 #include "GetOpt.h"
 #include "servervalidators.h"
@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 
   Opt::GetOpt<Opt::Server::Id> opts(std::span{Opt::Server::specs},
                                     std::span{Opt::Server::key_table});
-  std::vector<std::string_view> errors;
+  std::vector<std::string> errors;
   //Parsing
   bool ok = opts.parse(argc, argv, &errors);
 	if (ok == false)
