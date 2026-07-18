@@ -27,8 +27,8 @@ int main(int argc, char** argv)
 	std::vector<std::string_view> errors;
 
 	Opt::GetOpt<Opt::Server::Id> opts(
-		std::span{Opt::Server::specs},
-		std::span{Opt::Server::key_table});
+									  std::span<const Opt::Spec> {Opt::Server::specs},
+									  std::span<const Opt::KeyEntry<Opt::Server::Id>> {Opt::Server::key_table});
 
 	bool ok = opts.parse(argc, argv, &errors);
 
