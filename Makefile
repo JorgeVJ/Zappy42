@@ -27,9 +27,9 @@ SERVER-DIR    := ./Server/
 BUILD-DIR			:=	./.build/
 TESTS-DIR			:=	./Tests/
 
-# GUI (Monitor Godot 4.5 mono / C#)
+# GUI (Monitor Godot 4.6 mono / C#)
 GUI-DIR         := ./Monitor
-GODOT           ?= godot
+GODOT           ?= $(HOME)/godot-mono/godot
 DOTNET-LOCAL    := $(GUI-DIR)/.dotnet
 DOTNET-CHANNEL  := 8.0
 DOTNET-INSTALL  := https://dot.net/v1/dotnet-install.sh
@@ -42,18 +42,18 @@ TEST_VALIDATORS_SERVER   := $(TEST_VALIDATORS_DIR)server
 
 
 SRC-CORE			:=  Connection \
-									ZappySocket \
-									Tile \
-									CommandHistory \
-									Core \
-									pch \
-									utils \
-									Inventory \
-									Map \
-									Point \
-									CommandType \
-									GetOpt \
-									validators \
+						ZappySocket \
+						Tile \
+						CommandHistory \
+						Core \
+						pch \
+						utils \
+						Inventory \
+						Map \
+						Point \
+						CommandType \
+						GetOpt \
+						validators \
 
 
 
