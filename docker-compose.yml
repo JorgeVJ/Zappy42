@@ -1,0 +1,7 @@
+services:
+  build:
+    build: .
+    image: zappy42-linux-build
+    container_name: zappy42-build
+    # Sin volumenes: el codigo se COPIA dentro de la imagen (ver Dockerfile).
+    # La compilacion ocurre durante 'docker compose build' y no toca el host.

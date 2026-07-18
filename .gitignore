@@ -8,3 +8,11 @@
 /Core/x64
 /Server/x64
 /Monitor/.vs
+
+# Artefactos de compilacion Linux (Docker)
+/.build/
+/server
+/client
+/Tests/GetOpt/server
+/Tests/GetOpt/client
+/Tests/Validators/server

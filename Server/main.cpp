@@ -21,6 +21,18 @@
 int main(int argc, char** argv)
 {
 	// ========================================================================
+	// PLATFORM SOCKET INIT (Windows requiere WSAStartup antes de usar sockets)
+	// ========================================================================
+#ifdef _WIN32
+	WSADATA wsaData{};
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		std::cerr << "WSAStartup() failed" << std::endl;
+		return (1);
+	}
+#endif
+
+	// ========================================================================
 	// PARSE ARGUMENTS
 	// ========================================================================
 
@@ -87,6 +99,10 @@ int main(int argc, char** argv)
 	int exitCode = server.Run();
 
 	std::cout << "\nServer shutdown complete." << std::endl;
+
+#ifdef _WIN32
+	WSACleanup();
+#endif
 
 	return (exitCode);
 }

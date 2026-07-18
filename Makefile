@@ -42,24 +42,27 @@ TEST_VALIDATORS_SERVER   := $(TEST_VALIDATORS_DIR)server
 
 
 SRC-CORE			:=  Connection \
-						ZappySocket \
-						Tile \
-						CommandHistory \
-						Core \
-						pch \
-						utils \
-						Inventory \
-						Map \
-						Point \
-						CommandType \
-						GetOpt \
-						validators \
+									ZappySocket \
+									Tile \
+									CommandHistory \
+									CommandEntry \
+									Direction \
+									Player \
+									Core \
+									pch \
+									utils \
+									Inventory \
+									Map \
+									Point \
+									CommandType \
+									GetOpt \
+									validators \
 
 
 
 SRC-CLIENT := \
-  $(addprefix Client/, main IAgent AgentBreeder AgentExplorer \
-    AgentChaman AgentHungry AgentStoner ExplorationService \
+  $(addprefix Client/, main IAgent responses AgentBreeder AgentExplorer \
+    AgentChaman AgentFeeder AgentStoner ExplorationService \
     InfluenceService Bid Blackboard ClientGame) \
   $(addprefix Core/, $(SRC-CORE))
 
