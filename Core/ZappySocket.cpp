@@ -42,7 +42,7 @@ ZappySocket& ZappySocket::operator=(ZappySocket& other) noexcept
     {
         if (socket != INVALID_SOCKET)
 #ifdef _WIN32
-          closesocket(sock);
+          closesocket(socket);
 #elif defined(__linux__)
           close(socket);
 #endif
@@ -77,7 +77,7 @@ bool ZappySocket::Send(std::string &data)
 	return (send(this->Get(), data.c_str(), static_cast<int>(data.size()), 0) == static_cast<int>(data.size()));
 }
 
-bool ZappySocket::Send(const std::string_view &data)
+bool ZappySocket::Send(const std::string &data)
 {
 	return (send(this->Get(), data.data(), static_cast<int>(data.size()), 0) == static_cast<int>(data.size()));
 }

@@ -8,13 +8,29 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="zappy"
-run/main_scene="res://world.tscn"
-config/features=PackedStringArray("4.3", "C#", "Forward Plus")
+run/main_scene="res://game.tscn"
+config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [dotnet]
 
 project/assembly_name="zappy"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/meshy-godot-plugin/plugin.cfg")
+
+[rendering]
+
+environment/glow/upscale_mode=0
+
+[xr]
+
+shaders/enabled=true

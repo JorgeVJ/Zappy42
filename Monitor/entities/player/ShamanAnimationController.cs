@@ -1,0 +1,79 @@
+using Godot;
+
+public sealed partial class ShamanAnimationController
+{
+    private readonly AnimationPlayer _anim;
+
+    public ShamanAnimationController(AnimationPlayer anim)
+    {
+        _anim = anim;
+        EnableLoopOnAll();
+        PlayIdle();
+    }
+
+    public void PlayIdle()    => TryPlay(Clip.Idle);
+    public void PlayWalk()    => TryPlay(Clip.Walking);
+    public void PlayRun()     => TryPlay(Clip.Running);
+    public void PlaySpell()   => TryPlay(Clip.SpellCast);
+    public void PlayCollect() => TryPlay(Clip.CollectObj);
+    public void PlayPickUp()  => TryPlay(Clip.PickUpPocket);
+
+    /// <summary>
+    /// Duraciones reales de los clips (en segundos, sin escalar por SpeedScale), tomadas
+    /// del propio AnimationPlayer. Las usan los handlers de red para saber cuánto esperar
+    /// antes de volver a Idle o, en el caso de la incantación, antes de recibir el
+    /// resultado.
+    /// </summary>
+    public float SpellDuration   => GetClipLength(Clip.SpellCast);
+    public float CollectDuration => GetClipLength(Clip.CollectObj);
+    public float PickUpDuration  => GetClipLength(Clip.PickUpPocket);
+
+    /// <summary>
+    /// Permite que quien dispare una animación "one-shot" no fuerce Idle si, mientras
+    /// esperaba el timer, ya se inició otra animación distinta (p. ej. una incantación
+    /// llegó mientras terminaba el gesto de recoger/dejar recurso).
+    /// </summary>
+    public bool IsPlayingCollect => _anim?.CurrentAnimation == Clip.CollectObj;
+    public bool IsPlayingPickUp  => _anim?.CurrentAnimation == Clip.PickUpPocket;
+
+    /// <summary>
+    /// Escala la velocidad de reproducción de todas las animaciones (acelera/ralentiza
+    /// en función del time unit del servidor).
+    /// </summary>
+    public void SetSpeedScale(float scale)
+    {
+        if (_anim != null)
+            _anim.SpeedScale = Mathf.Max(0.01f, scale);
+    }
+
+    private void TryPlay(string name)
+    {
+        if (_anim == null || !_anim.HasAnimation(name))
+            return;
+        if (_anim.CurrentAnimation == name)
+            return;
+        _anim.Play(name);
+    }
+
+    /// <summary>
+    /// Duración del clip en segundos (0 si no existe), independiente del SpeedScale
+    /// actual; usada para temporizar el regreso a Idle tras un one-shot.
+    /// </summary>
+    private float GetClipLength(string name)
+    {
+        if (_anim == null || !_anim.HasAnimation(name))
+            return 0f;
+        Animation anim = _anim.GetAnimation(name);
+        return anim != null ? (float)anim.Length : 0f;
+    }
+
+    private void EnableLoopOnAll()
+    {
+        foreach (StringName name in _anim.GetAnimationList())
+        {
+            Animation anim = _anim.GetAnimation(name);
+            if (anim != null)
+                anim.LoopMode = Animation.LoopModeEnum.Linear;
+        }
+    }
+}

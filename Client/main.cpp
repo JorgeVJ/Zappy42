@@ -1,10 +1,14 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <thread>
 #include <chrono>
 #include <sstream>
+#include <span>
+#include <stdexcept>
 #ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
+#elif defined(__linux__)
+# include <netdb.h>
 #endif
 #include "Connection.h"
 #include "Blackboard.h"
@@ -18,6 +22,143 @@
 #include "ClientGame.h"
 #include "Result.h"
 #include "responses.h"
+#include "GetOpt.h"
+
+// Especificacion de los argumentos del cliente: -n <team> -p <port> [-h <hostname>]
+namespace Opt {
+	namespace ClientArgs {
+		enum class Id {
+			Port,
+			Teams,
+			Host,
+		};
+
+		constexpr Spec specs[] = {
+			{ port_keys,  Arity::One,       RepeatPolicy::Reject },
+			{ teams_keys, Arity::One,       RepeatPolicy::Reject },
+			{ host_keys,  Arity::ZeroOrOne, RepeatPolicy::Reject },
+		};
+
+		const KeyEntry<Id> key_table[] = {
+			{ "-p", Id::Port },
+			{ "-n", Id::Teams },
+			{ "-h", Id::Host },
+		};
+	}
+}
+
+struct ClientOptions
+{
+	std::string teamName;
+	std::string host = "localhost";
+	std::string portStr;
+	int port = 0;
+};
+
+static void PrintUsage()
+{
+	std::cerr << "Usage: ./client -n <team> -p <port> [-h <hostname>]\n";
+}
+
+// Parsea argv y rellena 'out'. Devuelve false (e imprime el error) si es invalido.
+static bool ParseClientArgs(int argc, char** argv, ClientOptions& out)
+{
+	using namespace Opt::ClientArgs;
+
+	std::vector<std::string> errors;
+	Opt::GetOpt<Id> opts{ std::span<const Opt::Spec>(specs), std::span<const Opt::KeyEntry<Id>>(key_table) };
+
+	bool ok = opts.parse(argc, argv, &errors);
+	ok &= validate_arity(opts.values, opts.specs, &errors);
+
+	if (!ok || !errors.empty())
+	{
+		for (const auto& e : errors)
+			std::cerr << e << std::endl;
+		PrintUsage();
+		return false;
+	}
+
+	out.teamName = std::string(opts.values[static_cast<size_t>(Id::Teams)].values[0]);
+	out.portStr  = std::string(opts.values[static_cast<size_t>(Id::Port)].values[0]);
+
+	const auto& hostVal = opts.values[static_cast<size_t>(Id::Host)];
+	if (hostVal.present && !hostVal.values.empty())
+		out.host = std::string(hostVal.values[0]);
+
+	if (out.teamName.empty())
+	{
+		std::cerr << "Team name (-n) cannot be empty\n";
+		return false;
+	}
+
+	try
+	{
+		size_t pos = 0;
+		out.port = std::stoi(out.portStr, &pos);
+		if (pos != out.portStr.size())
+		{
+			std::cerr << "Invalid port: '" << out.portStr << "'\n";
+			return false;
+		}
+	}
+	catch (...)
+	{
+		std::cerr << "Invalid port: '" << out.portStr << "'\n";
+		return false;
+	}
+
+	if (out.port < 1 || out.port > 65535)
+	{
+		std::cerr << "Port out of range (1-65535): " << out.portStr << "\n";
+		return false;
+	}
+
+	return true;
+}
+
+// Resuelve host:port y devuelve un socket ya conectado (INVALID_SOCKET si falla).
+static SOCKET ConnectToServer(const std::string& host, const std::string& portStr)
+{
+	struct addrinfo hints{};
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	struct addrinfo* res = nullptr;
+	int gai = getaddrinfo(host.c_str(), portStr.c_str(), &hints, &res);
+	if (gai != 0 || !res)
+	{
+#ifdef _WIN32
+		// En Windows gai_strerror puede resolver a la variante wchar_t*; usamos el codigo numerico.
+		std::cerr << "Could not resolve host '" << host << "' (getaddrinfo error " << gai << ")\n";
+#else
+		std::cerr << "Could not resolve host '" << host << "': " << gai_strerror(gai) << "\n";
+#endif
+		return INVALID_SOCKET;
+	}
+
+	SOCKET sock = INVALID_SOCKET;
+	for (struct addrinfo* ai = res; ai != nullptr; ai = ai->ai_next)
+	{
+		sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+		if (sock == INVALID_SOCKET)
+			continue;
+
+		if (connect(sock, ai->ai_addr, static_cast<int>(ai->ai_addrlen)) != SOCKET_ERROR)
+			break;
+
+#ifdef _WIN32
+		closesocket(sock);
+#else
+		close(sock);
+#endif
+		sock = INVALID_SOCKET;
+	}
+
+	freeaddrinfo(res);
+	return sock;
+}
 
 
 void WaitForDebugAndClean(int seconds = 5)
@@ -91,7 +232,7 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 
 	if (nb_client < 1)
 	{
-		// equipo lleno -> no error t�cnico, pero queremos notificar que no se puede unir
+		// equipo lleno -> no error tï¿½cnico, pero queremos notificar que no se puede unir
 		return Result<Blackboard*>::Fail("TeamFull");
 	}
 
@@ -127,36 +268,42 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 
 
 
-int main()
+int main(int argc, char** argv)
 {
-	//TODO parsear argumentos de linea de comando para ip, puerto y nombre de equipo
-	// Crear Connection y registrarla en ClientGame
+	// Parsear argumentos de linea de comando: -n <team> -p <port> [-h <hostname>]
+	ClientOptions options;
+	if (!ParseClientArgs(argc, argv, options))
+		return 1;
+
+	std::cout << "[Client] Team: " << options.teamName
+			  << " | Host: " << options.host
+			  << " | Port: " << options.port << "\n";
+
 #ifdef _WIN32
 	WSADATA wsaData{};
-	WSAStartup(MAKEWORD(2, 2), &wsaData);
-#endif
-    SOCKET rawSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	Connection* conn = new Connection(rawSock);
-	ClientGame::GetInstance()->connection = conn;
-
-
-    sockaddr_in serverAddr{};
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(12345);
-#ifdef _WIN32
-    inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
-#elif defined(__linux__)
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-#endif
-	if (connect(conn->Get(), (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-		std::cerr << "connect() failed\n";
-		WaitForDebugAndClean();
+		std::cerr << "WSAStartup() failed\n";
+		return 1;
+	}
+#endif
+
+	SOCKET rawSock = ConnectToServer(options.host, options.portStr);
+	if (rawSock == INVALID_SOCKET)
+	{
+		std::cerr << "connect() failed to " << options.host << ":" << options.port << "\n";
+#ifdef _WIN32
+		WSACleanup();
+#endif
 		return 1;
 	}
 
-	// Handshake: InitServerHandshake crear� el Blackboard e internamente usar� la Connection en ClientGame
-	auto result = InitServerHandshake("TestTeamName");
+	// Crear Connection y registrarla en ClientGame
+	Connection* conn = new Connection(rawSock);
+	ClientGame::GetInstance()->connection = conn;
+
+	// Handshake: InitServerHandshake creara el Blackboard e internamente usara la Connection en ClientGame
+	auto result = InitServerHandshake(options.teamName);
 	if (!result.Ok)
 	{
 		if (result.Message == "TeamFull")
@@ -199,33 +346,6 @@ int main()
 		if (!conn->SendLine(commandStr))
 			break;
 
-
-
-		////test
-		//std::string testCommand;
-		//std::string objectParam = "";
-
-		//if (i == 0)
-		//{
-		//	testCommand = "avance";
-		//	std::cout << "[Client] CMD => avance (iteration " << i << ")\n";
-		//}
-		//else
-		//{
-		//	testCommand = "prend nourriture";
-		//	objectParam = "nourriture";
-		//	std::cout << "[Client] CMD => prend nourriture (iteration " << i << ")\n";
-		//}
-
-		//board.commandHistory.AddCommand(ParseCommandType(testCommand), board.CurrentTick, objectParam);
-		//i++;
-
-		//if (!conn->SendLine(testCommand))
-		//	break;
-
-			/////
-
-
 		std::string response;
 		int responseCode;
 		while (true)
@@ -245,8 +365,6 @@ int main()
 			}
 
 		}
-
-		std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
 
 	// Legacy mode maybe of use is clusters.

@@ -2,7 +2,7 @@
 #include "validators.h"
 #include "Result.h"
 
-Result<int> Validators::Utils::parse_int(std::string_view s)  noexcept
+Result<int> Validators::Utils::parse_int(std::string s)  noexcept
 {
   int out = 0;
   auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), out, 10);
@@ -14,7 +14,7 @@ Result<int> Validators::Utils::parse_int(std::string_view s)  noexcept
   return Result<int>::Success(out);
 }
 
-Result<int> Validators::port(const std::vector<std::string_view> &values, std::vector<std::string_view> *errors)
+Result<int> Validators::port(const std::vector<std::string> &values, std::vector<std::string> *errors)
 {
 	if (values.empty())
 		return Result<int>::Fail(Errors::Validation::MissValue);
@@ -27,22 +27,22 @@ Result<int> Validators::port(const std::vector<std::string_view> &values, std::v
 			return (port);
 		else
 		{
-			vector_string_view_add(errors, Errors::Validation::InvalidPort);
+			vector_string_add(errors, Errors::Validation::InvalidPort);
 			return (Result<int>::Fail(Errors::Validation::InvalidPort));
 		}
 	}
-	vector_string_view_add(errors, port.Message);
+	vector_string_add(errors, port.Message);
 	return (port);
 }
 
-Result<bool> Validators::teamname(const std::string_view &teamname, 
-                  std::vector<std::string_view> *errors)
+Result<bool> Validators::teamname(const std::string &teamname,
+                  std::vector<std::string> *errors)
 		{
       if (!Utils::within_bounds(teamname.size(),
                                 TeamNameLen::Min, 
                                 TeamNameLen::Max))
 				{
-					vector_string_view_add(errors, Errors::Validation::InvalidTeamLen);
+					vector_string_add(errors, Errors::Validation::InvalidTeamLen);
 					return (Result<bool>::Fail(Errors::Validation::InvalidTeamLen));
 				}
       return (Result<bool>::Success(true));

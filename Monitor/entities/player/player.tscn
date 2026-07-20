@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://cku1rgyxqsgql"]
+
+[ext_resource type="Script" uid="uid://vtb1d8oimgnm" path="res://entities/player/Player.cs" id="1_60xi1"]
+[ext_resource type="PackedScene" uid="uid://dwnam38n4d51" path="res://entities/player/models/Shaman.glb" id="3_kjbrg"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nfceb"]
+
+[node name="Player" type="Node3D" unique_id=439265388]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+script = ExtResource("1_60xi1")
+metadata/__editor_changed = true
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1551144091]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=521705790]
+transform = Transform3D(2.685, 0, 0, 0, 2.685, 0, 0, 0, 2.685, 0, 1.01913, 0)
+shape = SubResource("BoxShape3D_nfceb")
+
+[node name="Model" parent="." unique_id=454791581 instance=ExtResource("3_kjbrg")]

@@ -1,0 +1,55 @@
+[gd_scene load_steps=9 format=3 uid="uid://d21qejsj8oxem"]
+
+[ext_resource type="Script" path="res://entities/terrain/Terrain.cs" id="1_1ewcx"]
+[ext_resource type="Script" path="res://entities/terrain/GrassSystem.cs" id="2_grass"]
+[ext_resource type="Shader" path="res://entities/terrain/terrain.gdshader" id="3_lh2em"]
+[ext_resource type="Script" path="res://entities/terrain/DecorationSystem.cs" id="4_decoration"]
+[ext_resource type="Script" path="res://entities/terrain/WaterSystem.cs" id="5_water"]
+[ext_resource type="Script" path="res://entities/animals/AnimalSystem.cs" id="6_animals"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pb4ps"]
+render_priority = 0
+shader = ExtResource("3_lh2em")
+shader_parameter/tile_size = 10.0
+shader_parameter/line_color = Color(0, 0, 0, 1)
+shader_parameter/ground_color = Color(0.4, 0.8, 0.4, 1)
+shader_parameter/ground_color_b = Color(0.28, 0.62, 0.22, 1)
+shader_parameter/color_variation = 0.15
+shader_parameter/noise_scale = 0.25
+shader_parameter/sand_color = Color(0.851, 0.784, 0.451, 1)
+shader_parameter/sand_height = 1.0
+shader_parameter/sand_blend = 0.6
+shader_parameter/highlight_color = Color(1, 1, 1, 1)
+shader_parameter/pulse_speed = 3.0
+shader_parameter/has_selection = false
+shader_parameter/selected_tile = Vector2(-1, -1)
+
+[sub_resource type="HeightMapShape3D" id="HeightMapShape3D_x4qeg"]
+
+[node name="Terrain" type="Node3D"]
+script = ExtResource("1_1ewcx")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_pb4ps")
+
+[node name="GrassSystem" type="Node3D" parent="."]
+visible = false
+script = ExtResource("2_grass")
+
+[node name="DecorationSystem" type="Node3D" parent="."]
+visible = false
+script = ExtResource("4_decoration")
+
+[node name="WaterSystem" type="Node3D" parent="."]
+visible = false
+script = ExtResource("5_water")
+
+[node name="AnimalSystem" type="Node3D" parent="."]
+process_mode = 4
+visible = false
+script = ExtResource("6_animals")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("HeightMapShape3D_x4qeg")

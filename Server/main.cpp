@@ -1,4 +1,4 @@
-#include "ServerSimple.h"
+﻿#include "ServerSimple.h"
 #include "serveroptions.h"
 #include "servervalidators.h"
 #include "ArgValidation.h"
@@ -21,10 +21,22 @@
 int main(int argc, char** argv)
 {
 	// ========================================================================
+	// PLATFORM SOCKET INIT (Windows requiere WSAStartup antes de usar sockets)
+	// ========================================================================
+#ifdef _WIN32
+	WSADATA wsaData{};
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		std::cerr << "WSAStartup() failed" << std::endl;
+		return (1);
+	}
+#endif
+
+	// ========================================================================
 	// PARSE ARGUMENTS
 	// ========================================================================
 
-	std::vector<std::string_view> errors;
+	std::vector<std::string> errors;
 
 	Opt::GetOpt<Opt::Server::Id> opts(
 									  std::span<const Opt::Spec> {Opt::Server::specs},
@@ -87,6 +99,10 @@ int main(int argc, char** argv)
 	int exitCode = server.Run();
 
 	std::cout << "\nServer shutdown complete." << std::endl;
+
+#ifdef _WIN32
+	WSACleanup();
+#endif
 
 	return (exitCode);
 }

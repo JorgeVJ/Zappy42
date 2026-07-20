@@ -27,6 +27,13 @@ SERVER-DIR    := ./Server/
 BUILD-DIR			:=	./.build/
 TESTS-DIR			:=	./Tests/
 
+# GUI (Monitor Godot 4.6 mono / C#)
+GUI-DIR         := ./Monitor
+GODOT           ?= $(HOME)/godot-mono/godot
+DOTNET-LOCAL    := $(GUI-DIR)/.dotnet
+DOTNET-CHANNEL  := 8.0
+DOTNET-INSTALL  := https://dot.net/v1/dotnet-install.sh
+
 TEST_GETOPT_DIR      		 := $(TESTS-DIR)GetOpt/
 TEST_GETOPT_SERVER	     := $(TEST_GETOPT_DIR)server
 TEST_GETOPT_CLIENT	     := $(TEST_GETOPT_DIR)client
@@ -38,6 +45,9 @@ SRC-CORE			:=  Connection \
 									ZappySocket \
 									Tile \
 									CommandHistory \
+									CommandEntry \
+									Direction \
+									Player \
 									Core \
 									pch \
 									utils \
@@ -51,13 +61,14 @@ SRC-CORE			:=  Connection \
 
 
 SRC-CLIENT := \
-  $(addprefix Client/, main IAgent AgentBreeder AgentExplorer \
-    AgentChaman AgentHungry AgentStoner ExplorationService \
+  $(addprefix Client/, main IAgent responses AgentBreeder AgentExplorer \
+    AgentChaman AgentFeeder AgentStoner ExplorationService \
     InfluenceService Bid Blackboard ClientGame) \
   $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER-NO-MAIN := \
-	  $(addprefix Server/, Game events responses servervalidators ArgValidation ServerSimple TeamManager SocketManager) \
+	  $(addprefix Server/, Game events responses servervalidators \
+		ArgValidation ServerSimple TeamManager SocketManager) \
 	  $(addprefix Core/, $(SRC-CORE))
 
 SRC-SERVER := \
@@ -132,6 +143,50 @@ $(BUILD-DIR)%.o:        %.cpp
 	@$(DIR_DUP)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+gui: gui-dotnet
+	@if ! command -v "$(GODOT)" >/dev/null 2>&1; then \
+		echo "Error: no se encontro el binario de Godot ('$(GODOT)'). Instalalo o: make gui GODOT=/ruta/a/godot"; \
+		exit 1; \
+	fi; \
+	if command -v dotnet >/dev/null 2>&1 && dotnet --list-sdks 2>/dev/null | grep -q '^8\.'; then \
+		DOTNET_DIR="$$(dirname "$$(command -v dotnet)")"; \
+	elif [ -x "$(abspath $(DOTNET-LOCAL))/dotnet" ]; then \
+		DOTNET_DIR="$(abspath $(DOTNET-LOCAL))"; \
+	else \
+		echo "Error: no hay .NET SDK 8 disponible"; exit 1; \
+	fi; \
+	export PATH="$$DOTNET_DIR:$$PATH"; \
+	export DOTNET_ROOT="$$DOTNET_DIR"; \
+	export DOTNET_CLI_TELEMETRY_OPTOUT=1; \
+	export DOTNET_NOLOGO=1; \
+	echo "Importando recursos..."; \
+	"$(GODOT)" --path "$(GUI-DIR)" --headless --import; \
+	echo "Compilando solucion C#..."; \
+	"$(GODOT)" --path "$(GUI-DIR)" --headless --build-solutions --quit; \
+	echo "GUI lista. Lanzar con: $(GODOT) --path $(GUI-DIR) [--mock | -h <host> -p <port>]"
+
+gui-dotnet:
+	@if command -v dotnet >/dev/null 2>&1 && dotnet --list-sdks 2>/dev/null | grep -q '^8\.'; then \
+		echo "dotnet 8 del sistema: $$(command -v dotnet)"; \
+	elif [ -x "$(DOTNET-LOCAL)/dotnet" ]; then \
+		echo "dotnet local ya instalado en $(DOTNET-LOCAL)"; \
+	else \
+		echo "dotnet no encontrado. Instalando .NET SDK $(DOTNET-CHANNEL) en $(DOTNET-LOCAL) (sin sudo)..."; \
+		mkdir -p "$(DOTNET-LOCAL)"; \
+		if command -v curl >/dev/null 2>&1; then \
+			curl -fsSL "$(DOTNET-INSTALL)" -o "$(DOTNET-LOCAL)/dotnet-install.sh"; \
+		elif command -v wget >/dev/null 2>&1; then \
+			wget -qO "$(DOTNET-LOCAL)/dotnet-install.sh" "$(DOTNET-INSTALL)"; \
+		else \
+			echo "Error: se necesita curl o wget para descargar dotnet-install.sh"; exit 1; \
+		fi; \
+		bash "$(DOTNET-LOCAL)/dotnet-install.sh" --channel $(DOTNET-CHANNEL) --install-dir "$(DOTNET-LOCAL)"; \
+		echo ".NET SDK instalado en $(DOTNET-LOCAL)"; \
+	fi
+
+gui-fclean:
+	@$(RM) $(GUI-DIR)/.godot $(GUI-DIR)/.dotnet $(GUI-DIR)/dotnet-install.sh
+
 clean:
 	@$(RM) $(BUILD-DIR) $(TEST_GETOPT_SERVER) $(TEST_GETOPT_CLIENT) $(TEST_GETOPT_DIR)err.log $(TEST_GETOPT_DIR)out.log $(TEST_VALIDATORS_SERVER)
 
@@ -146,4 +201,4 @@ info-%:
 print-%:
 	@$(info '$*'='$($*)')
 
-.PHONY: all clean fclean re info-% print-% test_getopt test_validators
+.PHONY: all clean fclean re info-% print-% test_getopt test_validators gui gui-dotnet gui-fclean

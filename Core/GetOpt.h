@@ -11,15 +11,15 @@
 
 
 namespace Opt {
-	constexpr std::string_view Delimiter_Options    = "--";
+	const std::string Delimiter_Options    = "--";
 
-	constexpr std::string_view port_keys[]    = { "-p" };
-	constexpr std::string_view width_keys[]   = { "-x" };
-	constexpr std::string_view height_keys[]  = { "-y" };
-	constexpr std::string_view teams_keys[]   = { "-n" };
-	constexpr std::string_view clients_keys[] = { "-c" };
-	constexpr std::string_view time_keys[]    = { "-t" };
-	constexpr std::string_view host_keys[]    = { "-h" };
+	const std::string port_keys[]    = { "-p" };
+	const std::string width_keys[]   = { "-x" };
+	const std::string height_keys[]  = { "-y" };
+	const std::string teams_keys[]   = { "-n" };
+	const std::string clients_keys[] = { "-c" };
+	const std::string time_keys[]    = { "-t" };
+	const std::string host_keys[]    = { "-h" };
 
 	enum class Arity : unsigned char {
 		Zero,
@@ -55,7 +55,7 @@ namespace Opt {
 
   	struct Value {
 		bool present = false;
-		std::vector<std::string_view> values;
+		std::vector<std::string> values;
 	};
 
 	enum class RepeatPolicy {
@@ -64,7 +64,7 @@ namespace Opt {
 	};
 
 	struct Spec {
-		std::span<const std::string_view> keys;
+		std::span<const std::string> keys;
 		Arity arity;
 		RepeatPolicy repeat;
 		bool is_repeatable()  const noexcept;
@@ -72,7 +72,7 @@ namespace Opt {
 
 	template<typename OptId>
 	struct KeyEntry {
-		std::string_view key;
+		std::string key;
 		OptId id;
 	};
 
@@ -86,19 +86,19 @@ namespace Opt {
 			: specs(specs), keys(keys), values(specs.size()) {}
 
 
-		bool parse(int argc, char** argv, std::vector<std::string_view> *errors) {
+		bool parse(int argc, char** argv, std::vector<std::string> *errors) {
 			bool ok = true;
 			bool end_of_options = false;
 
 			for (int i = 1; i < argc; ++i) {
-				std::string_view arg = argv[i];
+				std::string arg = argv[i];
 
 				if (!end_of_options && arg == Delimiter_Options) {
 					return (ok);
 				}
 				auto id = find(arg);
 				if (!id) {
-					vector_string_view_add(errors, Errors::CLI::UnknownOption);
+					vector_string_add(errors, Errors::CLI::UnknownOption);
 					ok = false;
 					continue;
 				}
@@ -108,7 +108,7 @@ namespace Opt {
 				auto& val  = values[idx];
 
 				if (val.present && !spec.is_repeatable()) {
-					vector_string_view_add(errors, Errors::CLI::RepeatOption);
+					vector_string_add(errors, Errors::CLI::RepeatOption);
 					ok = false;
 					continue;
 				}
@@ -124,7 +124,7 @@ namespace Opt {
 		std::span<const KeyEntry<OptId>> keys;
 		std::vector<Value> values;
 	private:
-		std::optional<OptId> find(std::string_view key) const noexcept {
+		std::optional<OptId> find(std::string key) const noexcept {
 			for (const auto& e : this->keys) {
 				if (e.key == key)
 					return (e.id);
@@ -136,7 +136,7 @@ namespace Opt {
 		bool consume(const Spec& spec,
                      Value& val,
                      int& i,
-					 std::vector<std::string_view> *errors,
+					 std::vector<std::string> *errors,
                      int argc,
                      char** argv)
 		{
@@ -145,7 +145,7 @@ namespace Opt {
 
 			while (i + 1 < argc && !arity_stop(spec.arity, count))
 			{
-				std::string_view next = argv[i + 1];
+				std::string next = argv[i + 1];
 				if (!next.empty() && next[0] == '-')
 					break;
 
@@ -165,7 +165,7 @@ namespace Opt {
 
 			if (arity_accepts(spec.arity, count))
 				return (ok);
-			vector_string_view_add(errors, Errors::CLI::InvalidArity);
+			vector_string_add(errors, Errors::CLI::InvalidArity);
 			ok = false;
 			return (ok);
 		}
@@ -173,4 +173,4 @@ namespace Opt {
 }
 
 bool validate_arity(const std::vector<Opt::Value> &values,
-			  const std::span<const Opt::Spec> &specs, std::vector<std::string_view> *errors);
+			  const std::span<const Opt::Spec> &specs, std::vector<std::string> *errors);
