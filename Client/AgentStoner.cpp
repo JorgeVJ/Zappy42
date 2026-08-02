@@ -1,50 +1,21 @@
-#include <iostream>
-#include <iostream>
 #include "AgentStoner.h"
 #include "Bid.h"
 #include "CommandEntry.h"
 #include "Inventory.h"
+#include "UtilityHelper.h"
+#include <algorithm>
+#include <iostream>
+#include <vector>
 
-void AgentStoner::GetBids(Blackboard& bb)
+namespace
 {
-	auto it = Inventory::IncantationRecipes.find(bb.Me.Level);
-	if (it == Inventory::IncantationRecipes.end())
-		return;
-
-	const Inventory& required = it->second.RequiredResources;
-	Tile* playerTile = bb.GetPlayerTile();
-	if (!playerTile)
-		return;
-
-	std::cout << "[Stoner] Analyzing resources for level " << bb.Me.Level << " incantation\n";
-	
-	// FASE 1: SOLICITAR busqueda de recursos faltantes
-	for (size_t r = 0; r < Inventory::Size(); ++r) {
-		Resource res = static_cast<Resource>(r);
-		if (res == Resource::Food) continue; // AgentHungry maneja la comida
-		
-		int needed = required.Get(res);
-		int current = bb.Me.inventory.Get(res);
-		
-		if (current < needed) {
-			int missing = needed - current;
-			int priority = 80 + (missing * 5); // Mas falta = mas prioridad
-			if (priority > 95) priority = 95; // Cap a 95 (comida critica tiene 100)
-			
-			bb.RequestResource(res, priority);
-			std::cout << "[Stoner] Requesting search for: " 
-			          << Inventory::ResourceToString(res) 
-			          << " (need " << missing << " more) - Priority: " << priority << "\n";
-		}
-	}
-	
-	// FASE 2: Hacer bids para recoger recursos en el tile actual
-	struct ResourceInfo {
+	struct ResourceInfo
+	{
 		std::string name;
-		Resource enumVal;
+		Resource resource;
 	};
-	
-	ResourceInfo resources[] = {
+
+	const ResourceInfo kResources[] = {
 		{"linemate", Resource::Linemate},
 		{"deraumere", Resource::Deraumere},
 		{"sibur", Resource::Sibur},
@@ -52,40 +23,106 @@ void AgentStoner::GetBids(Blackboard& bb)
 		{"phiras", Resource::Phiras},
 		{"thystame", Resource::Thystame}
 	};
-	
-	for (const auto& res : resources) {
-		int onTile = playerTile->inventory.Get(res.enumVal);
+
+	const IncantationRecipe* GetRecipeForLevel(int level)
+	{
+		auto it = Inventory::IncantationRecipes.find(level);
+		if (it == Inventory::IncantationRecipes.end())
+			return nullptr;
+		return &it->second;
+	}
+
+	double NormalizeNeed(int current, int required)
+	{
+		if (required <= 0)
+			return 0.0;
+
+		const int missing = (required - current) > 0 ? (required - current) : 0;
+		return UtilityHelper::Clamp01(static_cast<double>(missing) / static_cast<double>(required));
+	}
+
+	double BuildResourceUtility(const Blackboard& bb, Resource resource, int currentRequired, int nextRequired, int onTile)
+	{
+		const double hungerNeed = bb.GetHungerNeed();
+		const double lifePressure = 1.0 - bb.GetLifePercentage();
+		const double currentNeed = NormalizeNeed(bb.Me.inventory.Get(resource), currentRequired);
+		const double nextNeed = NormalizeNeed(bb.Me.inventory.Get(resource), nextRequired);
+		const double tileAvailability = UtilityHelper::Clamp01(static_cast<double>(onTile) / 3.0);
+
+		const double currentUtility = UtilityHelper::EvaluatePerceptron(
+			{ hungerNeed, lifePressure, currentNeed, tileAvailability },
+			{ 2.2, 1.0, 2.8, 1.2 },
+			-1.9,
+			UtilityActivation::Sigmoid);
+
+		const double nextUtility = UtilityHelper::EvaluatePerceptron(
+			{ hungerNeed, lifePressure, nextNeed, tileAvailability },
+			{ 1.7, 0.8, 2.1, 1.0 },
+			-2.1,
+			UtilityActivation::Sigmoid);
+
+		return (currentUtility * 0.75) + (nextUtility * 0.25);
+	}
+}
+
+void AgentStoner::GetBids(Blackboard& bb)
+{
+	Tile* playerTile = bb.GetPlayerTile();
+	if (!playerTile)
+		return;
+
+	const IncantationRecipe* currentRecipe = GetRecipeForLevel(bb.Me.Level);
+	if (!currentRecipe)
+		return;
+
+	const IncantationRecipe* nextRecipe = GetRecipeForLevel(bb.Me.Level + 1);
+
+	std::cout << "[Stoner] Analyzing resources for level " << bb.Me.Level << " incantation\n";
+
+	for (const auto& res : kResources)
+	{
+		const int onTile = playerTile->inventory.Get(res.resource);
+		const int currentNeeded = currentRecipe->RequiredResources.Get(res.resource);
+		const int nextNeeded = nextRecipe ? nextRecipe->RequiredResources.Get(res.resource) : 0;
+
 		if (onTile <= 0)
+		{
+			const int currentMissing = (currentNeeded - bb.Me.inventory.Get(res.resource)) > 0 ? (currentNeeded - bb.Me.inventory.Get(res.resource)) : 0;
+			const int nextMissing = (nextNeeded - bb.Me.inventory.Get(res.resource)) > 0 ? (nextNeeded - bb.Me.inventory.Get(res.resource)) : 0;
+			if (currentMissing > 0 || nextMissing > 0)
+			{
+				const double searchUtility = BuildResourceUtility(bb, res.resource, currentNeeded, nextNeeded, 0);
+				const double searchPriority = UtilityHelper::LinearClamp(searchUtility * 100.0, 0.0, 100.0);
+				bb.RequestResource(res.resource, static_cast<int>(searchPriority));
+
+				std::cout << "[Stoner] Requesting search for " << res.name
+					<< " | current missing: " << currentMissing
+					<< " | next missing: " << nextMissing
+					<< " | priority: " << searchPriority << "\n";
+			}
+
 			continue;
-		
-		int needed = required.Get(res.enumVal);
-		int current = bb.Me.inventory.Get(res.enumVal);
-		int missing = needed - current;
-		
-		double priority = 0.0;
-		
-		if (missing > 0) {
-			priority = 80.0 + (missing * 10.0);
-			std::cout << "[Stoner] HIGH PRIORITY: " << res.name 
-			          << " needed! (missing: " << missing << ") - Priority: " << priority << "\n";
 		}
-		else if (missing == 0) {
-			priority = 50.0;
-			std::cout << "[Stoner] COMPLETE: " << res.name 
-			          << " requirement met - Priority: " << priority << "\n";
-		}
-		else {
-			priority = 20.0;
-			std::cout << "[Stoner] SURPLUS: " << res.name 
-			          << " (extra: " << -missing << ") - Priority: " << priority << "\n";
-		}
-		
-		if (priority > 0.0) {
-			bb.Bids.push_back(Bid(
-				CommandEntry::Create(CommandType::Take, res.name, bb.CurrentTick),
-				priority
-			));
-		}
+
+		const double utility = BuildResourceUtility(bb, res.resource, currentNeeded, nextNeeded, onTile);
+		const double priority = UtilityHelper::LinearClamp(utility * 100.0, 0.0, 100.0);
+
+		if (priority <= 0.0)
+			continue;
+
+		const int currentMissing = (currentNeeded - bb.Me.inventory.Get(res.resource)) > 0 ? (currentNeeded - bb.Me.inventory.Get(res.resource)) : 0;
+		const int nextMissing = (nextNeeded - bb.Me.inventory.Get(res.resource)) > 0 ? (nextNeeded - bb.Me.inventory.Get(res.resource)) : 0;
+
+		std::cout << "[Stoner] TAKE " << res.name
+			<< " | tile: " << onTile
+			<< " | current missing: " << currentMissing
+			<< " | next missing: " << nextMissing
+			<< " | priority: " << priority << "\n";
+
+		bb.Bids.push_back(Bid(
+			CommandEntry::Create(CommandType::Take, res.name, bb.CurrentTick),
+			priority
+		));
 	}
 }
 
