@@ -1,8 +1,10 @@
 ﻿#include "Blackboard.h"
+#include "UtilityHelper.h"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <algorithm>
+
 
 Blackboard::Blackboard() : map(0, 0), CurrentTick(0)
 {
@@ -48,9 +50,20 @@ void Blackboard::CleanupOldRequests(int maxAge)
 int Blackboard::GetRemainingLifeTicks() const
 {
 	 int food = Me.inventory.Get(Resource::Food);
-    return food * TICKS_PER_FOOD;
+	return food * TICKS_PER_FOOD;
 }
 
+double Blackboard::GetFoodReserveNeed() const
+{
+	const double maxUsefulFood = 10.0;
+	double reserveRatio = static_cast<double>(Me.inventory.Get(Resource::Food)) / maxUsefulFood;
+	if (reserveRatio < 0.0)
+		reserveRatio = 0.0;
+	else if (reserveRatio > 1.0)
+		reserveRatio = 1.0;
+
+	return 1.0 - reserveRatio;
+}
 
 // Use getLifePercentage or GetHungerneed
 double Blackboard::GetLifePercentage() const
@@ -64,25 +77,13 @@ double Blackboard::GetLifePercentage() const
 	return percentage;
 }
 
-double Blackboard::GetHungerNeed()
+double Blackboard::GetHungerNeed() const
 {
-	int remainingTicks = GetRemainingLifeTicks();
-	
-	// Escala de urgencia basada en ticks restantes
-	if (remainingTicks <= 100)
-		return 1.0; // MUERTE INMINENTE
-	else if (remainingTicks < 250)
-		return 0.95; // CRiTICO (menos de 2 comandos de comida)
-	else if (remainingTicks < 400)
-		return 0.85; // URGENTE
-	else if (remainingTicks < 600)
-		return 0.70; // ALTO
-	else if (remainingTicks < 800)
-		return 0.50; // MEDIO
-	else if (remainingTicks < 1000)
-		return 0.30; // BAJO
-	else
-		return 0.15; // MUY BAJO (bien de comida)
+	const double lifePressure = 1.0 - GetLifePercentage();
+	const double reservePressure = GetFoodReserveNeed();
+	const double combinedNeed = (lifePressure * 0.35) + (reservePressure * 0.65);
+
+	return UtilityHelper::Sigmoid((combinedNeed - 0.5) * 8.0);
 }
 
 std::vector<std::string> ParseVoir(const std::string& str)

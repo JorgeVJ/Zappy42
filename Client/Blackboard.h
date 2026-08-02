@@ -101,7 +101,12 @@ class Blackboard
 		/// </summary>
 		/// <returns>Ticks de vida restantes</returns>
 		int GetRemainingLifeTicks() const;
-		
+
+		/// <summary>
+		/// Calcula la necesidad de reserva de comida normalizada (1.0 = sin reserva, 0.0 = suficiente)
+		/// </summary>
+		double GetFoodReserveNeed() const;
+
 		/// <summary>
 		/// Obtiene el porcentaje de vida restante (0.0 a 1.0)
 		/// </summary>
@@ -112,7 +117,7 @@ class Blackboard
 		/// Calcula la necesidad de comida como valor de urgencia
 		/// </summary>
 		/// <returns>Valor de urgencia entre 0.0 (sin hambre) y 1.0 (muerte inminente)</returns>
-		double GetHungerNeed();
+		double GetHungerNeed() const;
 		
 		/// <summary>
 		/// Procesa la respuesta del comando "voir" y actualiza el mapa

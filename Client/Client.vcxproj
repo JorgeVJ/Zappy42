@@ -146,6 +146,7 @@
     <ClCompile Include="InfluenceService.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="responses.cpp" />
+    <ClCompile Include="UtilityHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgentBreeder.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="MessageEntry.h" />
     <ClInclude Include="responses.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="UtilityHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.vcxproj">

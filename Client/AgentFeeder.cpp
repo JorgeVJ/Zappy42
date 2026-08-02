@@ -1,94 +1,116 @@
 #include "AgentFeeder.h"
 #include "Bid.h"
 #include "CommandEntry.h"
+#include "UtilityHelper.h"
 #include <iostream>
+#include <vector>
+
+namespace
+{
+	// Build the input vector and weights for the "Take Food" utility function
+	double BuildTakeFoodUtility(const Blackboard& bb, int foodOnTile)
+	{
+		const double hungerNeed = bb.GetHungerNeed();
+		const double lifePressure = 1.0 - bb.GetLifePercentage();
+		const double foodReserveNeed = bb.GetFoodReserveNeed();
+		const double foodAvailability = UtilityHelper::Clamp01(static_cast<double>(foodOnTile) / 3.0);
+
+		const std::vector<double> inputs = {
+			hungerNeed,
+			lifePressure,
+			foodReserveNeed,
+			foodAvailability
+		};
+
+		const std::vector<double> weights = {
+			2.4,
+			1.3,
+			1.1,
+			1.6
+		};
+
+		return UtilityHelper::EvaluatePerceptron(inputs, weights, -1.9, UtilityActivation::Sigmoid);
+	}
+	
+	// Build the input vector and weights for the "Search Food" utility function
+	double BuildSearchFoodUtility(const Blackboard& bb, int foodOnTile)
+	{
+		const double hungerNeed = bb.GetHungerNeed();
+		const double lifePressure = 1.0 - bb.GetLifePercentage();
+		const double foodReserveNeed = bb.GetFoodReserveNeed();
+		const double scarcity = 1.0 - UtilityHelper::Clamp01(static_cast<double>(foodOnTile) / 3.0);
+
+		const std::vector<double> inputs = {
+			hungerNeed,
+			lifePressure,
+			foodReserveNeed,
+			scarcity
+		};
+
+		const std::vector<double> weights = {
+			2.0,
+			1.1,
+			0.8,
+			1.2
+		};
+
+		return UtilityHelper::EvaluatePerceptron(inputs, weights, -1.6, UtilityActivation::Sigmoid);
+	}
+}
 
 void AgentFeeder::GetBids(Blackboard& bb)
 {
-	// actualizar inventario de comida segun los ticks transcurridos (cada 126 ticks se consume 1 comida). Guardar tiempo de ultima actualizacion (ticks) para saber desde cuando no se ha actualizado.
 	bb.Me.UpdateFoodConsumption(bb.CurrentTick);
-	double hungerNeed = bb.GetHungerNeed();
 
-
-	//Necesito comida? Si no, tiene sentido continuar?
-	if (hungerNeed <= 0.30) {
-		std::cout << "[Feeder] Hunger need is low (" << (bb.GetHungerNeed() * 100) << "%). No action needed.\n";
+	const double hungerNeed = bb.GetHungerNeed();
+	if (hungerNeed <= 0.30)
+	{
+		std::cout << "[Feeder] Hunger need is low (" << (hungerNeed * 100) << "%). No action needed.\n";
 		return;
 	}
-
 
 	Tile* playerTile = bb.GetPlayerTile();
 	if (!playerTile)
 	{
-		std::cout << "[Debug] Empty Player tile." << std::endl;
+		std::cout << "[Feeder] Empty player tile.\n";
 		return;
 	}
 
-	// Verificar si hay comida en el tile actual
-	int foodOnTile = playerTile->inventory.Get(Resource::Food);
-	int currentFood = bb.Me.inventory.Get(Resource::Food);
-	int remainingTicks = bb.GetRemainingLifeTicks();
-	int searchPriority = 0;
-	double priority = 0.0;
-	std::string urgencyLevel;
+	const int foodOnTile = playerTile->inventory.Get(Resource::Food);
+	const int currentFood = bb.Me.inventory.Get(Resource::Food);
+	const int remainingTicks = bb.GetRemainingLifeTicks();
 
-	if (remainingTicks <= 100) {
-		priority = 250.0;
-		urgencyLevel = "DEATH";
-		searchPriority = 150; // MUERTE INMINENTE for resource request
-	}
-	else if (remainingTicks < 200) {
-		priority = 200.0;
-		urgencyLevel = "CRITICAL";
-		searchPriority = 120; // CRiTICO
-	}
-	else if (remainingTicks < 400) {
-		priority = 170.0;
-		urgencyLevel = "URGENT";
-		searchPriority = 85; // URGENTE
-	}
-	else if (remainingTicks < 600) {
-		priority = 100.0;
-		urgencyLevel = "HIGH";
-		searchPriority = 70; // ALTO
-	}
-	else if (remainingTicks < 800) {
-		priority = 70.0;
-		urgencyLevel = "MEDIUM";
-		searchPriority = 50; // MEDIO
-	}
-	else if (remainingTicks < 1000) {
-		priority = 40.0;
-		urgencyLevel = "LOW";
-		searchPriority = 30; // BAJO
-	}
-	else {
-		priority = 10.0;
-		urgencyLevel = "VERY LOW";
-		searchPriority = 15; // MUY BAJO
-	}
+	std::cout << "[Feeder] Food=" << currentFood
+		<< " | Remaining ticks=" << remainingTicks
+		<< " | Tile food=" << foodOnTile
+		<< " | Hunger need=" << hungerNeed << "\n";
 
+	if (foodOnTile > 0)
+	{
+		const double takeUtility = BuildTakeFoodUtility(bb, foodOnTile);
+		const double takePriority = UtilityHelper::LinearClamp(takeUtility * 100.0, 0.0, 100.0);
 
-	// Si HAY comida aqui, hacer bid para recogerla
-	if (foodOnTile > 0){
+		std::cout << "[Feeder] TAKE utility=" << takeUtility
+			<< " -> priority=" << takePriority << "\n";
+
 		bb.Bids.push_back(Bid(
 			CommandEntry::Create(CommandType::Take, "nourriture", bb.CurrentTick),
-			priority
+			takePriority
 		));
+		return;
+	}
 
-		std::cout << "[Feeder] Life: " << (hungerNeed * 100) << "% hunger need " << priority << " |  ("
-			<< currentFood << " food).\n";
-	}
-	// Si NO hay comida en el tile actual, solo solicitamos busqueda
-	else {
-		std::cout << "[Debug] No food on current tile. Create request and wait for exploration...\n";
-		// Solicitar busqueda de comida si la prioridad es significativa
-		if (searchPriority > 40) {
-			bb.RequestResource(Resource::Food, searchPriority);
-			std::cout << "[Feeder] Requesting FOOD search with priority: " << searchPriority << "\n";
-		}
-	}
-	return;
+	const double searchUtility = BuildSearchFoodUtility(bb, foodOnTile);
+	const double searchPriority = UtilityHelper::LinearClamp(searchUtility * 100.0, 0.0, 100.0);
+
+	std::cout << "[Feeder] No food on tile. SEARCH utility=" << searchUtility
+		<< " -> priority=" << searchPriority << "\n";
+
+	bb.RequestResource(Resource::Food, static_cast<int>(searchPriority));
+	bb.Bids.push_back(Bid(
+		CommandEntry::Create(CommandType::See, bb.CurrentTick),
+		searchPriority
+	));
 }
 
 AgentFeeder::~AgentFeeder()
