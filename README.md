@@ -92,6 +92,135 @@ Nuestras IA no son servicios externos, son algoritmos diseñados desde cero por 
 
 Para que los humanos podamos disfrutar de la competencia, hemos desarrollado un cliente gráfico en **Godot** y **C#**. Este se conecta al servidor y traduce los datos técnicos en una representación visual fluida donde se pueden ver los rituales, los movimientos y las muertes de los personajes en tiempo real.
 
+#### 🚀 Compilar el Visualizador en Linux: `make gui`
+
+**Requisitos**
+
+* **Linux** (el `Makefile` aborta en otros sistemas operativos; en Windows usa **WSL**).
+* **Godot 4.6 .NET/mono** — la versión estándar **no** sirve, el proyecto es C#.
+* `curl` o `wget`, únicamente si todavía no tienes el SDK de .NET 8.
+
+**Compilar**
+
+```bash
+make gui
+```
+
+Esto hace dos cosas:
+
+1. `gui-dotnet`: usa el **.NET SDK 8** del sistema si ya está instalado; si no, lo descarga e instala **sin sudo** en `Monitor/.dotnet`.
+2. Importa los recursos del proyecto y compila la solución C# en modo *headless*.
+
+Por defecto se busca el binario de Godot en `~/godot-mono/godot`. Si lo tienes en otra ruta, pásala por variable:
+
+```bash
+make gui GODOT=/ruta/a/godot-mono
+```
+
+**Lanzar la GUI** (una vez compilada)
+
+```bash
+~/godot-mono/godot --path ./Monitor --mock
+```
+
+```bash
+~/godot-mono/godot --path ./Monitor -h 127.0.0.1 -p 4242
+```
+
+El primer comando arranca en modo demo con el servidor simulado interno; el segundo se conecta a un servidor Zappy real (`-h` host, `-p` puerto).
+
+**Limpiar**
+
+```bash
+make gui-fclean
+```
+
+Borra `Monitor/.godot`, `Monitor/.dotnet` y `Monitor/dotnet-install.sh`.
+
+#### 🪟 Compilar el Visualizador en Windows (sin `make`)
+
+El `Makefile` solo funciona en Linux, pero el proyecto Godot se compila y exporta igual desde `cmd` o PowerShell.
+
+**Requisitos**
+
+* **Godot 4.6 .NET/mono** para Windows (la versión estándar **no** sirve).
+* **.NET SDK 8** en el PATH: `dotnet --list-sdks` debe mostrar una entrada `8.x`.
+* Solo para exportar: las **export templates** de Godot 4.6 (variante *mono*).
+
+**Ruta al binario de Godot**
+
+Para trabajar por línea de comandos usa el binario **`_console.exe`**; el otro no engancha la consola y no verás ninguna salida.
+
+```bat
+set GODOT=C:\ruta\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64_console.exe
+```
+
+```powershell
+$env:GODOT = "C:\ruta\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64_console.exe"
+```
+
+**Compilar** (equivalente a `make gui`), desde la raíz del repositorio:
+
+```bat
+"%GODOT%" --path .\Monitor --headless --import
+```
+
+```bat
+"%GODOT%" --path .\Monitor --headless --build-solutions --quit
+```
+
+En PowerShell hay que invocar con el operador de llamada `&`:
+
+```powershell
+& $env:GODOT --path .\Monitor --headless --import
+```
+
+```powershell
+& $env:GODOT --path .\Monitor --headless --build-solutions --quit
+```
+
+La salida compilada queda en `Monitor\.godot\mono\temp\bin\Debug\zappy.dll` (dentro de `.godot`, que está ignorado por git).
+
+**Ejecutar**
+
+```bat
+"%GODOT%" --path .\Monitor --mock
+```
+
+```bat
+"%GODOT%" --path .\Monitor -h 127.0.0.1 -p 4242
+```
+
+Para jugar puedes usar el `.exe` sin `_console`.
+
+**Exportar el ejecutable independiente**
+
+El preset `gfx` (Windows Desktop, x86_64) ya está definido en `Monitor/export_presets.cfg`:
+
+```bat
+"%GODOT%" --path .\Monitor --headless --export-release "gfx" gfx.exe
+```
+
+* La ruta relativa se resuelve respecto al proyecto, así que el resultado queda en `Monitor\gfx.exe` y **sobrescribe el `gfx.exe`/`gfx.pck` versionados**. Pasa una ruta absoluta si prefieres exportar a otra carpeta.
+* El preset no embebe el `.pck`: hay que **distribuir `gfx.exe` junto a `gfx.pck`**.
+* Si faltan las plantillas verás este error; instálalas desde el editor en *Editor → Gestionar plantillas de exportación → Descargar e instalar*:
+
+  ```
+  ERROR: Cannot export project with preset "gfx" due to configuration errors:
+  No se encontró una plantilla de exportación en la ruta:
+  %APPDATA%\Godot\export_templates\4.6.stable.mono\windows_release_x86_64.exe
+  ```
+
+El ejecutable exportado acepta los mismos flags:
+
+```bat
+.\Monitor\gfx.exe --mock
+```
+
+```bat
+.\Monitor\gfx.exe -h 127.0.0.1 -p 4242
+```
+
 ---
 
 ## 👥 El Equipo de Desarrollo
