@@ -103,3 +103,9 @@ Para que los humanos podamos disfrutar de la competencia, hemos desarrollado un 
 | **David Aviles** | **Client IA** (Cerebro de la IA, Interprete de comandos y Estrategia) | [Perfil de GitHub](https://github.com/Karsp) |
 
 ---
+
+## Architecture Decision Records
+
+- [ADR 0002: Refactor del Utility-Based Decision System](docs/adr/0002-utility-decision-system-refactor.md)
+
+---

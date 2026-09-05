@@ -1,9 +1,7 @@
 #include "AgentChaman.h"
 #include "Bid.h"
 #include "CommandEntry.h"
-#include <iostream>
-#include "CommandEntry.h"
-#include <iostream>
+#include "ClientLog.h"
 
 void AgentChaman::GetBids(Blackboard& bb)
 {
@@ -19,9 +17,9 @@ void AgentChaman::GetBids(Blackboard& bb)
 			if (bb.Me.inventory.Has(recipe.RequiredResources))
 			{
 				// TODO: Verificar tambien si hay suficientes jugadores en el tile
-				std::cout << "[Chaman] Can perform incantation to level " << (bb.Me.Level + 1) << "\n";
-				std::cout << "[Chaman] Required players: " << recipe.RequiredPlayers << "\n";
-				
+				LOG_CHAMAN("Can perform incantation to level " << (bb.Me.Level + 1));
+				LOG_CHAMAN("Required players: " << recipe.RequiredPlayers);
+
 				bb.Bids.push_back(Bid(
 					CommandEntry::Create(CommandType::Incantation, bb.CurrentTick),
 					200.0
@@ -29,7 +27,7 @@ void AgentChaman::GetBids(Blackboard& bb)
 			}
 			else
 			{
-				std::cout << "[Chaman] Missing resources for level " << (bb.Me.Level + 1) << "\n";
+				LOG_CHAMAN("Missing resources for level " << (bb.Me.Level + 1));
 			}
 		}
 	}

@@ -1,8 +1,8 @@
 #include "AgentFeeder.h"
 #include "Bid.h"
 #include "CommandEntry.h"
+#include "ClientLog.h"
 #include "UtilityHelper.h"
-#include <iostream>
 #include <vector>
 
 namespace
@@ -65,14 +65,14 @@ void AgentFeeder::GetBids(Blackboard& bb)
 	const double hungerNeed = bb.GetHungerNeed();
 	if (hungerNeed <= 0.30)
 	{
-		std::cout << "[Feeder] Hunger need is low (" << (hungerNeed * 100) << "%). No action needed.\n";
+		LOG_FEEDER("Hunger need is low (" << (hungerNeed * 100) << "%). No action needed.");
 		return;
 	}
 
 	Tile* playerTile = bb.GetPlayerTile();
 	if (!playerTile)
 	{
-		std::cout << "[Feeder] Empty player tile.\n";
+		LOG_FEEDER("Empty player tile.");
 		return;
 	}
 
@@ -80,18 +80,18 @@ void AgentFeeder::GetBids(Blackboard& bb)
 	const int currentFood = bb.Me.inventory.Get(Resource::Food);
 	const int remainingTicks = bb.GetRemainingLifeTicks();
 
-	std::cout << "[Feeder] Food=" << currentFood
+	LOG_FEEDER("Food=" << currentFood
 		<< " | Remaining ticks=" << remainingTicks
 		<< " | Tile food=" << foodOnTile
-		<< " | Hunger need=" << hungerNeed << "\n";
+		<< " | Hunger need=" << hungerNeed);
 
 	if (foodOnTile > 0)
 	{
 		const double takeUtility = BuildTakeFoodUtility(bb, foodOnTile);
 		const double takePriority = UtilityHelper::LinearClamp(takeUtility * 100.0, 0.0, 100.0);
 
-		std::cout << "[Feeder] TAKE utility=" << takeUtility
-			<< " -> priority=" << takePriority << "\n";
+		LOG_FEEDER("TAKE utility=" << takeUtility
+			<< " -> priority=" << takePriority);
 
 		bb.Bids.push_back(Bid(
 			CommandEntry::Create(CommandType::Take, "nourriture", bb.CurrentTick),
@@ -101,10 +101,10 @@ void AgentFeeder::GetBids(Blackboard& bb)
 	}
 
 	const double searchUtility = BuildSearchFoodUtility(bb, foodOnTile);
-	const double searchPriority = UtilityHelper::LinearClamp(searchUtility * 100.0, 0.0, 100.0);
+	const double searchPriority = UtilityHelper::LinearClamp(searchUtility * 55.0, 0.0, 55.0);
 
-	std::cout << "[Feeder] No food on tile. SEARCH utility=" << searchUtility
-		<< " -> priority=" << searchPriority << "\n";
+	LOG_FEEDER("No food on tile. SEARCH utility=" << searchUtility
+		<< " -> priority=" << searchPriority);
 
 	bb.RequestResource(Resource::Food, static_cast<int>(searchPriority));
 	bb.Bids.push_back(Bid(

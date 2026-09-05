@@ -33,3 +33,9 @@ Direction BroadcastNumberToDirection(int soundNumber, Direction playerOrientatio
 /// Obtiene la direccion opuesta a la dada
 /// </summary>
 Direction GetOppositeDirection(Direction dir);
+
+/// <summary>
+/// Obtiene el sentido de giro necesario para pasar de una direccion cardinal a otra.
+/// Para giros de 180 grados devuelve un giro a la derecha por consistencia.
+/// </summary>
+TurnDirection GetTurnDirection(Direction from, Direction to);

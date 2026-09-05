@@ -157,6 +157,7 @@
     <ClInclude Include="Bid.h" />
     <ClInclude Include="Blackboard.h" />
     <ClInclude Include="ClientGame.h" />
+    <ClInclude Include="ClientLog.h" />
     <ClInclude Include="ExplorationService.h" />
     <ClInclude Include="IAgent.h" />
     <ClInclude Include="InfluenceService.h" />

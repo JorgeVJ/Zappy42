@@ -101,3 +101,36 @@ Direction GetOppositeDirection(Direction dir)
         default:                    return Direction::North;
     }
 }
+
+TurnDirection GetTurnDirection(Direction from, Direction to)
+{
+    auto toCardinalIndex = [](Direction dir) -> int
+    {
+        switch (dir)
+        {
+            case Direction::North: return 0;
+            case Direction::East:  return 1;
+            case Direction::South: return 2;
+            case Direction::West:  return 3;
+            default:               return 0;
+        }
+    };
+
+    const int fromIndex = toCardinalIndex(from);
+    const int toIndex = toCardinalIndex(to);
+    const int diff = (toIndex - fromIndex + 4) % 4;
+
+    switch (diff)
+    {
+        case 0:
+            return TurnDirection::Right;
+        case 1:
+            return TurnDirection::Right;
+        case 2:
+            return TurnDirection::Right;
+        case 3:
+            return TurnDirection::Left;
+        default:
+            return TurnDirection::Right;
+    }
+}

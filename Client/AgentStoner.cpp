@@ -2,9 +2,9 @@
 #include "Bid.h"
 #include "CommandEntry.h"
 #include "Inventory.h"
+#include "ClientLog.h"
 #include "UtilityHelper.h"
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 namespace
@@ -77,7 +77,7 @@ void AgentStoner::GetBids(Blackboard& bb)
 
 	const IncantationRecipe* nextRecipe = GetRecipeForLevel(bb.Me.Level + 1);
 
-	std::cout << "[Stoner] Analyzing resources for level " << bb.Me.Level << " incantation\n";
+	LOG_STONER("Analyzing resources for level " << bb.Me.Level << " incantation");
 
 	for (const auto& res : kResources)
 	{
@@ -95,10 +95,10 @@ void AgentStoner::GetBids(Blackboard& bb)
 				const double searchPriority = UtilityHelper::LinearClamp(searchUtility * 100.0, 0.0, 100.0);
 				bb.RequestResource(res.resource, static_cast<int>(searchPriority));
 
-				std::cout << "[Stoner] Requesting search for " << res.name
+				LOG_STONER("Requesting search for " << res.name
 					<< " | current missing: " << currentMissing
 					<< " | next missing: " << nextMissing
-					<< " | priority: " << searchPriority << "\n";
+					<< " | priority: " << searchPriority);
 			}
 
 			continue;
@@ -113,11 +113,11 @@ void AgentStoner::GetBids(Blackboard& bb)
 		const int currentMissing = (currentNeeded - bb.Me.inventory.Get(res.resource)) > 0 ? (currentNeeded - bb.Me.inventory.Get(res.resource)) : 0;
 		const int nextMissing = (nextNeeded - bb.Me.inventory.Get(res.resource)) > 0 ? (nextNeeded - bb.Me.inventory.Get(res.resource)) : 0;
 
-		std::cout << "[Stoner] TAKE " << res.name
+		LOG_STONER("TAKE " << res.name
 			<< " | tile: " << onTile
 			<< " | current missing: " << currentMissing
 			<< " | next missing: " << nextMissing
-			<< " | priority: " << priority << "\n";
+			<< " | priority: " << priority);
 
 		bb.Bids.push_back(Bid(
 			CommandEntry::Create(CommandType::Take, res.name, bb.CurrentTick),

@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <sstream>
+#include "ClientLog.h"
 #ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
 #endif
@@ -22,7 +23,7 @@
 
 void WaitForDebugAndClean(int seconds = 5)
 {
-	std::cout << "\n[DEBUG] Waiting " << seconds << " seconds before closing..." << std::endl;
+	LOG_DEBUG("Waiting " << seconds << " seconds before closing...");
 	std::this_thread::sleep_for(std::chrono::seconds(seconds));
 #ifdef _WIN32
 	WSACleanup();
@@ -68,7 +69,7 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 	if (line != "BIENVENUE")
 		return Result<Blackboard*>::Fail(std::string("Server message error: expected 'BIENVENUE', got '") + line + "'");
 
-	std::cout << "[Server] " << line << std::endl;
+	LOG_SERVER(line);
 
 	if (!conn->SendLine(teamName))
 		return Result<Blackboard*>::Fail("Failed to send team name");
@@ -95,7 +96,7 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 		return Result<Blackboard*>::Fail("TeamFull");
 	}
 
-	std::cout << "[Server] Available slots: " << nb_client << std::endl;
+	LOG_SERVER("Available slots: " << nb_client);
 
 	if (!conn->RecvLine(line))
 		return Result<Blackboard*>::Fail("Failed to receive map dimensions");
@@ -113,9 +114,9 @@ Result<Blackboard*> InitServerHandshake(const std::string& teamName)
 
 	std::string extra;
 	if (ss >> extra)
-		std::cerr << "Warning: Extra parameters in map dimensions: '" << extra << "'\n";
+		LOG_WARNING("Extra parameters in map dimensions: '" << extra << "'");
 
-	std::cout << "[Server] Map dimensions: X=" << x << ", Y=" << y << "\n";
+	LOG_SERVER("Map dimensions: X=" << x << ", Y=" << y);
 
 	// Crear y configurar Blackboard usando la Connection ya registrada en ClientGame
 	Blackboard* board = new Blackboard();
@@ -150,7 +151,7 @@ int main()
 #endif
 	if (connect(conn->Get(), (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
 	{
-		std::cerr << "connect() failed\n";
+		LOG_ERROR("connect() failed");
 		WaitForDebugAndClean();
 		return 1;
 	}
@@ -161,12 +162,12 @@ int main()
 	{
 		if (result.Message == "TeamFull")
 		{
-			std::cout << "Team is full. Disconnecting...\n";
+			LOG_SERVER("Team is full. Disconnecting...");
 			WaitForDebugAndClean();
 			ClientGame::Dispose();
 			return 0;
 		}
-		std::cerr << "Server handshake failed: " << result.Message << "\n";
+		LOG_ERROR("Server handshake failed: " << result.Message);
 		WaitForDebugAndClean();
 		ClientGame::Dispose();
 		return 1;
@@ -198,7 +199,7 @@ int main()
 			commandStr += " " + bestBid->Command.commandParameter;
 
 		board.commandHistory.AddCommand(bestBid->Command.type, board.CurrentTick, bestBid->Command.commandParameter);
-		std::cout << "[Client] CMD => " << commandStr << "\n";
+		LOG_CLIENT("CMD => " << commandStr);
 		if (!conn->SendLine(commandStr))
 			break;
 
@@ -236,7 +237,7 @@ int main()
 			if (!conn->RecvLine(response))
 				break;
 			
-			std::cout << "[Server] RESP <= " << response << "\n";
+			LOG_SERVER("RESP <= " << response);
 			responseCode = handleServerResponse(board, response);
 			if (responseCode == 0)
 				break;

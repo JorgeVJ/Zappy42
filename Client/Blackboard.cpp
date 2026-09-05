@@ -1,6 +1,6 @@
 ﻿#include "Blackboard.h"
+#include "ClientLog.h"
 #include "UtilityHelper.h"
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <algorithm>
@@ -174,18 +174,18 @@ void Blackboard::UpdateTick(int ticks)
 {
 	if (ticks < 0)
 	{
-		std::cerr << "[Warning] Attempted to update tick with negative value: " << ticks << "\n";
+		LOG_WARNING("Attempted to update tick with negative value: " << ticks);
 		return;
 	}
-	
+
 	CurrentTick += ticks;
-	std::cout << "[Debug] Tick updated to: " << CurrentTick << "\n";
+	LOG_DEBUG("Tick updated to: " << CurrentTick);
 }
 
 void Blackboard::ResetTick()
 {
     CurrentTick = 0;
-    std::cout << "[Debug] Tick reset to 0\n";
+    LOG_DEBUG("Tick reset to 0");
 }
 
 bool Blackboard::HandleIncantationResponse(const std::string& response)
@@ -196,7 +196,7 @@ bool Blackboard::HandleIncantationResponse(const std::string& response)
     
     if (pos == std::string::npos)
     {
-        std::cerr << "[Error] Invalid incantation response format: '" << response << "'\n";
+        LOG_ERROR("Invalid incantation response format: '" << response << "'");
         return false;
     }
     
@@ -209,7 +209,7 @@ bool Blackboard::HandleIncantationResponse(const std::string& response)
     
     if (levelStr.empty())
     {
-        std::cerr << "[Error] No level value found in response: '" << response << "'\n";
+        LOG_ERROR("No level value found in response: '" << response << "'");
         return false;
     }
     
@@ -222,25 +222,25 @@ bool Blackboard::HandleIncantationResponse(const std::string& response)
         // Verificar que se parseo toda la string
         if (parsePos != levelStr.length())
         {
-            std::cerr << "[Error] Invalid level format: '" << levelStr << "'\n";
+            LOG_ERROR("Invalid level format: '" << levelStr << "'");
             return false;
         }
         
         // Validar rango de nivel (1-8 segun Zappy)
         if (newLevel < 1 || newLevel > 8)
         {
-            std::cerr << "[Error] Level out of expected range (1-8): " << newLevel << "\n";
+            LOG_ERROR("Level out of expected range (1-8): " << newLevel);
             return false;
         }
         
         int oldLevel = Me.Level;
         Me.Level = newLevel;
-        
-        std::cout << "[Blackboard] Player level updated: " << oldLevel << " -> " << newLevel << "\n";
-        
+
+        LOG_CLIENT("Player level updated: " << oldLevel << " -> " << newLevel);
+
         if (newLevel <= oldLevel)
         {
-            std::cout << "[Debug] Something went wrong!\n";
+            LOG_DEBUG("Something went wrong!");
             return false;
         }
         
@@ -248,12 +248,12 @@ bool Blackboard::HandleIncantationResponse(const std::string& response)
     }
     catch (const std::invalid_argument& e)
     {
-        std::cerr << "[Error] Cannot parse level from: '" << levelStr << "'\n";
+        LOG_ERROR("Cannot parse level from: '" << levelStr << "'");
         return false;
     }
     catch (const std::out_of_range& e)
     {
-        std::cerr << "[Error] Level value out of range: '" << levelStr << "'\n";
+        LOG_ERROR("Level value out of range: '" << levelStr << "'");
         return false;
     }
     

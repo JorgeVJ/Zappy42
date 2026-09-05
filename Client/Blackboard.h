@@ -45,6 +45,12 @@ class Blackboard
 		// Number of players we are breeding. Do we start with just one connection? Shoud we send connectNbr command from the start to know how many players we have inmediately?
 		int TeamNbr = 0;
 
+		// Explorer cooldown and movement planning
+		// Add this to prevent the explorer from moving too often and to allow it to plan its path
+		int LastSeeTick = -100000;
+		Direction ExplorerTargetDirection = Direction::North;
+		bool ExplorerHasMovementPlan = false;
+
 		Player Me;
 
 		/// <summary>
